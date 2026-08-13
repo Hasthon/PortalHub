@@ -880,7 +880,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 Contenido de la Nómina
               </span>
               <span className="text-xs font-extrabold text-gray-600 dark:text-hub-text2 font-sans">
-                UTC Agregadas ({despachoUtcsList.length})
+                Nóminas Agregadas ({despachoUtcsList.length})
               </span>
             </div>
 
@@ -889,7 +889,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               {despachoUtcsList.length === 0 ? (
                 <div className="py-12 text-center border-2 border-dashed border-gray-200 dark:border-hub-border rounded-3xl">
                   <p className="text-xs text-gray-400 font-medium">
-                    No quedan UTCs en esta nómina de despacho.
+                    No quedan nóminas en este despacho.
                   </p>
                 </div>
               ) : (
@@ -913,11 +913,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                               isBeingRemoved ? 'bg-rose-600 animate-ping' : 'bg-purple-600'
                             }`} />
                             <h4 className="text-sm font-extrabold text-[#303030] dark:text-hub-text1 font-sans shrink-0">
-                              UTC {index + 1}
+                              Nómina {String(index + 1).padStart(2, '0')}
                             </h4>
-                            <span className="text-[11px] font-mono text-gray-400 dark:text-hub-text2 font-medium truncate">
-                              ({utc.codigoEncargo})
-                            </span>
                           </div>
 
                           {isBeingRemoved ? (
