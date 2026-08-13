@@ -1630,13 +1630,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 className={`py-2 px-1 rounded-xl text-xs font-extrabold transition-all duration-300 flex items-center justify-center gap-1 ${recentlyRemovedType === 'UTC'
                     ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
                     : activePdaTab === 'UTC'
-                      ? 'bg-white dark:bg-slate-700 text-[#303030] dark:text-hub-text1 shadow-sm border border-gray-200 dark:border-slate-700'
+                      ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-200/80 dark:border-purple-800'
                       : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
                   }`}
               >
                 <span>NÓMINAS</span>
                 <span
-                  className="font-mono text-[10px] px-1.5 py-0.2 rounded-full font-extrabold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-hub-text2 shrink-0"
+                  className="font-mono text-[10px] px-1.5 py-0.2 rounded-full font-extrabold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 shrink-0"
                 >
                   {utcsList.length}
                 </span>
@@ -1655,7 +1655,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   if (totalNominasPendientes === 0) {
                     return (
                       <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-hub-elevated border border-gray-200 dark:border-hub-border flex items-center justify-center text-gray-400 dark:text-hub-text3 mb-3 shadow-2xs">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3 shadow-2xs">
                           <Layers className="w-6 h-6 stroke-[1.8]" />
                         </div>
                         <p className="text-xs font-semibold text-gray-500 dark:text-hub-text2 max-w-[220px]">
@@ -2273,12 +2273,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               {/* Header Columna 3 */}
               <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-hub-border mb-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Layers className="w-4 h-4 text-gray-600 dark:text-hub-text2 shrink-0" />
+                  <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
                   <span className="text-sm font-extrabold text-[#414745] dark:text-hub-text1 font-sans truncate" title="Pendientes de despacho">
                     Pendientes de despacho
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-hub-text2 border border-gray-200 dark:border-slate-700 shrink-0">
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800 shrink-0">
                   {utcsList.length} {utcsList.length === 1 ? 'Nómina' : 'Nóminas'}
                 </span>
               </div>
