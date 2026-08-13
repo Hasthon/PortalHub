@@ -1490,7 +1490,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
                       <div className="flex flex-col text-left min-w-0 leading-tight">
                         <span className="text-sm font-extrabold text-white dark:text-hub-text1 truncate tracking-tight">
-                          Reubicar Rampa
+                          Reubicar Encargo
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
                           Cambiar Estación QR
@@ -2013,7 +2013,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <RefreshCw className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Reubicar Rampa</span>
+                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Reubicar Encargo</span>
                       <span className="text-xs text-gray-500 dark:text-hub-text2 font-normal font-sans">Cambiar o re-escanear ubicación</span>
                     </div>
                   </button>
