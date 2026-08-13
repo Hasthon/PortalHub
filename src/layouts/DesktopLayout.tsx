@@ -3,8 +3,6 @@ import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import {
   Scan,
-  Package,
-  Layers,
   Truck,
   BarChart3,
   MapPin,
@@ -140,56 +138,6 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
             >
               <Truck className="w-4 h-4 text-[#009D4E]" />
               <span>Nominación y Despacho</span>
-            </button>
-
-            {/* Lectura de Encargos */}
-            <button
-              onClick={() => onSelectModule?.('escaneo')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
-                activeModule === 'escaneo'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
-              }`}
-            >
-              <Package className="w-4 h-4" />
-              <span>Lectura de Encargos</span>
-            </button>
-
-            <button
-              onClick={() => onSelectModule?.('inventario')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
-                activeModule === 'inventario'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>Clasificación y Jaulas</span>
-            </button>
-
-            <button
-              onClick={() => onSelectModule?.('despachos')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
-                activeModule === 'despachos'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
-              }`}
-            >
-              <Truck className="w-4 h-4" />
-              <span>Despacho a Ruta</span>
-            </button>
-
-            {/* Reportes de Turno */}
-            <button
-              onClick={() => onSelectModule?.('reportes')}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
-                activeModule === 'reportes'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4" />
-              <span>Reportes de Turno</span>
             </button>
 
             <div className="pt-3 mt-2 border-t border-gray-200/80 dark:border-hub-border">
