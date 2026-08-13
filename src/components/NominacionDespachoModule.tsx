@@ -1630,13 +1630,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 className={`py-2 px-1 rounded-xl text-xs font-extrabold transition-all duration-300 flex items-center justify-center gap-1 ${recentlyRemovedType === 'UTC'
                     ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
                     : activePdaTab === 'UTC'
-                      ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-200/80 dark:border-purple-800'
+                      ? 'bg-white dark:bg-slate-700 text-[#303030] dark:text-hub-text1 shadow-sm border border-gray-200 dark:border-slate-700'
                       : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
                   }`}
               >
                 <span>NÓMINAS</span>
                 <span
-                  className="font-mono text-[10px] px-1.5 py-0.2 rounded-full font-extrabold bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 shrink-0"
+                  className="font-mono text-[10px] px-1.5 py-0.2 rounded-full font-extrabold bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-hub-text2 shrink-0"
                 >
                   {utcsList.length}
                 </span>
@@ -1655,7 +1655,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   if (totalNominasPendientes === 0) {
                     return (
                       <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                        <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-3 shadow-2xs">
+                        <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-hub-elevated border border-gray-200 dark:border-hub-border flex items-center justify-center text-gray-400 dark:text-hub-text3 mb-3 shadow-2xs">
                           <Layers className="w-6 h-6 stroke-[1.8]" />
                         </div>
                         <p className="text-xs font-semibold text-gray-500 dark:text-hub-text2 max-w-[220px]">
@@ -1668,22 +1668,22 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   return (
                     <div className="space-y-3 font-sans animate-fadeIn">
                       {/* BLOQUE 1: PENDIENTES DE DESPACHO (Encargos + Contenedoras) */}
-                      <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl p-3 space-y-2 shadow-2xs">
-                        <div className="border-b border-purple-200/80 dark:border-purple-800/60 pb-1.5">
-                          <span className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider block">
+                      <div className="bg-gray-50/80 dark:bg-slate-800/50 border border-gray-200/90 dark:border-slate-700/80 rounded-2xl p-3 space-y-2 shadow-2xs">
+                        <div className="border-b border-gray-200/80 dark:border-slate-700/60 pb-1.5">
+                          <span className="text-xs font-black text-[#414745] dark:text-hub-text1 uppercase tracking-wider block">
                             Contenido de las Nóminas
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-center text-xs pt-0.5">
                           {/* 1. Total Contenedoras */}
-                          <div className="p-2 bg-white/80 dark:bg-purple-900/40 border border-purple-200/80 dark:border-purple-700/60 rounded-xl flex flex-col justify-center">
+                          <div className="p-2 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-slate-700/80 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-emerald-700 dark:text-emerald-400 font-extrabold block uppercase tracking-tight">Contenedoras</span>
                             <strong className="text-base font-mono font-black text-[#009D4E] dark:text-emerald-300">
                               {totalContenedorasPendientes}
                             </strong>
                           </div>
                           {/* 2. Total Encargos */}
-                          <div className="p-2 bg-white/80 dark:bg-purple-900/40 border border-purple-200/80 dark:border-purple-700/60 rounded-xl flex flex-col justify-center">
+                          <div className="p-2 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-slate-700/80 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-blue-700 dark:text-sky-400 font-extrabold block uppercase tracking-tight">Encargos</span>
                             <strong className="text-base font-mono font-black text-[#2563EB] dark:text-sky-300">
                               {totalEncargosPendientes}
@@ -1693,12 +1693,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
 
                       {/* BLOQUE 2: RESUMEN DE SUMINISTROS (Bins, Jaulas, Valijas, Pallets) */}
-                      <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl p-3 space-y-2 shadow-2xs">
-                        <div className="border-b border-purple-200/80 dark:border-purple-800/60 pb-1.5 flex items-center justify-between">
-                          <span className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider">
+                      <div className="bg-gray-50/80 dark:bg-slate-800/50 border border-gray-200/90 dark:border-slate-700/80 rounded-2xl p-3 space-y-2 shadow-2xs">
+                        <div className="border-b border-gray-200/80 dark:border-slate-700/60 pb-1.5 flex items-center justify-between">
+                          <span className="text-xs font-black text-[#414745] dark:text-hub-text1 uppercase tracking-wider">
                             Suministros Consolidados
                           </span>
-                          <span className="text-[10px] font-mono font-bold text-purple-700 dark:text-purple-300">
+                          <span className="text-[10px] font-mono font-bold text-gray-600 dark:text-hub-text2">
                             Total: {totalSuministrosPendientes}
                           </span>
                         </div>
@@ -1711,9 +1711,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                             <span className="text-[9px] text-teal-700 dark:text-teal-400 font-bold block">Jaulas</span>
                             <strong className="text-xs font-mono font-extrabold text-teal-900 dark:text-teal-200">{insumosCounts.jaula || 8}</strong>
                           </div>
-                          <div className="p-1.5 bg-purple-100/60 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-800 rounded-xl flex flex-col justify-center">
-                            <span className="text-[9px] text-purple-700 dark:text-purple-300 font-bold block">Valijas</span>
-                            <strong className="text-xs font-mono font-extrabold text-purple-900 dark:text-purple-200">{insumosCounts.valija || 0}</strong>
+                          <div className="p-1.5 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl flex flex-col justify-center">
+                            <span className="text-[9px] text-slate-700 dark:text-slate-300 font-bold block">Valijas</span>
+                            <strong className="text-xs font-mono font-extrabold text-slate-900 dark:text-slate-100">{insumosCounts.valija || 0}</strong>
                           </div>
                           <div className="p-1.5 bg-orange-50/80 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/60 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-orange-700 dark:text-orange-400 font-bold block">Pallets</span>
@@ -2273,19 +2273,19 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               {/* Header Columna 3 */}
               <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-hub-border mb-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <Layers className="w-4 h-4 text-purple-600 shrink-0" />
+                  <Layers className="w-4 h-4 text-gray-600 dark:text-hub-text2 shrink-0" />
                   <span className="text-sm font-extrabold text-[#414745] dark:text-hub-text1 font-sans truncate" title="Pendientes de despacho">
                     Pendientes de despacho
                   </span>
                 </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border border-purple-200 shrink-0">
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-hub-text2 border border-gray-200 dark:border-slate-700 shrink-0">
                   {utcsList.length} {utcsList.length === 1 ? 'Nómina' : 'Nóminas'}
                 </span>
               </div>
 
               {/* Banner informativo sutil del sistema */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 mb-2.5 bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/40 rounded-xl text-[10px] text-purple-900 dark:text-purple-300 font-sans font-medium shrink-0">
-                <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0 stroke-[2]" />
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 mb-2.5 bg-gray-50/80 dark:bg-slate-800/60 border border-gray-200/80 dark:border-slate-700/60 rounded-xl text-[10px] text-gray-600 dark:text-hub-text2 font-sans font-medium shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-gray-500 dark:text-hub-text2 shrink-0 stroke-[2]" />
                 <span>Cargadas automáticamente por el sistema para este despacho.</span>
               </div>
 
@@ -2299,7 +2299,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   if (totalNominasPendientes === 0) {
                     return (
                       <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-                        <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800/60 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-2 shadow-2xs">
+                        <div className="w-10 h-10 rounded-2xl bg-gray-50 dark:bg-hub-elevated border border-gray-200 dark:border-hub-border flex items-center justify-center text-gray-400 dark:text-hub-text3 mb-2 shadow-2xs">
                           <Layers className="w-5 h-5 stroke-[1.8]" />
                         </div>
                         <p className="text-xs font-semibold text-gray-500 dark:text-hub-text2 max-w-[200px]">
@@ -2312,22 +2312,22 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   return (
                     <div className="space-y-2.5 font-sans animate-fadeIn">
                       {/* BLOQUE 1: PENDIENTES DE DESPACHO (Encargos + Contenedoras) */}
-                      <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl p-3 space-y-2 shadow-2xs">
-                        <div className="border-b border-purple-200/80 dark:border-purple-800/60 pb-1.5">
-                          <span className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider block">
+                      <div className="bg-gray-50/80 dark:bg-slate-800/50 border border-gray-200/90 dark:border-slate-700/80 rounded-2xl p-3 space-y-2 shadow-2xs">
+                        <div className="border-b border-gray-200/80 dark:border-slate-700/60 pb-1.5">
+                          <span className="text-xs font-black text-[#414745] dark:text-hub-text1 uppercase tracking-wider block">
                             Contenido de las Nóminas
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-center text-xs pt-0.5">
                           {/* 1. Total Contenedoras */}
-                          <div className="p-2 bg-white/80 dark:bg-purple-900/40 border border-purple-200/80 dark:border-purple-700/60 rounded-xl flex flex-col justify-center">
+                          <div className="p-2 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-slate-700/80 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-emerald-700 dark:text-emerald-400 font-extrabold block uppercase tracking-tight">Contenedoras</span>
                             <strong className="text-base font-mono font-black text-[#009D4E] dark:text-emerald-300">
                               {totalContenedorasPendientes}
                             </strong>
                           </div>
                           {/* 2. Total Encargos */}
-                          <div className="p-2 bg-white/80 dark:bg-purple-900/40 border border-purple-200/80 dark:border-purple-700/60 rounded-xl flex flex-col justify-center">
+                          <div className="p-2 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-slate-700/80 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-blue-700 dark:text-sky-400 font-extrabold block uppercase tracking-tight">Encargos</span>
                             <strong className="text-base font-mono font-black text-[#2563EB] dark:text-sky-300">
                               {totalEncargosPendientes}
@@ -2337,12 +2337,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
 
                       {/* BLOQUE 2: RESUMEN DE SUMINISTROS (Bins, Jaulas, Valijas, Pallets) */}
-                      <div className="bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 rounded-2xl p-3 space-y-2 shadow-2xs">
-                        <div className="border-b border-purple-200/80 dark:border-purple-800/60 pb-1.5 flex items-center justify-between">
-                          <span className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider">
+                      <div className="bg-gray-50/80 dark:bg-slate-800/50 border border-gray-200/90 dark:border-slate-700/80 rounded-2xl p-3 space-y-2 shadow-2xs">
+                        <div className="border-b border-gray-200/80 dark:border-slate-700/60 pb-1.5 flex items-center justify-between">
+                          <span className="text-xs font-black text-[#414745] dark:text-hub-text1 uppercase tracking-wider">
                             Suministros Consolidados
                           </span>
-                          <span className="text-[10px] font-mono font-bold text-purple-700 dark:text-purple-300">
+                          <span className="text-[10px] font-mono font-bold text-gray-600 dark:text-hub-text2">
                             Total: {totalSuministrosPendientes}
                           </span>
                         </div>
@@ -2355,9 +2355,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                             <span className="text-[9px] text-teal-700 dark:text-teal-400 font-bold block">Jaulas</span>
                             <strong className="text-xs font-mono font-extrabold text-teal-900 dark:text-teal-200">{insumosCounts.jaula || 8}</strong>
                           </div>
-                          <div className="p-1.5 bg-purple-100/60 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-800 rounded-xl flex flex-col justify-center">
-                            <span className="text-[9px] text-purple-700 dark:text-purple-300 font-bold block">Valijas</span>
-                            <strong className="text-xs font-mono font-extrabold text-purple-900 dark:text-purple-200">{insumosCounts.valija || 0}</strong>
+                          <div className="p-1.5 bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl flex flex-col justify-center">
+                            <span className="text-[9px] text-slate-700 dark:text-slate-300 font-bold block">Valijas</span>
+                            <strong className="text-xs font-mono font-extrabold text-slate-900 dark:text-slate-100">{insumosCounts.valija || 0}</strong>
                           </div>
                           <div className="p-1.5 bg-orange-50/80 dark:bg-orange-950/40 border border-orange-200/80 dark:border-orange-900/60 rounded-xl flex flex-col justify-center">
                             <span className="text-[9px] text-orange-700 dark:text-orange-400 font-bold block">Pallets</span>
@@ -2367,11 +2367,11 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
 
                       {/* FOOTER INFORMATIVO */}
-                      <div className="flex items-center justify-between text-[10px] text-purple-800 dark:text-purple-300 px-1 pt-0.5">
+                      <div className="flex items-center justify-between text-[10px] text-gray-600 dark:text-hub-text2 px-1 pt-0.5">
                         <span className="font-bold flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" /> Carga lista para despachar
+                          <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Carga lista para despachar
                         </span>
-                        <span className="font-mono text-purple-700 dark:text-purple-300 font-extrabold">
+                        <span className="font-mono text-gray-700 dark:text-hub-text1 font-extrabold">
                           Rampa {activeRampa.numero} 🚚
                         </span>
                       </div>
