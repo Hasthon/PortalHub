@@ -9,6 +9,7 @@ import {
   Box,
   Layers,
   Package,
+  Truck,
   AlertCircle,
   ShieldAlert,
   CheckCircle2,
@@ -91,6 +92,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
     idVehiculo: string;
   } | null>(null);
 
+  const [patenteInput, setPatenteInput] = useState('');
+
   const handleSimularQrTransportista = () => {
     setTransportistaAsignado({
       nombre: 'Carlos Mendoza Silva',
@@ -99,6 +102,24 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       idVehiculo: 'HJ-9021',
     });
     triggerToast('¡QR Transportista escaneado exitosamente! Datos integrados.', 'success');
+    playSuccessSound();
+  };
+
+  const handleAsignarPorPatente = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanPatente = patenteInput.trim().toUpperCase();
+    if (!cleanPatente) {
+      triggerToast('⚠️ Ingresa una patente válida para continuar', 'warning');
+      playWarningSound();
+      return;
+    }
+    setTransportistaAsignado({
+      nombre: 'Conductor Asignado (Ingreso Manual)',
+      rut: '14.892.304-K',
+      tipoVehiculo: 'Camión Rampla 28t',
+      idVehiculo: cleanPatente,
+    });
+    triggerToast(`¡Patente [${cleanPatente}] asignada correctamente!`, 'success');
     playSuccessSound();
   };
 
@@ -973,34 +994,66 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
           </div>
         )}
 
-        {/* ── STEP 2: ASIGNACIÓN DE TRANSPORTISTA (QR) ── */}
+        {/* ── STEP 2: ASIGNACIÓN DE TRANSPORTISTA (QR O PATENTE) ── */}
         {stepDespacho === 2 && (
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 font-sans">
             {!transportistaAsignado ? (
-              <div className="p-8 sm:p-10 text-center border-2 border-dashed border-gray-200 dark:border-hub-border rounded-3xl bg-gray-50/50 dark:bg-slate-800/30 flex flex-col items-center justify-center space-y-4 font-sans">
+              <div className="p-6 sm:p-8 border-2 border-dashed border-gray-200 dark:border-hub-border rounded-3xl bg-gray-50/50 dark:bg-slate-800/30 flex flex-col items-center justify-center space-y-4">
                 {/* Ícono representativo de sin transportista */}
-                <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-2xs">
-                  <UserX className="w-8 h-8 stroke-[1.8]" />
+                <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-2xs">
+                  <UserX className="w-7 h-7 stroke-[1.8]" />
                 </div>
 
-                <div className="space-y-1.5 max-w-xs mx-auto">
+                <div className="space-y-1 text-center max-w-xs mx-auto">
                   <h4 className="text-base font-extrabold text-[#303030] dark:text-hub-text1">
                     Sin transportista asignado
                   </h4>
                   <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-relaxed">
-                    Escanea el código QR del conductor para asociar sus datos a esta nómina.
+                    Escanea el código QR del conductor o digita manualmente la patente del vehículo.
                   </p>
                 </div>
 
-                {/* Botón Simular Escaneo QR */}
+                {/* Opción 1: Botón Simular Escaneo QR */}
                 <button
                   type="button"
                   onClick={handleSimularQrTransportista}
-                  className="mt-2 py-3 px-5 bg-[#EEFBF4] dark:bg-emerald-950/60 border border-[#A7F3D0] dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
+                  className="py-3 px-5 bg-[#EEFBF4] dark:bg-emerald-950/60 border border-[#A7F3D0] dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
                 >
                   <QrCode className="w-4 h-4" />
                   <span>Simular Escaneo QR Transportista</span>
                 </button>
+
+                {/* Divisor Visual */}
+                <div className="relative flex items-center justify-center w-full max-w-md my-1">
+                  <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
+                  <span className="bg-gray-100 dark:bg-slate-800 px-3 text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider rounded-full shrink-0">
+                    O DIGITAR PATENTE
+                  </span>
+                  <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
+                </div>
+
+                {/* Opción 2: Formulario de ingreso manual de Patente */}
+                <form onSubmit={handleAsignarPorPatente} className="flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-md mx-auto">
+                  <div className="relative flex-1 w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
+                      <Truck className="w-4 h-4 text-[#009D4E] dark:text-emerald-400" />
+                    </div>
+                    <input
+                      type="text"
+                      value={patenteInput}
+                      onChange={(e) => setPatenteInput(e.target.value.toUpperCase())}
+                      placeholder="Ej: ABCD-12 o HJ-9021"
+                      maxLength={10}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-hub-surface border border-gray-300 dark:border-hub-border rounded-2xl text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009D4E] uppercase shadow-2xs"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto px-4 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0"
+                  >
+                    <span>Asignar Patente</span>
+                  </button>
+                </form>
               </div>
             ) : (
               <div className="space-y-4 animate-fadeIn">
