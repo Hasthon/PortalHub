@@ -2126,26 +2126,34 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     return (
                       <div
                         key={item.id}
-                        className={`p-2 rounded-xl border transition-all duration-300 flex items-center justify-between text-xs font-mono ${isNew
+                        className={`p-2.5 rounded-xl border transition-all duration-300 font-mono space-y-1 ${isNew
                             ? 'bg-[#EEFBF4] dark:bg-emerald-950/70 border-[#A7F3D0] dark:border-emerald-700 border-l-4 border-l-[#009D4E] shadow-sm animate-toast-slide-down'
                             : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
                           }`}
                       >
-                        <div>
+                        {/* Fila 1: Código de Barras de 26 dígitos y Badge ¡NUEVO! */}
+                        <div className="flex items-center justify-between gap-2">
                           <strong
-                            className={`block font-bold ${isNew ? 'text-[#065F46] dark:text-emerald-200' : 'text-[#414745] dark:text-slate-200'
+                            className={`block font-black text-xs font-mono tracking-tight truncate ${isNew ? 'text-[#065F46] dark:text-emerald-200' : 'text-[#414745] dark:text-slate-200'
                               }`}
                           >
-                            {item.codigoEncargo.replace(/^(JAULA-|CONT-|JAULA|CONT)/i, '')}
+                            {item.codigoBarras26 || '78901234567890123456382910'}
                           </strong>
-                          <span className="text-[10px] text-gray-400">{item.horaEscaneo}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
                           {isNew && (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-[#009D4E] text-white shadow-2xs animate-pulse">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-[#009D4E] text-white shadow-2xs animate-pulse shrink-0">
                               ¡NUEVO!
                             </span>
                           )}
+                        </div>
+
+                        {/* Fila 2: OF-XXXXXXXXX (izquierda) y Hora (derecha) en la misma fila */}
+                        <div className="flex items-center justify-between text-[11px] font-mono pt-0.5">
+                          <span className="font-bold text-gray-600 dark:text-hub-text2">
+                            {item.codigoOF9 || 'OF-382910482'}
+                          </span>
+                          <span className="text-[10px] text-gray-400 dark:text-hub-text3 font-semibold">
+                            {item.horaEscaneo}
+                          </span>
                         </div>
                       </div>
                     );
