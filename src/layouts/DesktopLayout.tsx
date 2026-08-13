@@ -106,11 +106,11 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               onClick={() => onSelectModule?.('home')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
                 activeModule === 'home'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
+                  ? 'bg-[#EEFBF4] text-[#009D4E] border border-[#A7F3D0] dark:bg-[#03F77C]/15 dark:text-[#03F77C] dark:border-[#03F77C]/40 font-bold shadow-xs'
+                  : 'text-[#414745] dark:text-gray-300 border border-transparent hover:bg-emerald-50/80 hover:text-[#009D4E] dark:hover:bg-[#03F77C]/10 dark:hover:text-[#03F77C] dark:hover:border-[#03F77C]/30 font-semibold'
               }`}
             >
-              <BarChart3 className="w-4 h-4 text-[#009D4E]" />
+              <BarChart3 className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
               <span>Menú Principal</span>
             </button>
 
@@ -119,11 +119,11 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               onClick={() => onSelectModule?.('encasillado')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
                 activeModule === 'encasillado'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
+                  ? 'bg-[#EEFBF4] text-[#009D4E] border border-[#A7F3D0] dark:bg-[#03F77C]/15 dark:text-[#03F77C] dark:border-[#03F77C]/40 font-bold shadow-xs'
+                  : 'text-[#414745] dark:text-gray-300 border border-transparent hover:bg-emerald-50/80 hover:text-[#009D4E] dark:hover:bg-[#03F77C]/10 dark:hover:text-[#03F77C] dark:hover:border-[#03F77C]/30 font-semibold'
               }`}
             >
-              <Box className="w-4 h-4 text-[#009D4E]" />
+              <Box className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
               <span>Encasillado</span>
             </button>
 
@@ -132,11 +132,11 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
               onClick={() => onSelectModule?.('nominacion')}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
                 activeModule === 'nominacion'
-                  ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                  : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
+                  ? 'bg-[#EEFBF4] text-[#009D4E] border border-[#A7F3D0] dark:bg-[#03F77C]/15 dark:text-[#03F77C] dark:border-[#03F77C]/40 font-bold shadow-xs'
+                  : 'text-[#414745] dark:text-gray-300 border border-transparent hover:bg-emerald-50/80 hover:text-[#009D4E] dark:hover:bg-[#03F77C]/10 dark:hover:text-[#03F77C] dark:hover:border-[#03F77C]/30 font-semibold'
               }`}
             >
-              <Truck className="w-4 h-4 text-[#009D4E]" />
+              <Truck className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
               <span>Nominación y Despacho</span>
             </button>
 
@@ -148,11 +148,11 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 onClick={() => onSelectModule?.('configuracion')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all ${
                   activeModule === 'configuracion'
-                    ? 'bg-gradient-to-r from-[#EEFBF4] to-[#E8F8F0] dark:from-emerald-950/60 dark:to-emerald-900/40 text-[#009D4E] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs font-bold'
-                    : 'text-gray-600 dark:text-hub-text2 hover:bg-gray-100 dark:hover:bg-hub-elevated font-semibold'
+                    ? 'bg-[#EEFBF4] text-[#009D4E] border border-[#A7F3D0] dark:bg-[#03F77C]/15 dark:text-[#03F77C] dark:border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'text-[#414745] dark:text-gray-300 border border-transparent hover:bg-emerald-50/80 hover:text-[#009D4E] dark:hover:bg-[#03F77C]/10 dark:hover:text-[#03F77C] dark:hover:border-[#03F77C]/30 font-semibold'
                 }`}
               >
-                <Settings className="w-4 h-4 text-[#009D4E]" />
+                <Settings className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
                 <span>Configuración</span>
               </button>
             </div>
