@@ -67,7 +67,7 @@ export const LocationQrModal: React.FC<LocationQrModalProps> = ({ isOpen, onSele
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-[#414745] hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors"
+            className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
             title="Cerrar ventana"
           >
             <X className="w-5 h-5 stroke-[2.2]" />

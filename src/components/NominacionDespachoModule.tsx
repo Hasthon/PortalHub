@@ -316,7 +316,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             <button
               type="button"
               onClick={() => setIsInsumosModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
@@ -353,7 +353,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                           type="button"
                           onClick={() => handleUpdateInsumo(key, -1)}
                           disabled={insumosCounts[key] <= 0}
-                          className="w-8 h-8 rounded-xl bg-white dark:bg-hub-surface border border-gray-300 dark:border-[#03F77C] flex items-center justify-center text-gray-700 dark:text-[#03F77C] hover:bg-emerald-50 dark:hover:bg-[#03F77C]/15 active:bg-emerald-100 dark:active:bg-[#03F77C]/30 disabled:opacity-30 disabled:pointer-events-none shadow-2xs active:scale-95 transition-all cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white dark:bg-hub-surface border border-gray-300 dark:border-[#03F77C]/40 flex items-center justify-center text-gray-700 dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/15 hover:border-[#009D4E]/30 dark:hover:border-[#03F77C]/60 active:bg-emerald-100 dark:active:bg-[#03F77C]/30 disabled:opacity-30 disabled:pointer-events-none shadow-2xs active:scale-95 transition-all cursor-pointer"
                         >
                           <Minus className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -365,7 +365,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         <button
                           type="button"
                           onClick={() => handleUpdateInsumo(key, 1)}
-                          className="w-8 h-8 rounded-xl bg-white dark:bg-hub-surface border border-gray-300 dark:border-[#03F77C] flex items-center justify-center text-gray-700 dark:text-[#03F77C] hover:bg-emerald-50 dark:hover:bg-[#03F77C]/15 active:bg-emerald-100 dark:active:bg-[#03F77C]/30 shadow-2xs active:scale-95 transition-all cursor-pointer"
+                          className="w-8 h-8 rounded-xl bg-white dark:bg-hub-surface border border-gray-300 dark:border-[#03F77C]/40 flex items-center justify-center text-gray-700 dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/15 hover:border-[#009D4E]/30 dark:hover:border-[#03F77C]/60 active:bg-emerald-100 dark:active:bg-[#03F77C]/30 shadow-2xs active:scale-95 transition-all cursor-pointer"
                         >
                           <Plus className="w-4 h-4 stroke-[2.5]" />
                         </button>
@@ -470,7 +470,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             <button
               type="button"
               onClick={() => setIsDespachoSuccessModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
@@ -536,7 +536,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             <button
               type="button"
               onClick={() => setIsExitConfirmationModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors"
+              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
