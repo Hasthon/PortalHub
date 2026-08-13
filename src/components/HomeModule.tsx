@@ -4,10 +4,6 @@ import { useDevice } from '../context/DeviceContext';
 import {
   Layers,
   Truck,
-  Scan,
-  Boxes,
-  Send,
-  BarChart3,
   ChevronRight,
   Sparkles,
 } from 'lucide-react';
@@ -44,42 +40,6 @@ const MODULES_LIST: ModuleCardDef[] = [
     icon: Layers,
     accentColor: 'from-blue-600 to-indigo-700',
     badgeText: 'OPERATIVO',
-  },
-  {
-    id: 'escaneo',
-    title: 'Escaneo General',
-    subtitle: 'Ingreso Rápido de Bultos',
-    description: 'Captura masiva con lector de código de barras, retroalimentación sonora e historial.',
-    icon: Scan,
-    accentColor: 'from-amber-500 to-orange-600',
-    badgeText: 'RÁPIDO',
-  },
-  {
-    id: 'inventario',
-    title: 'Control de Inventario',
-    subtitle: 'Auditoría en Nave',
-    description: 'Control de stock retenido, cuadratura de bultos en tránsito y conteo por zona.',
-    icon: Boxes,
-    accentColor: 'from-purple-600 to-violet-700',
-    badgeText: 'PRÓXIMAMENTE',
-  },
-  {
-    id: 'despachos',
-    title: 'Historial de Despachos',
-    subtitle: 'Manifiestos Emitidos',
-    description: 'Consulta de guías despachadas, horarios de salida de camiones y trazabilidad.',
-    icon: Send,
-    accentColor: 'from-teal-600 to-emerald-700',
-    badgeText: 'PRÓXIMAMENTE',
-  },
-  {
-    id: 'reportes',
-    title: 'Indicadores y Reportes',
-    subtitle: 'Métricas de Producción',
-    description: 'Estadísticas del turno, rendimiento por operario y volumen de bultos procesados.',
-    icon: BarChart3,
-    accentColor: 'from-slate-700 to-slate-900',
-    badgeText: 'PRÓXIMAMENTE',
   },
 ];
 
