@@ -125,7 +125,7 @@ export const HomeModule: React.FC<HomeModuleProps> = ({ onSelectModule }) => {
             Módulos de Operaciones Logísticas
           </h1>
           <p className="text-xs md:text-sm text-gray-500 dark:text-hub-text2 font-medium">
-            Selecciona un módulo operativo para comenzar tus tareas en la nave.
+            Selecciona un módulo operativo para comenzar tus tareas.
           </p>
         </div>
 
