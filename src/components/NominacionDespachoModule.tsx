@@ -51,13 +51,13 @@ const PRESET_RAMPAS: RampaInfo[] = [
 ];
 
 const INITIAL_NOMINADOS: EncargoNominado[] = [
-  { id: 'NOM-101', codigoEncargo: 'JAULA-382910482', tipoCarga: 'CONTENEDORA', horaEscaneo: '16:45:10' },
-  { id: 'NOM-102948291', codigoEncargo: 'SACA-9918', tipoCarga: 'UTC', horaEscaneo: '16:48:22', cantidadContenedores: 3, cantidadEncargos: 12 },
-  { id: 'NOM-105829104', codigoEncargo: 'SACA-9919', tipoCarga: 'UTC', horaEscaneo: '16:49:05', cantidadContenedores: 1, cantidadEncargos: 7 },
-  { id: 'NOM-106481029', codigoEncargo: 'SACA-9920', tipoCarga: 'UTC', horaEscaneo: '16:50:30', cantidadContenedores: 4, cantidadEncargos: 20 },
-  { id: 'NOM-107482910', codigoEncargo: 'SACA-9921', tipoCarga: 'UTC', horaEscaneo: '16:51:15', cantidadContenedores: 2, cantidadEncargos: 9 },
-  { id: 'NOM-103', codigoEncargo: 'OF-882103', tipoCarga: 'SUELTO', horaEscaneo: '16:50:01' },
-  { id: 'NOM-104', codigoEncargo: 'OF-104921', tipoCarga: 'SUELTO', horaEscaneo: '16:52:14' },
+  { id: 'NOM-101', codigoEncargo: 'JAULA-382910482', tipoCarga: 'CONTENEDORA', horaEscaneo: '16:45:10', codigoBarras26: '78901234567890123456382910', codigoOF9: 'OF-382910482' },
+  { id: 'NOM-102948291', codigoEncargo: 'SACA-9918', tipoCarga: 'UTC', horaEscaneo: '16:48:22', cantidadContenedores: 3, cantidadEncargos: 12, codigoBarras26: '98765432109876543210991800', codigoOF9: 'OF-991800123' },
+  { id: 'NOM-105829104', codigoEncargo: 'SACA-9919', tipoCarga: 'UTC', horaEscaneo: '16:49:05', cantidadContenedores: 1, cantidadEncargos: 7, codigoBarras26: '45678901234567890123991900', codigoOF9: 'OF-991900456' },
+  { id: 'NOM-106481029', codigoEncargo: 'SACA-9920', tipoCarga: 'UTC', horaEscaneo: '16:50:30', cantidadContenedores: 4, cantidadEncargos: 20, codigoBarras26: '12345678901234567890992000', codigoOF9: 'OF-992000789' },
+  { id: 'NOM-107482910', codigoEncargo: 'SACA-9921', tipoCarga: 'UTC', horaEscaneo: '16:51:15', cantidadContenedores: 2, cantidadEncargos: 9, codigoBarras26: '65432109876543210987992100', codigoOF9: 'OF-992100321' },
+  { id: 'NOM-103', codigoEncargo: 'OF-882103', tipoCarga: 'SUELTO', horaEscaneo: '16:50:01', codigoBarras26: '78901234567890123456882103', codigoOF9: 'OF-882103942' },
+  { id: 'NOM-104', codigoEncargo: 'OF-104921', tipoCarga: 'SUELTO', horaEscaneo: '16:52:14', codigoBarras26: '78901234567890123456104921', codigoOF9: 'OF-104921857' },
 ];
 
 interface NominacionDespachoModuleProps {
@@ -640,11 +640,17 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       tipoCarga = 'CONTENEDORA';
     }
 
+    const numDigitsOnly = uppercaseCode.replace(/[^0-9]/g, '');
+    const codigoBarras26 = (numDigitsOnly + '78901234567890123456882103').slice(0, 26);
+    const codigoOF9 = `OF-${(numDigitsOnly + '882103942').slice(0, 9)}`;
+
     const newItem: EncargoNominado = {
       id: `NOM-${Date.now().toString().slice(-6)}`,
       codigoEncargo: uppercaseCode,
       tipoCarga,
       horaEscaneo: timestamp,
+      codigoBarras26,
+      codigoOF9,
     };
 
     setEncargosNominados((prev) => [newItem, ...prev]);
@@ -1716,21 +1722,28 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   return (
                     <div
                       key={item.id}
-                      className={`py-1 px-2.5 rounded-xl border transition-all duration-300 flex items-center justify-between text-xs font-mono ${rowStyle}`}
+                      className={`p-2.5 rounded-xl border transition-all duration-300 font-mono space-y-1 ${rowStyle}`}
                     >
-                      <div>
-                        <strong className={`block font-bold ${textPrimaryStyle}`}>
-                          {item.tipoCarga === 'CONTENEDORA' ? item.codigoEncargo.replace(/^(JAULA-|CONT-|JAULA|CONT)/i, '') : item.codigoEncargo}
+                      {/* Fila 1: Código de Barras de 26 dígitos y Badge ¡NUEVO! */}
+                      <div className="flex items-center justify-between gap-2">
+                        <strong className={`block font-black text-xs font-mono tracking-tight truncate ${textPrimaryStyle}`}>
+                          {item.codigoBarras26 || '78901234567890123456882103'}
                         </strong>
-                        <span className="text-[10px] text-gray-400">{item.horaEscaneo}</span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5">
                         {isNew && (
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${newBadgeBg} text-white shadow-2xs animate-pulse`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${newBadgeBg} text-white shadow-2xs animate-pulse shrink-0`}>
                             ¡NUEVO!
                           </span>
                         )}
+                      </div>
+
+                      {/* Fila 2: OF-XXXXXXXXX (izquierda) y Hora (derecha) en la misma fila */}
+                      <div className="flex items-center justify-between text-[11px] font-mono pt-0.5">
+                        <span className="font-bold text-gray-600 dark:text-hub-text2">
+                          {item.codigoOF9 || 'OF-882103942'}
+                        </span>
+                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 font-semibold">
+                          {item.horaEscaneo}
+                        </span>
                       </div>
                     </div>
                   );
@@ -2037,26 +2050,34 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     return (
                       <div
                         key={item.id}
-                        className={`p-2 rounded-xl border transition-all duration-300 flex items-center justify-between text-xs font-mono ${isNew
+                        className={`p-2.5 rounded-xl border transition-all duration-300 font-mono space-y-1 ${isNew
                             ? 'bg-sky-50/80 dark:bg-sky-950/70 border-sky-300 dark:border-sky-700 border-l-4 border-l-blue-600 shadow-sm animate-toast-slide-down'
                             : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
                           }`}
                       >
-                        <div>
+                        {/* Fila 1: Código de Barras de 26 dígitos y Badge ¡NUEVO! */}
+                        <div className="flex items-center justify-between gap-2">
                           <strong
-                            className={`block font-bold ${isNew ? 'text-blue-900 dark:text-sky-200' : 'text-[#414745] dark:text-slate-200'
+                            className={`block font-black text-xs font-mono tracking-tight truncate ${isNew ? 'text-blue-900 dark:text-sky-200' : 'text-[#414745] dark:text-slate-200'
                               }`}
                           >
-                            {item.codigoEncargo}
+                            {item.codigoBarras26 || '78901234567890123456882103'}
                           </strong>
-                          <span className="text-[10px] text-gray-400">{item.horaEscaneo}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
                           {isNew && (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-blue-600 text-white shadow-2xs animate-pulse">
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase bg-blue-600 text-white shadow-2xs animate-pulse shrink-0">
                               ¡NUEVO!
                             </span>
                           )}
+                        </div>
+
+                        {/* Fila 2: OF-XXXXXXXXX (izquierda) y Hora (derecha) en la misma fila */}
+                        <div className="flex items-center justify-between text-[11px] font-mono pt-0.5">
+                          <span className="font-bold text-gray-600 dark:text-hub-text2">
+                            {item.codigoOF9 || 'OF-882103942'}
+                          </span>
+                          <span className="text-[10px] text-gray-400 dark:text-hub-text3 font-semibold">
+                            {item.horaEscaneo}
+                          </span>
                         </div>
                       </div>
                     );

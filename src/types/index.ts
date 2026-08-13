@@ -54,6 +54,8 @@ export interface EncargoEncasillado {
   horaEscaneo: string;
   cliente?: string;
   destino?: string;
+  codigoBarras26?: string;
+  codigoOF9?: string;
 }
 
 // --- TIPOS PARA EL MÓDULO DE NOMINACIÓN Y DESPACHO ---
@@ -68,6 +70,8 @@ export interface EncargoNominado {
   codigoContenedor?: string;
   cantidadContenedores?: number;
   cantidadEncargos?: number;
+  codigoBarras26?: string;
+  codigoOF9?: string;
 }
 
 export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion';
