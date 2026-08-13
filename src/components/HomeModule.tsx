@@ -26,7 +26,7 @@ const MODULES_LIST: ModuleCardDef[] = [
   {
     id: 'nominacion',
     title: 'Nominación y Despacho',
-    subtitle: 'Rampas y Manifiestos',
+    subtitle: '',
     description: 'Escanear ubicación de rampa, nominar encargos por tipo de carga y autorizar salidas.',
     icon: Truck,
     accentColor: 'from-[#009D4E] to-[#008743]',
@@ -35,7 +35,7 @@ const MODULES_LIST: ModuleCardDef[] = [
   {
     id: 'encasillado',
     title: 'Encasillado y Clasificación',
-    subtitle: 'Pasillos y Estaciones',
+    subtitle: '',
     description: 'Escanear estación QR, clasificar cargas por pasillo (Azul, Rojo, Verde) y validar bultos.',
     icon: Layers,
     accentColor: 'from-blue-600 to-indigo-700',
@@ -93,9 +93,11 @@ export const HomeModule: React.FC<HomeModuleProps> = ({ onSelectModule }) => {
                     <span className="text-sm font-extrabold text-white dark:text-hub-text1 truncate tracking-tight">
                       {mod.title}
                     </span>
-                    <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
-                      {mod.subtitle}
-                    </span>
+                    {mod.subtitle && (
+                      <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
+                        {mod.subtitle}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-300 dark:text-hub-text2 shrink-0" />
@@ -170,9 +172,11 @@ export const HomeModule: React.FC<HomeModuleProps> = ({ onSelectModule }) => {
               </div>
 
               <div className="space-y-1.5 flex-1">
-                <span className="text-[11px] font-mono font-bold text-gray-400 dark:text-hub-text2 uppercase tracking-wider block">
-                  {mod.subtitle}
-                </span>
+                {mod.subtitle && (
+                  <span className="text-[11px] font-mono font-bold text-gray-400 dark:text-hub-text2 uppercase tracking-wider block">
+                    {mod.subtitle}
+                  </span>
+                )}
                 <h3 className="text-lg font-extrabold text-[#303030] dark:text-hub-text1 leading-snug font-sans group-hover:text-[#009D4E] dark:group-hover:text-emerald-400 transition-colors">
                   {mod.title}
                 </h3>
