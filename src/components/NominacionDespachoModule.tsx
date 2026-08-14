@@ -1038,17 +1038,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
                 </div>
 
-                {/* Formulario Integrado: Botón Asignar (Izquierda) + Input Patente (Derecha) en cápsula unificada */}
+                {/* Formulario Integrado: Input Patente (Izquierda) + Botón Asignar (Derecha) en cápsula unificada */}
                 <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full max-w-md mx-auto rounded-xl border border-gray-300 dark:border-hub-border overflow-hidden bg-white dark:bg-hub-surface shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
-                  {/* Botón Asignar en el lado izquierdo sin border-radius interno */}
-                  <button
-                    type="submit"
-                    className="px-3.5 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap border-r border-gray-200 dark:border-hub-border"
-                  >
-                    <span>Asignar</span>
-                  </button>
-
-                  {/* Input en el lado derecho sin border-radius interno pegado al botón */}
+                  {/* Input en el lado izquierdo */}
                   <div className="relative flex-1 min-w-0 flex items-center">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
                       <Truck className="w-3.5 h-3.5 text-[#009D4E] dark:text-emerald-400 shrink-0" />
@@ -1062,6 +1054,14 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       className="w-full pl-8 pr-3 py-2 bg-transparent border-0 text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none uppercase"
                     />
                   </div>
+
+                  {/* Botón Asignar en el lado derecho sin border-radius interno pegado al input */}
+                  <button
+                    type="submit"
+                    className="px-3.5 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-200 dark:border-hub-border"
+                  >
+                    <span>Asignar</span>
+                  </button>
                 </form>
               </div>
             ) : (
@@ -1073,15 +1073,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     <span className="text-emerald-600 dark:text-emerald-400 font-mono">Activo: {transportistaAsignado.idVehiculo}</span>
                   </div>
                   <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full rounded-xl border border-gray-300 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
-                    {/* Botón Cambiar en el lado izquierdo */}
-                    <button
-                      type="submit"
-                      className="px-3 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-r border-gray-300 dark:border-slate-700"
-                    >
-                      <span>Cambiar</span>
-                    </button>
-
-                    {/* Input en el lado derecho */}
+                    {/* Input en el lado izquierdo */}
                     <div className="relative flex-1 min-w-0 flex items-center">
                       <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
                         <Truck className="w-3.5 h-3.5 text-[#009D4E] dark:text-emerald-400 shrink-0" />
@@ -1095,6 +1087,14 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         className="w-full pl-7 pr-2 py-1.5 bg-transparent border-0 text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none uppercase"
                       />
                     </div>
+
+                    {/* Botón Cambiar en el lado derecho */}
+                    <button
+                      type="submit"
+                      className="px-3 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
+                    >
+                      <span>Cambiar</span>
+                    </button>
 
                     {/* Botón QR opcional */}
                     <button
