@@ -284,18 +284,19 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       <LocationQrModal
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
+        currentLocationNumber={activeRampa.numero}
         onSelectLocation={(loc) => {
           const matched = PRESET_RAMPAS.find((r) => loc.nombreEstacion.includes(r.numero) || loc.rampaAsociada.includes(r.numero)) || {
             id: loc.id,
-            numero: '24',
+            numero: '01',
             destino: loc.zonaDestino,
-            region: 'Zona Centro-Sur',
-            nominacionesPendientes: 1,
+            region: 'Zona Central',
+            nominacionesPendientes: 0,
           };
           setActiveRampa(matched);
           setIsLocationScanned(true);
           setIsLocationModalOpen(false);
-          triggerToast(`Ubicación escaneada / cambiada a ${loc.nombreEstacion}`, 'success');
+          triggerToast(`Ubicación cambiada exitosamente a ${loc.nombreEstacion}`, 'success');
           playSuccessSound();
         }}
       />
@@ -2167,7 +2168,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             /* DESPUÉS DE ESCANEAR: MOSTRAR RAMPA ACTIVA Y BOTONES EN COMPONENTES SEPARADOS (ESCRITORIO) */
             <div className="space-y-6 animate-fadeIn">
               {/* Componente Aparte 1: Ubicación de Rampa Activa */}
-              <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-hub-border flex items-center justify-between">
+              <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-hub-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 flex items-center justify-center text-[#009D4E] shrink-0 shadow-xs">
                     <MapPin className="w-7 h-7 stroke-[2.2]" />
@@ -2180,6 +2181,22 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       Región: {activeRampa.region}
                     </p>
                   </div>
+                </div>
+
+                {/* Opción 5: Descriptiva Integrada con Aclaración Previa y Botón Cambiar Ubicación */}
+                <div className="pt-4 md:pt-0 md:pl-6 flex items-center justify-between md:justify-end gap-4 w-full md:w-auto border-t md:border-t-0 md:border-l border-gray-200 dark:border-hub-border">
+                  <div className="text-left md:text-right">
+                    <span className="text-xs font-extrabold text-[#414745] dark:text-hub-text1 block font-sans">¿Trabajarás en otra rampa?</span>
+                    <span className="text-[11px] text-gray-400 font-sans">Actualiza tu estación QR activa</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsLocationModalOpen(true)}
+                    className="px-5 py-2.5 rounded-2xl bg-[#EEFBF4] hover:bg-emerald-100 dark:bg-[#03F77C]/15 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] font-extrabold text-xs shadow-2xs flex items-center gap-2 transition-all font-sans cursor-pointer active:scale-95 shrink-0"
+                  >
+                    <QrCode className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
+                    <span>Cambiar Ubicación</span>
+                  </button>
                 </div>
               </div>
 
