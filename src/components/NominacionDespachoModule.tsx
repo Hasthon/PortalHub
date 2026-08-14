@@ -1002,20 +1002,20 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
         {/* ── STEP 2: ASIGNACIÓN DE TRANSPORTISTA (QR O PATENTE) ── */}
         {stepDespacho === 2 && (
-          <div className="space-y-4 py-2 font-sans">
+          <div className="space-y-2.5 sm:space-y-4 py-1 font-sans">
             {!transportistaAsignado ? (
-              <div className="p-6 sm:p-8 border-2 border-dashed border-gray-200 dark:border-hub-border rounded-3xl bg-gray-50/50 dark:bg-slate-800/30 flex flex-col items-center justify-center space-y-4">
+              <div className="p-3.5 sm:p-6 border-2 border-dashed border-gray-200 dark:border-hub-border rounded-2xl sm:rounded-3xl bg-gray-50/50 dark:bg-slate-800/30 flex flex-col items-center justify-center space-y-2.5 sm:space-y-4">
                 {/* Ícono representativo de sin transportista */}
-                <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-2xs">
-                  <UserX className="w-7 h-7 stroke-[1.8]" />
+                <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-2xs shrink-0">
+                  <UserX className="w-5 h-5 sm:w-7 sm:h-7 stroke-[1.8]" />
                 </div>
 
-                <div className="space-y-1 text-center max-w-xs mx-auto">
-                  <h4 className="text-base font-extrabold text-[#303030] dark:text-hub-text1">
+                <div className="space-y-0.5 text-center max-w-xs mx-auto">
+                  <h4 className="text-xs sm:text-base font-extrabold text-[#303030] dark:text-hub-text1">
                     Sin transportista asignado
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-relaxed">
-                    Escanea el código QR del conductor o digita manualmente la patente del vehículo.
+                  <p className="text-[11px] sm:text-xs text-gray-500 dark:text-hub-text2 font-medium leading-tight">
+                    Escanea el código QR del conductor o digita la patente.
                   </p>
                 </div>
 
@@ -1023,16 +1023,16 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 <button
                   type="button"
                   onClick={handleSimularQrTransportista}
-                  className="py-3 px-5 bg-[#EEFBF4] dark:bg-emerald-950/60 border border-[#A7F3D0] dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
+                  className="py-2 px-3.5 sm:py-3 sm:px-5 bg-[#EEFBF4] dark:bg-emerald-950/60 border border-[#A7F3D0] dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
                 >
-                  <QrCode className="w-4 h-4" />
-                  <span>Simular Escaneo QR Transportista</span>
+                  <QrCode className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>Simular Escaneo QR</span>
                 </button>
 
                 {/* Divisor Visual */}
-                <div className="relative flex items-center justify-center w-full max-w-md my-1">
+                <div className="relative flex items-center justify-center w-full max-w-md my-0.5">
                   <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
-                  <span className="bg-gray-100 dark:bg-slate-800 px-3 text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider rounded-full shrink-0">
+                  <span className="bg-gray-100 dark:bg-slate-800 px-2.5 text-[9px] sm:text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider rounded-full shrink-0">
                     Digita patente
                   </span>
                   <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
@@ -1042,7 +1042,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full max-w-md mx-auto rounded-xl border border-gray-300 dark:border-hub-border overflow-hidden bg-white dark:bg-hub-surface shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
                   {/* Input en el lado izquierdo */}
                   <div className="relative flex-1 min-w-0 flex items-center">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
+                    <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
                       <Truck className="w-3.5 h-3.5 text-[#009D4E] dark:text-emerald-400 shrink-0" />
                     </div>
                     <input
@@ -1051,24 +1051,24 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       onChange={(e) => setPatenteInput(e.target.value.toUpperCase())}
                       placeholder="Ej: ABCD-12"
                       maxLength={10}
-                      className="w-full pl-8 pr-3 py-2 bg-transparent border-0 text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none uppercase"
+                      className="w-full pl-7 pr-2 py-1.5 sm:py-2 bg-transparent border-0 text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none uppercase"
                     />
                   </div>
 
                   {/* Botón Asignar en el lado derecho sin border-radius interno pegado al input */}
                   <button
                     type="submit"
-                    className="px-3.5 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-200 dark:border-hub-border"
+                    className="px-3 py-2 sm:px-3.5 sm:py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-200 dark:border-hub-border"
                   >
                     <span>Asignar</span>
                   </button>
                 </form>
               </div>
             ) : (
-              <div className="space-y-3 animate-fadeIn font-sans">
+              <div className="space-y-2 sm:space-y-3 animate-fadeIn font-sans">
                 {/* Bar de Cambio Rápido de Patente en la parte superior (Cápsula unificada) */}
-                <div className="p-2.5 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl shadow-xs">
-                  <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1.5">
+                <div className="p-2 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-xl sm:rounded-2xl shadow-xs">
+                  <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1">
                     <span>Cambiar Patente</span>
                   </div>
                   <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full rounded-xl border border-gray-300 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
@@ -1090,45 +1090,45 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     {/* Botón Cambiar en el lado derecho */}
                     <button
                       type="submit"
-                      className="px-3 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
+                      className="px-3 py-1.5 sm:py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
                     >
                       <span>Cambiar</span>
                     </button>
                   </form>
                 </div>
 
-                {/* Tarjeta de Información del Transportista Asignado (Con todos los datos completos) */}
-                <div className="p-5 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-2xl space-y-3 shadow-xs">
+                {/* Tarjeta de Información del Transportista Asignado (Compacta sin scroll en PDA) */}
+                <div className="p-3 sm:p-4 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-xl sm:rounded-2xl space-y-2 shadow-xs font-sans">
                   {/* Encabezado limpio en una sola fila sin botón quitar asignación */}
-                  <div className="border-b border-emerald-200 dark:border-hub-border pb-2.5 flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2 font-sans">
-                      <UserCheck className="w-5 h-5 stroke-[2.2]" /> Transportista Asignado
+                  <div className="border-b border-emerald-200 dark:border-hub-border pb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4 stroke-[2.2]" /> Transportista Asignado
                     </span>
                   </div>
 
-                  {/* Grilla con todos los Datos Completos del Transportista */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
+                  {/* Grilla compacta de 2 columnas para mobile y desktop sin necesidad de scroll */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">Nombre</span>
-                      <strong className="text-base text-[#414745] dark:text-hub-text1 font-extrabold block">
+                      <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-bold">Nombre</span>
+                      <strong className="text-xs sm:text-sm text-[#414745] dark:text-hub-text1 font-extrabold block truncate">
                         {transportistaAsignado.nombre}
                       </strong>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">RUT</span>
-                      <span className="font-mono font-bold text-sm text-[#414745] dark:text-hub-text1">
+                      <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-bold">RUT</span>
+                      <span className="font-mono font-bold text-xs text-[#414745] dark:text-hub-text1 block truncate">
                         {transportistaAsignado.rut}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">Tipo de Vehículo</span>
-                      <span className="font-semibold text-gray-700 dark:text-hub-text2">
+                      <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-bold">Vehículo</span>
+                      <span className="font-semibold text-xs text-gray-700 dark:text-hub-text2 block truncate">
                         {transportistaAsignado.tipoVehiculo}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">ID Vehículo / Patente</span>
-                      <span className="font-mono font-extrabold text-sm text-[#009D4E] dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-0.5 rounded-md inline-block">
+                      <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-bold">Patente</span>
+                      <span className="font-mono font-extrabold text-xs text-[#009D4E] dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md inline-block">
                         {transportistaAsignado.idVehiculo}
                       </span>
                     </div>
