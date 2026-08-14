@@ -28,6 +28,7 @@ import {
   Check,
   Trash2,
   Sparkles,
+  Pencil,
 } from 'lucide-react';
 
 interface ToastMessage {
@@ -1628,12 +1629,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               </div>
             ) : (
               /* DESPUÉS DE ESCANEAR: COMPONENTE UBICACIÓN Y BOTONES ALINEADOS ARRIBA (PDA) */
-              <div className="flex-1 flex flex-col justify-start space-y-4 animate-fadeIn w-full">
-                {/* Componente Aparte 1: Card Info Rampa Ubicada (ARRIBA COMPACTO) */}
-                <div className="bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl py-3 px-4 shadow-xs w-full shrink-0">
+              <div className="flex-1 flex flex-col justify-start space-y-4 animate-fadeIn w-full font-sans">
+                {/* Componente Aparte 1: Card Info Rampa Ubicada en PDA */}
+                <div className="bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-4 shadow-xs w-full shrink-0 flex flex-col gap-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shrink-0">
-                      <MapPin className="w-5 h-5 stroke-[2.2]" />
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shrink-0">
+                      <MapPin className="w-5.5 h-5.5 stroke-[2.2]" />
                     </div>
                     <div>
                       <h3 className="text-base font-extrabold text-[#414745] dark:text-hub-text1 leading-tight font-sans">
@@ -1641,6 +1642,22 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium">{activeRampa.destino} ({activeRampa.region})</p>
                     </div>
+                  </div>
+
+                  {/* Opción 3 Definitiva: Footer Integrado en la misma Card */}
+                  <div className="pt-2.5 mt-1 border-t border-gray-100 dark:border-hub-border flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-medium text-gray-400 font-sans">¿Trabajarás en otra rampa?</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsLocationModalOpen(true)}
+                      className="min-h-[36px] pl-4 pr-1.5 py-1 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold flex items-center gap-2.5 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
+                      title="Cambiar Rampa"
+                    >
+                      <span>Cambiar rampa</span>
+                      <div className="w-6 h-6 rounded-full bg-[#009D4E] dark:bg-[#03F77C] text-white dark:text-[#303030] flex items-center justify-center shrink-0 shadow-2xs">
+                        <Pencil className="w-3 h-3 stroke-[2.5]" />
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -1735,13 +1752,23 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
         ) : (
           /* STEP 2: PROCESO DE NOMINACIÓN (PDA) */
           <div className="flex-1 min-h-0 flex flex-col space-y-2 overflow-hidden">
-            {/* Header / Subtítulo con Badge fuera del componente (Arriba a la derecha - Visible) */}
-            <div className="flex items-center justify-between px-1 shrink-0">
-              <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block">
+            {/* Header / Subtítulo con Badge en filas distintas en PDA (Separación exclusiva entre badge y título) */}
+            <div className="flex flex-col gap-2.5 px-1 shrink-0">
+              <div className="flex justify-end w-full">
+                <button
+                  type="button"
+                  onClick={() => setIsLocationModalOpen(true)}
+                  className="min-h-[36px] pl-4 pr-3 py-1.5 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold flex items-center gap-3 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
+                  title="Cambiar rampa / ubicación activa"
+                >
+                  <span>Rampa {activeRampa.numero} - {activeRampa.destino}</span>
+                  <div className="w-6 h-6 rounded-full bg-[#009D4E] dark:bg-[#03F77C] text-white dark:text-[#303030] flex items-center justify-center shrink-0 shadow-2xs">
+                    <Pencil className="w-3 h-3 stroke-[2.5]" />
+                  </div>
+                </button>
+              </div>
+              <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block pt-1">
                 Proceso de Nominación
-              </span>
-              <span className="text-[10px] font-mono font-bold text-[#009D4E] dark:text-[#03F77C] bg-[#EEFBF4] dark:bg-[#03F77C]/15 border border-[#A7F3D0] dark:border-[#03F77C]/40 px-2.5 py-0.5 rounded-full shadow-2xs">
-                Rampa {activeRampa.numero} - {activeRampa.destino}
               </span>
             </div>
 
@@ -2167,7 +2194,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
           ) : (
             /* DESPUÉS DE ESCANEAR: MOSTRAR RAMPA ACTIVA Y BOTONES EN COMPONENTES SEPARADOS (ESCRITORIO) */
             <div className="space-y-6 animate-fadeIn">
-              {/* Componente Aparte 1: Ubicación de Rampa Activa */}
+              {/* Componente Aparte 1: Ubicación de Rampa Activa con Opción 5 Completa en Escritorio */}
               <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-hub-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 flex items-center justify-center text-[#009D4E] shrink-0 shadow-xs">
@@ -2183,7 +2210,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   </div>
                 </div>
 
-                {/* Opción 5: Descriptiva Integrada con Aclaración Previa y Botón Cambiar Ubicación */}
+                {/* Lado derecho Opción 5: Divisor Vertical + Texto Explicativo + Botón Cambiar Rampa */}
                 <div className="pt-4 md:pt-0 md:pl-6 flex items-center justify-between md:justify-end gap-4 w-full md:w-auto border-t md:border-t-0 md:border-l border-gray-200 dark:border-hub-border">
                   <div className="text-left md:text-right">
                     <span className="text-xs font-extrabold text-[#414745] dark:text-hub-text1 block font-sans">¿Trabajarás en otra rampa?</span>
@@ -2192,10 +2219,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <button
                     type="button"
                     onClick={() => setIsLocationModalOpen(true)}
-                    className="px-5 py-2.5 rounded-2xl bg-[#EEFBF4] hover:bg-emerald-100 dark:bg-[#03F77C]/15 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] font-extrabold text-xs shadow-2xs flex items-center gap-2 transition-all font-sans cursor-pointer active:scale-95 shrink-0"
+                    className="min-h-[40px] pl-5 pr-1.5 py-1.5 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-sm font-mono font-bold flex items-center gap-3 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
+                    title="Cambiar Rampa"
                   >
-                    <QrCode className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
-                    <span>Cambiar Ubicación</span>
+                    <span>Cambiar rampa</span>
+                    <div className="w-7 h-7 rounded-full bg-[#009D4E] dark:bg-[#03F77C] text-white dark:text-[#303030] flex items-center justify-center shrink-0 shadow-2xs">
+                      <Pencil className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
                   </button>
                 </div>
               </div>
@@ -2282,9 +2312,17 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             >
               <ArrowLeft className="w-4 h-4" /> Volver a Selección de Rampa
             </button>
-            <div className="px-3.5 py-1 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold">
-              Ubicación Activa: Rampa {activeRampa.numero} ({activeRampa.destino})
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsLocationModalOpen(true)}
+              className="min-h-[36px] pl-4 pr-3 py-1.5 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold flex items-center gap-3 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
+              title="Cambiar rampa / ubicación activa"
+            >
+              <span>Rampa {activeRampa.numero} - {activeRampa.destino}</span>
+              <div className="w-6 h-6 rounded-full bg-[#009D4E] dark:bg-[#03F77C] text-white dark:text-[#303030] flex items-center justify-center shrink-0 shadow-2xs">
+                <Pencil className="w-3 h-3 stroke-[2.5]" />
+              </div>
+            </button>
           </div>
 
           {/* Card Control Bar: Escanea los encargos + Quitar Switch + Simular */}
