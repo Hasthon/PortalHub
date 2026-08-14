@@ -323,7 +323,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       };
                       handleSelectEncargoParaReubicar(sampleItem);
                     }}
-                    className="w-full py-3.5 px-6 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className={`w-full ${
+                      isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'py-3.5 px-6 rounded-2xl text-xs sm:text-sm'
+                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer`}
                   >
                     <Scan className="w-4 h-4 shrink-0" />
                     <span>Simular Escaneo de Encargo</span>
@@ -338,63 +340,81 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <CheckCircle2 className="w-9 h-9 stroke-[2.2]" />
                 </div>
 
-                <div className="space-y-1">
+                {/* Título en Frase (Solo primer letra Mayúscula) y Sin Subtítulo */}
+                <div className="px-2">
                   <h3 className="text-xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
-                    Encargo Reubicado Exitosamente
+                    Encargo reubicado exitosamente
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium">
-                    El encargo fue registrado con éxito en su nuevo estado de estación.
-                  </p>
                 </div>
 
-                {/* Ficha Detallada del Encargo en el Nuevo Estado */}
+                {/* Propuesta Visual de Ficha de Encargo — Estilo Portal Hub */}
                 {selectedEncargoReubicar && (
-                  <div className="w-full p-4 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-2xl space-y-3 text-left shadow-2xs">
-                    <div className="flex items-center justify-between border-b border-emerald-200 dark:border-hub-border pb-2">
-                      <span className="text-[10px] font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider">
-                        Estado Actual de Carga
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-mono font-extrabold">
-                        REUBICADO Y REGISTRADO
+                  <div className="w-full bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl p-4 shadow-sm space-y-3 text-left">
+                    {/* Encabezado: Badge de Encargo + Estado Pill */}
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-hub-border pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C]">
+                          <Box className="w-4.5 h-4.5" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block">
+                            Código Encargo
+                          </span>
+                          <strong className="text-base font-mono font-extrabold text-[#303030] dark:text-hub-text1">
+                            {selectedEncargoReubicar.codigoEncargo}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                        <Check className="w-3 h-3 stroke-[3]" /> Reubicado
                       </span>
                     </div>
 
+                    {/* Grilla con campos clave */}
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
-                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Código Encargo</span>
-                        <strong className="text-sm font-mono font-extrabold text-[#303030] dark:text-hub-text1 block">
-                          {selectedEncargoReubicar.codigoEncargo}
-                        </strong>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Tipo Carga</span>
-                        <span className="font-bold text-xs text-gray-700 dark:text-hub-text2 block">
+                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-extrabold block mb-0.5">
+                          Tipo de Carga
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-slate-800 text-[#303030] dark:text-hub-text1 text-xs font-bold inline-block border border-gray-200 dark:border-slate-700">
                           {selectedEncargoReubicar.tipoCarga}
                         </span>
                       </div>
-                      <div className="col-span-2">
-                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Código de Barras (26 dígitos)</span>
-                        <span className="font-mono text-xs text-[#303030] dark:text-hub-text1 block truncate">
-                          {selectedEncargoReubicar.codigoBarras26}
-                        </span>
-                      </div>
+
                       <div>
-                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Ubicación Actual</span>
-                        <span className="font-extrabold text-xs text-[#009D4E] dark:text-[#03F77C] block">
-                          Rampa {activeRampa.numero} ({activeRampa.destino})
+                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-extrabold block mb-0.5">
+                          Hora Registro
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-gray-400 block uppercase font-bold">Hora Reubicación</span>
-                        <span className="font-mono font-bold text-xs text-gray-600 dark:text-hub-text2 block">
+                        <span className="text-xs font-mono font-bold text-gray-700 dark:text-hub-text2 block pt-1">
                           {selectedEncargoReubicar.horaEscaneo}
                         </span>
+                      </div>
+
+                      <div className="col-span-2">
+                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-extrabold block mb-1">
+                          Código 26 Dígitos
+                        </span>
+                        <div className="p-2 bg-gray-50 dark:bg-slate-800/80 rounded-xl border border-gray-200 dark:border-slate-700 font-mono text-[11px] font-bold text-[#009D4E] dark:text-[#03F77C] truncate flex items-center gap-2">
+                          <QrCode className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                          <span className="truncate">{selectedEncargoReubicar.codigoBarras26}</span>
+                        </div>
+                      </div>
+
+                      <div className="col-span-2">
+                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-extrabold block mb-1">
+                          Nueva Ubicación Asignada
+                        </span>
+                        <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-2 text-xs font-extrabold text-[#009D4E] dark:text-emerald-300">
+                          <MapPin className="w-4 h-4 shrink-0 text-[#009D4E] dark:text-[#03F77C]" />
+                          <span>Rampa {activeRampa.numero} — {activeRampa.destino}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) */}
+                {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) Redondeados en PDA */}
                 <div className="w-full pt-2">
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     {/* Botón Secundario (Izquierda): Reubicar otro */}
@@ -404,7 +424,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
                       }}
-                      className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                      className={`w-full sm:w-1/2 ${
+                        isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'h-11 rounded-2xl text-xs'
+                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                     >
                       <span>Reubicar otro encargo</span>
                     </button>
@@ -417,7 +439,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
                       }}
-                      className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                      className={`w-full sm:w-1/2 ${
+                        isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'h-11 rounded-2xl text-xs'
+                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                     >
                       <span>Finalizar</span>
                     </button>
