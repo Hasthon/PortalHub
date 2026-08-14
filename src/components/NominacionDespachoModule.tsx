@@ -254,54 +254,68 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
         }}
       />
 
-      {/* Modal Popup Alerta de Despacho */}
+      {/* Modal Popup Alerta / Confirmación de Despacho de Rampa */}
       {isDespachoModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="w-7 h-7 stroke-[2.2]" />
-              <h3 className="text-lg font-bold text-[#414745] dark:text-hub-text1 font-sans">
-                Alerta de Despacho de Rampa
-              </h3>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn font-sans">
+          <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up">
+            
+            {/* Botón X de Cierre Arriba a la Derecha */}
+            <button
+              type="button"
+              onClick={() => setIsDespachoModalOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
+              title="Cerrar"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            <p className="text-sm text-gray-600 dark:text-hub-text2 font-sans leading-relaxed">
-              Existen <strong className="text-amber-600 dark:text-amber-400 font-bold">{activeRampa.nominacionesPendientes} nóminas pendientes por despachar</strong> en Rampa {activeRampa.numero} ({activeRampa.destino}).
-            </p>
+            <div className="flex flex-col items-center text-center space-y-4 pt-1 pb-1">
+              {/* Ícono Ilustrativo de Despacho */}
+              <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-sm">
+                <Send className="w-8 h-8 stroke-[2.2]" />
+              </div>
 
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-2xl text-xs text-amber-900 dark:text-amber-200 font-mono">
-              ¿Quieres autorizar el cierre de manifiesto y despachar la carga ahora?
-            </div>
+              {/* Título y Mensaje Claro sobre Nóminas Pendientes */}
+              <div className="space-y-1.5 px-2">
+                <h3 className="text-xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
+                  Despacho de Rampa {activeRampa.numero}
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 leading-relaxed">
+                  Actualmente existen <strong className="text-[#009D4E] dark:text-emerald-400 font-extrabold">{activeRampa.nominacionesPendientes} {activeRampa.nominacionesPendientes === 1 ? 'nómina pendiente' : 'nóminas pendientes'}</strong> en esta rampa ({activeRampa.destino}) listas para ser despachadas.
+                </p>
+                <p className="text-[11px] text-gray-400 dark:text-hub-text3 font-medium pt-1">
+                  Al continuar se iniciará el proceso de cierre y asignación de transportista.
+                </p>
+              </div>
 
-            <div className="flex flex-col gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsDespachoModalOpen(false);
-                  const currentUtcs = encargosNominados.filter((i) => i.tipoCarga === 'UTC');
-                  setDespachoUtcsList(currentUtcs.length >= 4 ? currentUtcs : INITIAL_NOMINADOS.filter((i) => i.tipoCarga === 'UTC'));
-                  setStepDespacho(1);
-                  setStep('DESPACHO_FLOW');
-                }}
-                className={`${
-                  isPda
-                    ? 'w-full h-12 rounded-full text-sm'
-                    : 'w-full py-3 rounded-xl text-xs'
-                } bg-amber-600 dark:bg-[#03F77C] hover:bg-amber-700 hover:dark:bg-[#02D66B] active:bg-amber-800 dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer`}
-              >
-                Confirmar Despacho
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsDespachoModalOpen(false)}
-                className={`${
-                  isPda
-                    ? 'w-full h-12 rounded-full text-sm'
-                    : 'w-full py-3 rounded-xl text-xs'
-                } border-2 border-gray-300 dark:border-[#03F77C] text-gray-700 dark:text-[#03F77C] hover:bg-gray-100 dark:hover:bg-[#03F77C]/10 font-black flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer`}
-              >
-                Cancelar
-              </button>
+              {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) */}
+              <div className="w-full pt-2">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  {/* Botón Secundario (Izquierda): Cancelar */}
+                  <button
+                    type="button"
+                    onClick={() => setIsDespachoModalOpen(false)}
+                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                  >
+                    <span>Cancelar</span>
+                  </button>
+
+                  {/* Botón Primario (Derecha): Despachar Nóminas */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDespachoModalOpen(false);
+                      const currentUtcs = encargosNominados.filter((i) => i.tipoCarga === 'UTC');
+                      setDespachoUtcsList(currentUtcs.length >= 4 ? currentUtcs : INITIAL_NOMINADOS.filter((i) => i.tipoCarga === 'UTC'));
+                      setStepDespacho(1);
+                      setStep('DESPACHO_FLOW');
+                    }}
+                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                  >
+                    <span>Despachar Nóminas</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
