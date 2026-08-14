@@ -350,23 +350,18 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 {/* Propuesta Visual de Ficha de Encargo — Estilo Portal Hub */}
                 {selectedEncargoReubicar && (
                   <div className="w-full bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl p-4 shadow-sm space-y-3 text-left">
-                    {/* Encabezado: Badge de Encargo + Estado Pill */}
-                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-hub-border pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C]">
-                          <Box className="w-4.5 h-4.5" />
-                        </div>
-                        <div>
-                          <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block">
-                            Código Encargo
-                          </span>
-                          <strong className="text-base font-mono font-extrabold text-[#303030] dark:text-hub-text1">
-                            {selectedEncargoReubicar.codigoEncargo}
-                          </strong>
-                        </div>
+                    {/* Encabezado: Código Encargo (26 dígitos sin ícono al lado) + Estado Pill */}
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-hub-border pb-3 gap-2">
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block mb-0.5">
+                          Código Encargo (26 dígitos)
+                        </span>
+                        <strong className="text-xs sm:text-sm font-mono font-extrabold text-[#303030] dark:text-hub-text1 truncate block">
+                          {selectedEncargoReubicar.codigoBarras26}
+                        </strong>
                       </div>
 
-                      <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
+                      <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs shrink-0">
                         <Check className="w-3 h-3 stroke-[3]" /> Reubicado
                       </span>
                     </div>
@@ -389,16 +384,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         <span className="text-xs font-mono font-bold text-gray-700 dark:text-hub-text2 block pt-1">
                           {selectedEncargoReubicar.horaEscaneo}
                         </span>
-                      </div>
-
-                      <div className="col-span-2">
-                        <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-extrabold block mb-1">
-                          Código 26 Dígitos
-                        </span>
-                        <div className="p-2 bg-gray-50 dark:bg-slate-800/80 rounded-xl border border-gray-200 dark:border-slate-700 font-mono text-[11px] font-bold text-[#009D4E] dark:text-[#03F77C] truncate flex items-center gap-2">
-                          <QrCode className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                          <span className="truncate">{selectedEncargoReubicar.codigoBarras26}</span>
-                        </div>
                       </div>
 
                       <div className="col-span-2">
