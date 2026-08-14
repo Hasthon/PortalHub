@@ -1097,60 +1097,36 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   </form>
                 </div>
 
-                {/* Tarjeta de Información del Transportista Asignado */}
-                <div className="p-5 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-2xl space-y-3">
-                  <div className="border-b border-emerald-200 dark:border-hub-border pb-2.5 flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-2 font-sans">
-                      <UserCheck className="w-5 h-5 stroke-[2.2]" /> Transportista Asignado
+                {/* Tarjeta de Información del Transportista Asignado (En una sola fila limpia) */}
+                <div className="p-3.5 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-2xl flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs font-sans shadow-xs">
+                  {/* Ícono y Título */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <UserCheck className="w-5 h-5 text-[#009D4E] dark:text-emerald-400 stroke-[2.2] shrink-0" />
+                    <span className="font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider text-xs whitespace-nowrap">
+                      Transportista Asignado:
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTransportistaAsignado(null);
-                        setPatenteInput('');
-                      }}
-                      className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
-                    >
-                      Quitar Asignación
-                    </button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-sans">
-                    <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">Nombre</span>
-                      <strong className="text-base text-[#414745] dark:text-hub-text1 font-extrabold block">
-                        {transportistaAsignado.nombre}
-                      </strong>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">RUT</span>
-                      <span className="font-mono font-bold text-sm text-[#414745] dark:text-hub-text1">
-                        {transportistaAsignado.rut}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">Tipo de Vehículo</span>
-                      <span className="font-semibold text-gray-700 dark:text-hub-text2">
-                        {transportistaAsignado.tipoVehiculo}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-400 block uppercase font-bold">ID Vehículo / Patente</span>
-                      <span className="font-mono font-extrabold text-sm text-[#009D4E] dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-0.5 rounded-md inline-block">
-                        {transportistaAsignado.idVehiculo}
-                      </span>
-                    </div>
+                  {/* Nombre */}
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <strong className="text-sm text-[#414745] dark:text-hub-text1 font-extrabold truncate">
+                      {transportistaAsignado.nombre}
+                    </strong>
                   </div>
-                </div>
 
-                <div className="flex justify-center text-center pt-1">
-                  <button
-                    type="button"
-                    onClick={handleSimularQrTransportista}
-                    className="text-xs font-semibold text-[#414745] dark:text-hub-text2 hover:text-[#303030] cursor-pointer font-sans transition-colors"
-                  >
-                    <span>Para cambiar de transportista escanea otro QR</span>
-                  </button>
+                  {/* RUT */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="font-mono font-bold text-xs text-gray-600 dark:text-hub-text2">
+                      RUT: {transportistaAsignado.rut}
+                    </span>
+                  </div>
+
+                  {/* Patente Badge */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="font-mono font-extrabold text-xs text-[#009D4E] dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-800">
+                      {transportistaAsignado.idVehiculo}
+                    </span>
+                  </div>
                 </div>
               </div>
             )}
