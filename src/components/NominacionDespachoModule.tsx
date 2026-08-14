@@ -350,20 +350,14 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 {/* Propuesta Visual de Ficha de Encargo — Estilo Portal Hub */}
                 {selectedEncargoReubicar && (
                   <div className="w-full bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl p-4 shadow-sm space-y-3 text-left">
-                    {/* Encabezado: Código Encargo (26 dígitos sin ícono al lado) + Estado Pill */}
-                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-hub-border pb-3 gap-2">
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block mb-0.5">
-                          Código Encargo (26 dígitos)
-                        </span>
-                        <strong className="text-xs sm:text-sm font-mono font-extrabold text-[#303030] dark:text-hub-text1 truncate block">
-                          {selectedEncargoReubicar.codigoBarras26}
-                        </strong>
-                      </div>
-
-                      <span className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[10px] font-mono font-extrabold uppercase tracking-wider flex items-center gap-1.5 shadow-2xs shrink-0">
-                        <Check className="w-3 h-3 stroke-[3]" /> Reubicado
+                    {/* Encabezado: Código Encargo completo sin puntos suspensivos y sin badge */}
+                    <div className="border-b border-gray-100 dark:border-hub-border pb-3">
+                      <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block mb-1">
+                        Código Encargo
                       </span>
+                      <strong className="text-xs sm:text-sm font-mono font-extrabold text-[#303030] dark:text-hub-text1 block break-all leading-snug">
+                        {selectedEncargoReubicar.codigoBarras26}
+                      </strong>
                     </div>
 
                     {/* Grilla con campos clave */}
