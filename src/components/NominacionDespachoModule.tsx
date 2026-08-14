@@ -304,7 +304,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       {isReubicarModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn font-sans">
           <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-lg w-full p-6 shadow-2xl relative animate-scale-up">
-            
+
             {/* Botón X de Cierre */}
             <button
               type="button"
@@ -332,11 +332,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     Reubicación de Carga
                   </span>
                   <h3 className="text-xl sm:text-2xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
-                    Escanea el encargo para reubicar
+                    Escanea el código de encargo para reubicar
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-hub-text2 font-medium leading-relaxed max-w-sm mx-auto">
-                    Apunta la pistola escáner hacia el código de barras de la etiqueta para procesar la reubicación.
-                  </p>
                 </div>
 
                 {/* Botón de Simulación para Probar Escaneo */}
@@ -354,9 +351,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       };
                       handleSelectEncargoParaReubicar(sampleItem);
                     }}
-                    className={`w-full ${
-                      isPda ? 'h-12 rounded-full text-sm' : 'py-3.5 px-6 rounded-2xl text-sm'
-                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer`}
+                    className={`w-full ${isPda ? 'h-12 rounded-full text-sm' : 'py-3.5 px-6 rounded-2xl text-sm'
+                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer`}
                   >
                     <Scan className="w-4 h-4 shrink-0" />
                     <span>Simular Escaneo de Encargo</span>
@@ -434,9 +430,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
                       }}
-                      className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
+                      className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                        } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                     >
                       <span>Reubicar otro encargo</span>
                     </button>
@@ -449,9 +444,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
                       }}
-                      className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
+                      className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                        } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                     >
                       <span>Finalizar</span>
                     </button>
@@ -467,7 +461,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       {isDespachoModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn font-sans">
           <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up">
-            
+
             {/* Botón X de Cierre Arriba a la Derecha */}
             <button
               type="button"
@@ -501,9 +495,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <button
                     type="button"
                     onClick={() => setIsDespachoModalOpen(false)}
-                    className={`w-full sm:w-1/2 ${
-                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                    } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
+                    className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                   >
                     <span>Cancelar</span>
                   </button>
@@ -518,9 +511,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setStepDespacho(1);
                       setStep('DESPACHO_FLOW');
                     }}
-                    className={`w-full sm:w-1/2 ${
-                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
+                    className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                   >
                     <span>Despachar Nóminas</span>
                   </button>
@@ -551,7 +543,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               <div className="space-y-5">
                 <div className="pr-6">
                   <h3 className="text-base font-extrabold text-[#414745] dark:text-hub-text1 leading-tight">
-                    Ingresa la cantidad de suministros necesarios para esta nominación
+                    Ingresa la cantidad de suministros
                   </h3>
                 </div>
 
@@ -603,9 +595,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <button
                     type="button"
                     onClick={() => setIsInsumosModalOpen(false)}
-                    className={`w-full sm:w-1/2 ${
-                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                    } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
+                    className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                   >
                     <span>Cancelar</span>
                   </button>
@@ -616,9 +607,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setInsumosModalStep('SUCCESS_SCREEN');
                       playSuccessSound();
                     }}
-                    className={`w-full sm:w-1/2 ${
-                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer order-1 sm:order-2`}
+                    className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer order-1 sm:order-2`}
                   >
                     <span>Confirmar Insumos</span>
                   </button>
@@ -652,9 +642,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setEncargosNominados([]);
                         triggerToast('Nueva nómina iniciada', 'success');
                       }}
-                      className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
+                      className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                        } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                     >
                       <span>Crear otra nómina</span>
                     </button>
@@ -669,9 +658,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setStepDespacho(1);
                         setStep('DESPACHO_FLOW');
                       }}
-                      className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
-                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
+                      className={`w-full sm:w-1/2 ${isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                        } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                     >
                       <span>Despachar</span>
                     </button>
@@ -699,7 +687,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       {isDespachoSuccessModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up">
-            
+
             {/* Botón X de Cierre Arriba a la Derecha */}
             <button
               type="button"
@@ -767,7 +755,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       {isExitConfirmationModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-3xl max-w-md w-full p-6 shadow-2xl relative animate-scale-up">
-            
+
             {/* Botón X de Cierre Arriba a la Derecha */}
             <button
               type="button"
@@ -1001,11 +989,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 {/* Línea conectora entre círculos */}
                 {idx > 0 && (
                   <div
-                    className={`flex-1 h-[2px] mx-2 transition-colors duration-300 ${
-                      stepDespacho >= s.num
-                        ? 'bg-[#303030] dark:bg-emerald-500'
-                        : 'bg-gray-300 dark:bg-slate-700'
-                    }`}
+                    className={`flex-1 h-[2px] mx-2 transition-colors duration-300 ${stepDespacho >= s.num
+                      ? 'bg-[#303030] dark:bg-emerald-500'
+                      : 'bg-gray-300 dark:bg-slate-700'
+                      }`}
                   />
                 )}
 
@@ -1016,13 +1003,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     onClick={() => {
                       if (isPassed || isActive) setStepDespacho(s.num as 1 | 2 | 3);
                     }}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 font-bold text-xs ${
-                      isActive
-                        ? 'bg-[#303030] text-white ring-4 ring-[#303030]/20 dark:ring-emerald-500/30 dark:bg-emerald-500'
-                        : isPassed
+                    className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 font-bold text-xs ${isActive
+                      ? 'bg-[#303030] text-white ring-4 ring-[#303030]/20 dark:ring-emerald-500/30 dark:bg-emerald-500'
+                      : isPassed
                         ? 'bg-[#009D4E] text-white border-2 border-[#009D4E]'
                         : 'bg-white dark:bg-hub-elevated border-2 border-gray-300 dark:border-hub-border text-gray-500 dark:text-slate-400'
-                    }`}
+                      }`}
                   >
                     {isActive ? (
                       /* Anillo doble / punto interior como en la imagen */
@@ -1037,13 +1023,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   </button>
 
                   <span
-                    className={`text-xs font-bold mt-2 font-sans transition-colors ${
-                      isActive
-                        ? 'text-[#303030] dark:text-hub-text1 font-extrabold'
-                        : isPassed
+                    className={`text-xs font-bold mt-2 font-sans transition-colors ${isActive
+                      ? 'text-[#303030] dark:text-hub-text1 font-extrabold'
+                      : isPassed
                         ? 'text-[#009D4E]'
                         : 'text-gray-400 dark:text-slate-500'
-                    }`}
+                      }`}
                   >
                     {s.label}
                   </span>
@@ -1084,14 +1069,12 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     triggerToast('Modo Quitar Nómina desactivado', 'warning');
                   }
                 }}
-                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 cursor-pointer ${
-                  isQuitarUtcToggleOn ? 'bg-rose-600' : 'bg-gray-300 dark:bg-slate-700'
-                }`}
+                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 cursor-pointer ${isQuitarUtcToggleOn ? 'bg-rose-600' : 'bg-gray-300 dark:bg-slate-700'
+                  }`}
               >
                 <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${
-                    isQuitarUtcToggleOn ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${isQuitarUtcToggleOn ? 'translate-x-5' : 'translate-x-0'
+                    }`}
                 />
               </button>
             </div>
@@ -1129,7 +1112,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
       {/* Tarjeta Principal Centrada (Optimizada para PDA y Escritorio) */}
       <div className="flex-1 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-3xl p-4 sm:p-6 shadow-sm overflow-y-auto no-scrollbar space-y-4 w-full">
-        
+
         {/* ── STEP 1: RESUMEN DE UTCS ── */}
         {stepDespacho === 1 && (
           <div className="space-y-3">
@@ -1159,18 +1142,16 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <div
                         key={utc.id}
                         id={`utc-card-${utc.id}`}
-                        className={`border rounded-2xl p-3.5 shadow-2xs font-sans transition-all duration-300 flex flex-col justify-between ${
-                          isBeingRemoved
-                            ? 'bg-rose-100 dark:bg-rose-950/80 border-rose-500 text-rose-800 scale-[0.98] ring-2 ring-rose-400/80 animate-pulse'
-                            : 'bg-white dark:bg-slate-800/90 border-gray-200/90 dark:border-slate-700/80 hover:border-emerald-400 dark:hover:border-emerald-600'
-                        }`}
+                        className={`border rounded-2xl p-3.5 shadow-2xs font-sans transition-all duration-300 flex flex-col justify-between ${isBeingRemoved
+                          ? 'bg-rose-100 dark:bg-rose-950/80 border-rose-500 text-rose-800 scale-[0.98] ring-2 ring-rose-400/80 animate-pulse'
+                          : 'bg-white dark:bg-slate-800/90 border-gray-200/90 dark:border-slate-700/80 hover:border-emerald-400 dark:hover:border-emerald-600'
+                          }`}
                       >
                         {/* Cabecera Tarjeta (Fila 1): Título, ID Carga y Badge */}
                         <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-slate-700/60">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${
-                              isBeingRemoved ? 'bg-rose-600 animate-ping' : 'bg-purple-600'
-                            }`} />
+                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${isBeingRemoved ? 'bg-rose-600 animate-ping' : 'bg-purple-600'
+                              }`} />
                             <h4 className="text-sm font-extrabold text-[#303030] dark:text-hub-text1 font-sans shrink-0">
                               Nómina {String(index + 1).padStart(2, '0')}
                             </h4>
@@ -1187,45 +1168,45 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                           )}
                         </div>
 
-                      {/* Cuerpo Tarjeta: Fila 2 (Cargas) y Fila 3 (Insumos) */}
-                      <div className="pt-2.5 space-y-2 text-xs text-gray-700 dark:text-hub-text2 font-medium">
-                        {/* Fila 2: Contenedoras y Encargos */}
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 text-[11px] font-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
-                            20 Contenedoras
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/40 text-[11px] font-bold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
-                            50 Encargos
-                          </span>
-                        </div>
+                        {/* Cuerpo Tarjeta: Fila 2 (Cargas) y Fila 3 (Insumos) */}
+                        <div className="pt-2.5 space-y-2 text-xs text-gray-700 dark:text-hub-text2 font-medium">
+                          {/* Fila 2: Contenedoras y Encargos */}
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40 text-[11px] font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                              20 Contenedoras
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/40 text-[11px] font-bold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+                              50 Encargos
+                            </span>
+                          </div>
 
-                        {/* Fila 3: Todos los Insumos agrupados */}
-                        <div className="flex flex-wrap gap-1.5 pt-0.5">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                            {insumosCounts.bins || 5} Bins
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                            {insumosCounts.jaula || 8} Jaulas
-                          </span>
-                          {insumosCounts.valija > 0 && (
+                          {/* Fila 3: Todos los Insumos agrupados */}
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
                             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
                               <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                              {insumosCounts.valija} Valijas
+                              {insumosCounts.bins || 5} Bins
                             </span>
-                          )}
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                            {insumosCounts.pallets || 3} Pallets
-                          </span>
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                              {insumosCounts.jaula || 8} Jaulas
+                            </span>
+                            {insumosCounts.valija > 0 && (
+                              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                                {insumosCounts.valija} Valijas
+                              </span>
+                            )}
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-hub-text2 text-[11px]">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
+                              {insumosCounts.pallets || 3} Pallets
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1348,11 +1329,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
                 {/* Tarjeta de Información del Transportista Asignado con animación Flash al actualizar */}
                 <div
-                  className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2 font-sans transition-all duration-500 ${
-                    carrierFlash
-                      ? 'bg-emerald-100 dark:bg-emerald-950/90 border-4 border-[#009D4E] ring-4 ring-emerald-400/50 shadow-lg scale-[1.02]'
-                      : 'bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] shadow-xs'
-                  }`}
+                  className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2 font-sans transition-all duration-500 ${carrierFlash
+                    ? 'bg-emerald-100 dark:bg-emerald-950/90 border-4 border-[#009D4E] ring-4 ring-emerald-400/50 shadow-lg scale-[1.02]'
+                    : 'bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] shadow-xs'
+                    }`}
                 >
                   {/* Encabezado limpio en una sola fila sin botón quitar asignación */}
                   <div className="border-b border-emerald-200 dark:border-hub-border pb-1.5 flex items-center justify-between">
@@ -1524,11 +1504,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
           <button
             type="button"
             onClick={() => setStepDespacho(2)}
-            className={`${
-              isPda
-                ? 'w-full h-14 rounded-full text-base'
-                : 'px-8 py-3.5 rounded-2xl text-sm'
-            } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer font-sans`}
+            className={`${isPda
+              ? 'w-full h-14 rounded-full text-base'
+              : 'px-8 py-3.5 rounded-2xl text-sm'
+              } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer font-sans`}
           >
             <span>Continuar</span>
           </button>
@@ -1539,15 +1518,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             type="button"
             disabled={!transportistaAsignado}
             onClick={() => setStepDespacho(3)}
-            className={`${
-              isPda
-                ? 'w-full h-14 rounded-full text-base'
-                : 'px-8 py-3.5 rounded-2xl text-sm'
-            } font-black shadow-md flex items-center justify-center transition-all font-sans ${
-              transportistaAsignado
+            className={`${isPda
+              ? 'w-full h-14 rounded-full text-base'
+              : 'px-8 py-3.5 rounded-2xl text-sm'
+              } font-black shadow-md flex items-center justify-center transition-all font-sans ${transportistaAsignado
                 ? 'bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] cursor-pointer active:scale-[0.98]'
                 : 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-slate-600 cursor-not-allowed shadow-none'
-            }`}
+              }`}
           >
             <span>Continuar</span>
           </button>
@@ -1561,11 +1538,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               triggerToast(`¡Despacho de Rampa ${activeRampa.numero} confirmado con éxito! Manifiesto generado.`, 'success');
               playSuccessSound();
             }}
-            className={`${
-              isPda
-                ? 'w-full h-14 rounded-full text-base'
-                : 'px-8 py-3.5 rounded-2xl text-sm'
-            } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer font-sans`}
+            className={`${isPda
+              ? 'w-full h-14 rounded-full text-base'
+              : 'px-8 py-3.5 rounded-2xl text-sm'
+              } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer font-sans`}
           >
             <Check className="w-5 h-5 stroke-[2.5]" />
             <span>Confirmar y Despachar</span>
@@ -1713,7 +1689,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                           Despachar
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
-                          Emisión de Manifiesto
+                          Asignacion de transportista y despacho
                         </span>
                       </div>
                     </div>
@@ -1745,7 +1721,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                           Reubicar
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
-                          Cambiar Estación QR
+                          Cambiar ubicación de encargo
                         </span>
                       </div>
                     </div>
@@ -1832,19 +1808,19 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 type="button"
                 onClick={() => setActivePdaTab('SUELTO')}
                 className={`py-2 px-1.5 rounded-xl text-sm font-extrabold transition-all duration-300 flex items-center justify-center gap-1.5 ${recentlyRemovedType === 'SUELTO'
-                    ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
-                    : recentlyScannedType === 'SUELTO'
-                      ? 'ring-2 ring-blue-500 bg-sky-100 text-blue-700 scale-[1.02] shadow-md border border-sky-300'
-                      : activePdaTab === 'SUELTO'
-                        ? 'bg-white dark:bg-slate-700 text-[#2563EB] dark:text-sky-300 shadow-sm border border-sky-200/80 dark:border-sky-800'
-                        : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
+                  ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
+                  : recentlyScannedType === 'SUELTO'
+                    ? 'ring-2 ring-blue-500 bg-sky-100 text-blue-700 scale-[1.02] shadow-md border border-sky-300'
+                    : activePdaTab === 'SUELTO'
+                      ? 'bg-white dark:bg-slate-700 text-[#2563EB] dark:text-sky-300 shadow-sm border border-sky-200/80 dark:border-sky-800'
+                      : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
                   }`}
               >
                 <span>ENC</span>
                 <span
                   className={`font-mono text-xs px-1.5 py-0.2 rounded-full font-bold transition-transform shrink-0 ${recentlyScannedType === 'SUELTO'
-                      ? 'bg-blue-600 text-white font-extrabold scale-110'
-                      : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300'
+                    ? 'bg-blue-600 text-white font-extrabold scale-110'
+                    : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300'
                     }`}
                 >
                   {sueltosList.length}
@@ -1856,19 +1832,19 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 type="button"
                 onClick={() => setActivePdaTab('CONTENEDORA')}
                 className={`py-2 px-1.5 rounded-xl text-sm font-extrabold transition-all duration-300 flex items-center justify-center gap-1.5 ${recentlyRemovedType === 'CONTENEDORA'
-                    ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
-                    : recentlyScannedType === 'CONTENEDORA'
-                      ? 'ring-2 ring-[#009D4E] bg-emerald-100 text-[#009D4E] scale-[1.02] shadow-md border border-[#A7F3D0]'
-                      : activePdaTab === 'CONTENEDORA'
-                        ? 'bg-white dark:bg-slate-700 text-[#009D4E] dark:text-emerald-400 shadow-sm border border-emerald-200/80 dark:border-emerald-800'
-                        : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
+                  ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
+                  : recentlyScannedType === 'CONTENEDORA'
+                    ? 'ring-2 ring-[#009D4E] bg-emerald-100 text-[#009D4E] scale-[1.02] shadow-md border border-[#A7F3D0]'
+                    : activePdaTab === 'CONTENEDORA'
+                      ? 'bg-white dark:bg-slate-700 text-[#009D4E] dark:text-emerald-400 shadow-sm border border-emerald-200/80 dark:border-emerald-800'
+                      : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
                   }`}
               >
                 <span>CONT</span>
                 <span
                   className={`font-mono text-xs px-1.5 py-0.2 rounded-full font-bold transition-transform shrink-0 ${recentlyScannedType === 'CONTENEDORA'
-                      ? 'bg-[#009D4E] text-white font-extrabold scale-110'
-                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                    ? 'bg-[#009D4E] text-white font-extrabold scale-110'
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
                     }`}
                 >
                   {contenedorasList.length}
@@ -1880,10 +1856,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 type="button"
                 onClick={() => setActivePdaTab('UTC')}
                 className={`py-2 px-1 rounded-xl text-xs font-extrabold transition-all duration-300 flex items-center justify-center gap-1 ${recentlyRemovedType === 'UTC'
-                    ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
-                    : activePdaTab === 'UTC'
-                      ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-200/80 dark:border-purple-800'
-                      : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
+                  ? 'ring-2 ring-rose-500 bg-rose-100 text-rose-700 scale-[1.02] shadow-md border border-rose-300 animate-pulse'
+                  : activePdaTab === 'UTC'
+                    ? 'bg-white dark:bg-slate-700 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-200/80 dark:border-purple-800'
+                    : 'text-gray-600 dark:text-hub-text2 hover:text-gray-800 dark:hover:text-slate-200'
                   }`}
               >
                 <span>NÓMINAS</span>
@@ -2128,10 +2104,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
         <div
           key={toast.id}
           className={`fixed top-4 right-6 z-50 max-w-md w-full animate-toast-pop shadow-xl rounded-2xl p-4 flex items-center justify-between gap-3 border font-mono transition-all ${toast.type === 'success'
-              ? 'bg-[#EEFBF4] dark:bg-emerald-950/90 border-[#A7F3D0] dark:border-emerald-700/80 text-[#065F46] dark:text-emerald-200'
-              : toast.type === 'warning'
-                ? 'bg-[#FFFBEB] dark:bg-amber-950/90 border-[#FDE68A] dark:border-amber-700/80 text-[#92400E] dark:text-amber-200'
-                : 'bg-[#FEF2F2] dark:bg-rose-950/90 border-[#FCA5A5] dark:border-rose-700/80 text-[#991B1B] dark:text-rose-200'
+            ? 'bg-[#EEFBF4] dark:bg-emerald-950/90 border-[#A7F3D0] dark:border-emerald-700/80 text-[#065F46] dark:text-emerald-200'
+            : toast.type === 'warning'
+              ? 'bg-[#FFFBEB] dark:bg-amber-950/90 border-[#FDE68A] dark:border-amber-700/80 text-[#92400E] dark:text-amber-200'
+              : 'bg-[#FEF2F2] dark:bg-rose-950/90 border-[#FCA5A5] dark:border-rose-700/80 text-[#991B1B] dark:text-rose-200'
             }`}
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -2228,7 +2204,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     </div>
                     <div>
                       <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Nominar</span>
-                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Escaneo y clasificación de carga</span>
+                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Escaneo y clasificación de carga.</span>
                     </div>
                   </button>
 
@@ -2251,7 +2227,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     </div>
                     <div>
                       <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Despachar</span>
-                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Cierre de manifiesto y salida</span>
+                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Asignación de transportista y confirmación de despacho.</span>
                     </div>
                   </button>
 
@@ -2269,7 +2245,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     </div>
                     <div>
                       <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Reubicar</span>
-                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-normal font-sans">Cambiar o re-escanear ubicación</span>
+                      <span className="text-xs text-gray-500 dark:text-hub-text2 font-normal font-sans">Cambiar ubicación de encargo.</span>
                     </div>
                   </button>
                 </div>
@@ -2369,10 +2345,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             {/* Columna 1: Encargos Sueltos (ENC) */}
             <div
               className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-300 flex flex-col h-[380px] ${recentlyRemovedType === 'SUELTO'
-                  ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
-                  : recentlyScannedType === 'SUELTO'
-                    ? 'ring-2 ring-blue-500 dark:ring-blue-400 bg-sky-50/30 dark:bg-sky-950/20 border-sky-300'
-                    : 'border-gray-200/80 dark:border-hub-border'
+                ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
+                : recentlyScannedType === 'SUELTO'
+                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 bg-sky-50/30 dark:bg-sky-950/20 border-sky-300'
+                  : 'border-gray-200/80 dark:border-hub-border'
                 }`}
             >
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-hub-border mb-3">
@@ -2382,11 +2358,11 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 </div>
                 <span
                   className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full transition-transform ${recentlyScannedType === 'SUELTO'
-                      ? 'bg-blue-600 text-white font-extrabold scale-110 shadow-xs'
-                      : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200'
+                    ? 'bg-blue-600 text-white font-extrabold scale-110 shadow-xs'
+                    : 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border border-sky-200'
                     }`}
                 >
-                  {sueltosList.length} bultos
+                  {sueltosList.length} Enc
                 </span>
               </div>
 
@@ -2407,8 +2383,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <div
                         key={item.id}
                         className={`p-2.5 rounded-xl border transition-all duration-300 font-mono space-y-1 ${isNew
-                            ? 'bg-sky-50/80 dark:bg-sky-950/70 border-sky-300 dark:border-sky-700 border-l-4 border-l-blue-600 shadow-sm animate-toast-slide-down'
-                            : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
+                          ? 'bg-sky-50/80 dark:bg-sky-950/70 border-sky-300 dark:border-sky-700 border-l-4 border-l-blue-600 shadow-sm animate-toast-slide-down'
+                          : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
                           }`}
                       >
                         {/* Fila 1: Código de Barras de 26 dígitos y Badge ¡NUEVO! */}
@@ -2445,10 +2421,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             {/* Columna 2: Contenedoras (CONT) */}
             <div
               className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-300 flex flex-col h-[380px] ${recentlyRemovedType === 'CONTENEDORA'
-                  ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
-                  : recentlyScannedType === 'CONTENEDORA'
-                    ? 'ring-2 ring-[#009D4E] dark:ring-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/20 border-[#A7F3D0]'
-                    : 'border-gray-200/80 dark:border-hub-border'
+                ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
+                : recentlyScannedType === 'CONTENEDORA'
+                  ? 'ring-2 ring-[#009D4E] dark:ring-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/20 border-[#A7F3D0]'
+                  : 'border-gray-200/80 dark:border-hub-border'
                 }`}
             >
               <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-hub-border mb-3">
@@ -2458,11 +2434,11 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 </div>
                 <span
                   className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full transition-transform ${recentlyScannedType === 'CONTENEDORA'
-                      ? 'bg-[#009D4E] text-white font-extrabold scale-110 shadow-xs'
-                      : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200'
+                    ? 'bg-[#009D4E] text-white font-extrabold scale-110 shadow-xs'
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-200'
                     }`}
                 >
-                  {contenedorasList.length} bultos
+                  {contenedorasList.length} Cont
                 </span>
               </div>
 
@@ -2483,8 +2459,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <div
                         key={item.id}
                         className={`p-2.5 rounded-xl border transition-all duration-300 font-mono space-y-1 ${isNew
-                            ? 'bg-[#EEFBF4] dark:bg-emerald-950/70 border-[#A7F3D0] dark:border-emerald-700 border-l-4 border-l-[#009D4E] shadow-sm animate-toast-slide-down'
-                            : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
+                          ? 'bg-[#EEFBF4] dark:bg-emerald-950/70 border-[#A7F3D0] dark:border-emerald-700 border-l-4 border-l-[#009D4E] shadow-sm animate-toast-slide-down'
+                          : 'border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40'
                           }`}
                       >
                         {/* Fila 1: Código de Barras de 26 dígitos y Badge ¡NUEVO! */}
@@ -2521,8 +2497,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             {/* Columna 3: Nóminas pendientes de despacho (Cargadas automáticamente por el sistema) */}
             <div
               className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-300 flex flex-col h-[380px] ${recentlyRemovedType === 'UTC'
-                  ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
-                  : 'border-gray-200/80 dark:border-hub-border'
+                ? 'ring-2 ring-rose-500 dark:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20 border-rose-300 animate-pulse'
+                : 'border-gray-200/80 dark:border-hub-border'
                 }`}
             >
               {/* Header Columna 3 */}
