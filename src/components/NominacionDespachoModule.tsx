@@ -275,16 +275,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 <Send className="w-8 h-8 stroke-[2.2]" />
               </div>
 
-              {/* Título y Mensaje Claro sobre Nóminas Pendientes */}
+              {/* Título y Subtítulo ultra conciso */}
               <div className="space-y-1.5 px-2">
                 <h3 className="text-xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
                   Despacho de Rampa {activeRampa.numero}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 leading-relaxed">
-                  Actualmente existen <strong className="text-[#009D4E] dark:text-emerald-400 font-extrabold">{activeRampa.nominacionesPendientes} {activeRampa.nominacionesPendientes === 1 ? 'nómina pendiente' : 'nóminas pendientes'}</strong> en esta rampa ({activeRampa.destino}) listas para ser despachadas.
-                </p>
-                <p className="text-[11px] text-gray-400 dark:text-hub-text3 font-medium pt-1">
-                  Al continuar se iniciará el proceso de cierre y asignación de transportista.
+                <p className="text-sm text-gray-600 dark:text-hub-text2 font-medium leading-normal">
+                  Existen <strong className="text-[#009D4E] dark:text-emerald-400 font-extrabold">{activeRampa.nominacionesPendientes} {activeRampa.nominacionesPendientes === 1 ? 'nómina pendiente' : 'nóminas pendientes'}</strong>, listas para ser despachadas.
                 </p>
               </div>
 
