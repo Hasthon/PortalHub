@@ -98,7 +98,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
   const [isReubicarModalOpen, setIsReubicarModalOpen] = useState(false);
   const [reubicarStep, setReubicarStep] = useState<'SCAN_STEP' | 'RESULT_STEP'>('SCAN_STEP');
   const [selectedEncargoReubicar, setSelectedEncargoReubicar] = useState<EncargoNominado | null>(null);
-  const [reubicarInputCode, setReubicarInputCode] = useState('');
 
   const handleSelectEncargoParaReubicar = (item: EncargoNominado) => {
     setSelectedEncargoReubicar({
@@ -108,25 +107,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
     setReubicarStep('RESULT_STEP');
     playSuccessSound();
     triggerToast(`Encargo [${item.codigoEncargo}] reubicado correctamente.`, 'success');
-  };
-
-  const handleReubicarSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanCode = reubicarInputCode.trim().toUpperCase();
-    if (!cleanCode) {
-      triggerToast('⚠️ Ingresa o escanear un código válido', 'warning');
-      playWarningSound();
-      return;
-    }
-    const found = encargosNominados.find((i) => i.codigoEncargo === cleanCode || i.codigoOF9 === cleanCode) || {
-      id: `NOM-${Date.now().toString().slice(-6)}`,
-      codigoEncargo: cleanCode,
-      tipoCarga: cleanCode.startsWith('JAULA') || cleanCode.startsWith('CONT') ? 'CONTENEDORA' : 'SUELTO',
-      horaEscaneo: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      codigoBarras26: '78901234567890123456882103',
-      codigoOF9: `OF-${cleanCode.replace(/[^0-9]/g, '').slice(0, 9) || '882103942'}`,
-    };
-    handleSelectEncargoParaReubicar(found);
   };
 
   const handleSimularQrTransportista = () => {
@@ -301,7 +281,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 setIsReubicarModalOpen(false);
                 setReubicarStep('SCAN_STEP');
                 setSelectedEncargoReubicar(null);
-                setReubicarInputCode('');
               }}
               className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 dark:text-hub-text2 hover:text-[#009D4E] dark:hover:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 border border-transparent dark:hover:border-[#03F77C]/30 transition-all cursor-pointer"
               title="Cerrar"
@@ -311,77 +290,44 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
             {reubicarStep === 'SCAN_STEP' ? (
               /* ── PASO 1: ORDEN CLARA DE ESCANEAR EL ENCARGO PARA REUBICAR ── */
-              <div className="flex flex-col items-center text-center space-y-4 pt-1">
-                {/* Ícono de Reubicación */}
-                <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] shadow-sm">
-                  <RefreshCw className="w-8 h-8 stroke-[2.2]" />
+              <div className="flex flex-col items-center text-center space-y-5 pt-2 pb-2">
+                {/* Ícono Ilustrativo de Escáner y Reubicación */}
+                <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-300 dark:border-emerald-700 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] shadow-sm">
+                  <RefreshCw className="w-10 h-10 stroke-[2.2]" />
                 </div>
 
-                <div className="space-y-1.5 px-2">
+                <div className="space-y-2 px-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#009D4E] dark:text-[#03F77C] text-[11px] font-mono font-extrabold uppercase">
                     Reubicación de Carga
                   </span>
-                  <h3 className="text-xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#414745] dark:text-hub-text1 tracking-tight">
                     Escanea el encargo para reubicar
                   </h3>
-                  <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-relaxed max-w-sm mx-auto">
-                    Escanea la etiqueta con el lector o digita el código para asignarle su nuevo estado e itinerario.
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-hub-text2 font-medium leading-relaxed max-w-sm mx-auto">
+                    Apunta la pistola escáner hacia el código de barras de la etiqueta para procesar la reubicación.
                   </p>
                 </div>
 
-                {/* Cápsula Unificada de Búsqueda / Escaneo */}
-                <form onSubmit={handleReubicarSubmit} className="flex flex-row items-center w-full max-w-md mx-auto rounded-xl border border-gray-300 dark:border-hub-border overflow-hidden bg-gray-50 dark:bg-slate-800 shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
-                  <div className="relative flex-1 min-w-0 flex items-center">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
-                      <Scan className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C] shrink-0" />
-                    </div>
-                    <input
-                      type="text"
-                      value={reubicarInputCode}
-                      onChange={(e) => setReubicarInputCode(e.target.value)}
-                      placeholder="Ej: OF-882103 o escanea código..."
-                      className="w-full pl-9 pr-3 py-2.5 bg-transparent border-0 text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none uppercase"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-4 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
-                  >
-                    <span>Buscar</span>
-                  </button>
-                </form>
-
-                {/* Lista de accesos rápidos para seleccionar y simular la reubicación al pinchar */}
+                {/* Botón de Simulación para Probar Escaneo */}
                 <div className="w-full pt-2">
-                  <span className="text-[10px] text-gray-400 dark:text-hub-text3 uppercase font-bold block mb-2 text-left">
-                    O pincha un encargo para ver su nuevo estado:
-                  </span>
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {encargosNominados.slice(0, 3).map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => handleSelectEncargoParaReubicar(item)}
-                        className="p-3 bg-gray-50 hover:bg-emerald-50/60 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-700 rounded-2xl flex items-center justify-between transition-all cursor-pointer group text-left"
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] shrink-0">
-                            <Box className="w-4 h-4" />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-mono font-extrabold text-xs text-[#303030] dark:text-hub-text1 block truncate">
-                              {item.codigoEncargo}
-                            </span>
-                            <span className="text-[10px] text-gray-400 dark:text-hub-text3 block font-mono">
-                              {item.codigoBarras26}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="px-2.5 py-1 rounded-xl bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] text-[10px] font-extrabold shrink-0 group-hover:scale-105 transition-all">
-                          Reubicar
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sampleItem = encargosNominados[0] || {
+                        id: 'NOM-882103',
+                        codigoEncargo: 'OF-882103',
+                        tipoCarga: 'SUELTO',
+                        horaEscaneo: '16:54:12',
+                        codigoBarras26: '78901234567890123456882103',
+                        codigoOF9: 'OF-882103942',
+                      };
+                      handleSelectEncargoParaReubicar(sampleItem);
+                    }}
+                    className="w-full py-3.5 px-6 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Scan className="w-4 h-4 shrink-0" />
+                    <span>Simular Escaneo de Encargo</span>
+                  </button>
                 </div>
               </div>
             ) : (
@@ -457,7 +403,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       onClick={() => {
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
-                        setReubicarInputCode('');
                       }}
                       className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
                     >
@@ -471,7 +416,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setIsReubicarModalOpen(false);
                         setReubicarStep('SCAN_STEP');
                         setSelectedEncargoReubicar(null);
-                        setReubicarInputCode('');
                       }}
                       className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
                     >
