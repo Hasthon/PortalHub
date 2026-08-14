@@ -96,7 +96,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
   const handleSimularQrTransportista = () => {
     setTransportistaAsignado({
-      nombre: 'Carlos Mendoza Silva',
+      nombre: 'Carlos Mendoza',
       rut: '14.892.304-K',
       tipoVehiculo: 'Camión Rampla 28t',
       idVehiculo: 'HJ-9021',
@@ -114,7 +114,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       return;
     }
     setTransportistaAsignado({
-      nombre: 'Conductor Asignado (Ingreso Manual)',
+      nombre: 'Juan Pérez',
       rut: '14.892.304-K',
       tipoVehiculo: 'Camión Rampla 28t',
       idVehiculo: cleanPatente,
