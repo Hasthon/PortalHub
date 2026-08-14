@@ -1038,66 +1038,66 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <div className="border-t border-gray-200 dark:border-hub-border w-full"></div>
                 </div>
 
-                {/* Opción 2: Formulario de ingreso manual de Patente */}
-                <form onSubmit={handleAsignarPorPatente} className="flex flex-col sm:flex-row items-center gap-2.5 w-full max-w-md mx-auto">
-                  <div className="relative flex-1 w-full">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
-                      <Truck className="w-4 h-4 text-[#009D4E] dark:text-emerald-400" />
+                {/* Opción 2: Formulario de ingreso manual de Patente (En una sola fila para PDA y Escritorio) */}
+                <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center gap-2 w-full max-w-md mx-auto">
+                  <div className="relative flex-1 min-w-0">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
+                      <Truck className="w-3.5 h-3.5 text-[#009D4E] dark:text-emerald-400 shrink-0" />
                     </div>
                     <input
                       type="text"
                       value={patenteInput}
                       onChange={(e) => setPatenteInput(e.target.value.toUpperCase())}
-                      placeholder="Ej: ABCD-12 o HJ-9021"
+                      placeholder="Ej: ABCD-12"
                       maxLength={10}
-                      className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-hub-surface border border-gray-300 dark:border-hub-border rounded-2xl text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009D4E] uppercase shadow-2xs"
+                      className="w-full pl-8 pr-2.5 py-2 bg-white dark:bg-hub-surface border border-gray-300 dark:border-hub-border rounded-xl text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009D4E] uppercase shadow-2xs"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full sm:w-auto px-4 py-2.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0"
+                    className="px-3 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold rounded-xl text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0 whitespace-nowrap"
                   >
-                    <span>Asignar Patente</span>
+                    <span>Asignar</span>
                   </button>
                 </form>
               </div>
             ) : (
               <div className="space-y-3 animate-fadeIn font-sans">
-                {/* Bar de Cambio Rápido de Patente en la parte superior */}
-                <div className="p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl shadow-xs">
+                {/* Bar de Cambio Rápido de Patente en la parte superior (En una sola fila para PDA) */}
+                <div className="p-2.5 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl shadow-xs">
                   <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                    <span>Cambiar Patente o Transportista</span>
+                    <span>Cambiar Patente</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-mono">Activo: {transportistaAsignado.idVehiculo}</span>
                   </div>
-                  <form onSubmit={handleAsignarPorPatente} className="flex flex-col sm:flex-row items-center gap-2">
-                    <div className="relative flex-1 w-full">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
-                        <Truck className="w-4 h-4 text-[#009D4E] dark:text-emerald-400" />
+                  <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center gap-1.5 w-full">
+                    <div className="relative flex-1 min-w-0">
+                      <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400 dark:text-hub-text3">
+                        <Truck className="w-3.5 h-3.5 text-[#009D4E] dark:text-emerald-400 shrink-0" />
                       </div>
                       <input
                         type="text"
                         value={patenteInput}
                         onChange={(e) => setPatenteInput(e.target.value.toUpperCase())}
-                        placeholder={`Digitar nueva patente (actual: ${transportistaAsignado.idVehiculo})...`}
+                        placeholder={`Ej: ${transportistaAsignado.idVehiculo}`}
                         maxLength={10}
-                        className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009D4E] uppercase"
+                        className="w-full pl-7 pr-2 py-1.5 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl text-xs font-mono font-bold text-[#303030] dark:text-hub-text1 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009D4E] uppercase"
                       />
                     </div>
-                    <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         type="submit"
-                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-95 cursor-pointer"
+                        className="px-2.5 py-1.5 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1 transition-all shadow-2xs active:scale-95 cursor-pointer whitespace-nowrap"
                       >
-                        <span>Cambiar Patente</span>
+                        <span>Cambiar</span>
                       </button>
                       <button
                         type="button"
                         onClick={handleSimularQrTransportista}
-                        className="px-3 py-2 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-95 cursor-pointer"
-                        title="Escanear otro QR de Transportista"
+                        className="p-1.5 sm:px-2.5 sm:py-1.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1 hover:bg-emerald-100/80 transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0"
+                        title="Escanear QR"
                       >
-                        <QrCode className="w-4 h-4" />
-                        <span className="hidden sm:inline">Escanear QR</span>
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">QR</span>
                       </button>
                     </div>
                   </form>
