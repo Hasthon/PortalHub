@@ -1068,9 +1068,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               <div className="space-y-3 animate-fadeIn font-sans">
                 {/* Bar de Cambio Rápido de Patente en la parte superior (Cápsula unificada) */}
                 <div className="p-2.5 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-2xl shadow-xs">
-                  <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1.5">
                     <span>Cambiar Patente</span>
-                    <span className="text-emerald-600 dark:text-emerald-400 font-mono">Activo: {transportistaAsignado.idVehiculo}</span>
                   </div>
                   <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full rounded-xl border border-gray-300 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
                     {/* Input en el lado izquierdo */}
@@ -1094,17 +1093,6 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       className="px-3 py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
                     >
                       <span>Cambiar</span>
-                    </button>
-
-                    {/* Botón QR opcional */}
-                    <button
-                      type="button"
-                      onClick={handleSimularQrTransportista}
-                      className="px-2.5 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-[#009D4E] dark:text-emerald-300 font-extrabold text-[11px] flex items-center justify-center gap-1 hover:bg-emerald-100/80 transition-all cursor-pointer shrink-0 border-l border-gray-300 dark:border-slate-700"
-                      title="Escanear QR"
-                    >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">QR</span>
                     </button>
                   </form>
                 </div>
