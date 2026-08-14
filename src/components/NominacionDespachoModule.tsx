@@ -324,7 +324,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       handleSelectEncargoParaReubicar(sampleItem);
                     }}
                     className={`w-full ${
-                      isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'py-3.5 px-6 rounded-2xl text-xs sm:text-sm'
+                      isPda ? 'h-12 rounded-full text-sm' : 'py-3.5 px-6 rounded-2xl text-sm'
                     } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer`}
                   >
                     <Scan className="w-4 h-4 shrink-0" />
@@ -393,7 +393,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   </div>
                 )}
 
-                {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) Redondeados en PDA */}
+                {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) Redondeados a 14px */}
                 <div className="w-full pt-2">
                   <div className="flex flex-col sm:flex-row items-center gap-3">
                     {/* Botón Secundario (Izquierda): Reubicar otro */}
@@ -404,7 +404,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setSelectedEncargoReubicar(null);
                       }}
                       className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'h-11 rounded-2xl text-xs'
+                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
                       } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                     >
                       <span>Reubicar otro encargo</span>
@@ -419,7 +419,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setSelectedEncargoReubicar(null);
                       }}
                       className={`w-full sm:w-1/2 ${
-                        isPda ? 'h-12 rounded-full text-xs sm:text-sm' : 'h-11 rounded-2xl text-xs'
+                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
                       } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                     >
                       <span>Finalizar</span>
@@ -470,7 +470,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <button
                     type="button"
                     onClick={() => setIsDespachoModalOpen(false)}
-                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                    className={`w-full sm:w-1/2 ${
+                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                    } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                   >
                     <span>Cancelar</span>
                   </button>
@@ -485,7 +487,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setStepDespacho(1);
                       setStep('DESPACHO_FLOW');
                     }}
-                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                    className={`w-full sm:w-1/2 ${
+                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                   >
                     <span>Despachar Nóminas</span>
                   </button>
@@ -568,7 +572,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <button
                     type="button"
                     onClick={() => setIsInsumosModalOpen(false)}
-                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                    className={`w-full sm:w-1/2 ${
+                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                    } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                   >
                     <span>Cancelar</span>
                   </button>
@@ -579,7 +585,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setInsumosModalStep('SUCCESS_SCREEN');
                       playSuccessSound();
                     }}
-                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer order-1 sm:order-2"
+                    className={`w-full sm:w-1/2 ${
+                      isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                    } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer order-1 sm:order-2`}
                   >
                     <span>Confirmar Insumos</span>
                   </button>
@@ -613,7 +621,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setEncargosNominados([]);
                         triggerToast('Nueva nómina iniciada', 'success');
                       }}
-                      className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                      className={`w-full sm:w-1/2 ${
+                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1`}
                     >
                       <span>Crear otra nómina</span>
                     </button>
@@ -628,7 +638,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         setStepDespacho(1);
                         setStep('DESPACHO_FLOW');
                       }}
-                      className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                      className={`w-full sm:w-1/2 ${
+                        isPda ? 'h-12 rounded-full text-sm' : 'h-11 rounded-2xl text-sm'
+                      } bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2`}
                     >
                       <span>Despachar</span>
                     </button>
