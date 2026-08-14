@@ -99,6 +99,17 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
   const [reubicarStep, setReubicarStep] = useState<'SCAN_STEP' | 'RESULT_STEP'>('SCAN_STEP');
   const [selectedEncargoReubicar, setSelectedEncargoReubicar] = useState<EncargoNominado | null>(null);
 
+  const [isCarrierUpdating, setIsCarrierUpdating] = useState(false);
+  const [carrierFlash, setCarrierFlash] = useState(false);
+  const carrierPoolIndexRef = useRef(0);
+
+  const CARRIER_SAMPLE_POOL = [
+    { nombre: 'Carlos Mendoza', rut: '14.892.304-K', tipoVehiculo: 'Camión Rampla 28t', idVehiculo: 'HJ-9021' },
+    { nombre: 'Rodrigo Sepúlveda', rut: '16.421.890-5', tipoVehiculo: 'Tráiler Doble Eje', idVehiculo: 'KP-4492' },
+    { nombre: 'Esteban Morales', rut: '12.309.412-3', tipoVehiculo: 'Camión Carga Pesada', idVehiculo: 'LL-8019' },
+    { nombre: 'Marcelo Fuentes', rut: '15.712.003-8', tipoVehiculo: 'Camión Rampla 28t', idVehiculo: 'BC-3041' },
+  ];
+
   const handleSelectEncargoParaReubicar = (item: EncargoNominado) => {
     setSelectedEncargoReubicar({
       ...item,
@@ -110,14 +121,21 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
   };
 
   const handleSimularQrTransportista = () => {
-    setTransportistaAsignado({
-      nombre: 'Carlos Mendoza',
-      rut: '14.892.304-K',
-      tipoVehiculo: 'Camión Rampla 28t',
-      idVehiculo: 'HJ-9021',
-    });
-    triggerToast('¡QR Transportista escaneado exitosamente! Datos integrados.', 'success');
-    playSuccessSound();
+    setIsCarrierUpdating(true);
+    setTimeout(() => {
+      carrierPoolIndexRef.current = (carrierPoolIndexRef.current + 1) % CARRIER_SAMPLE_POOL.length;
+      const nextCarrier = CARRIER_SAMPLE_POOL[carrierPoolIndexRef.current];
+
+      setTransportistaAsignado(nextCarrier);
+      setPatenteInput('');
+      setIsCarrierUpdating(false);
+
+      setCarrierFlash(true);
+      setTimeout(() => setCarrierFlash(false), 900);
+
+      triggerToast(`¡QR Transportista escaneado! Conductor: ${nextCarrier.nombre} (${nextCarrier.idVehiculo})`, 'success');
+      playSuccessSound();
+    }, 400);
   };
 
   const handleAsignarPorPatente = (e?: React.FormEvent) => {
@@ -128,14 +146,27 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
       playWarningSound();
       return;
     }
-    setTransportistaAsignado({
-      nombre: 'Juan Pérez',
-      rut: '14.892.304-K',
-      tipoVehiculo: 'Camión Rampla 28t',
-      idVehiculo: cleanPatente,
-    });
-    triggerToast(`¡Patente [${cleanPatente}] asignada correctamente!`, 'success');
-    playSuccessSound();
+
+    setIsCarrierUpdating(true);
+    setTimeout(() => {
+      const drivers = ['Juan Pérez', 'Pedro Araya', 'Gastón Silva', 'Patricio Rivas'];
+      const randomDriver = drivers[Math.floor(Math.random() * drivers.length)];
+
+      setTransportistaAsignado({
+        nombre: transportistaAsignado ? transportistaAsignado.nombre : randomDriver,
+        rut: transportistaAsignado ? transportistaAsignado.rut : '14.892.304-K',
+        tipoVehiculo: transportistaAsignado ? transportistaAsignado.tipoVehiculo : 'Camión Rampla 28t',
+        idVehiculo: cleanPatente,
+      });
+      setPatenteInput('');
+      setIsCarrierUpdating(false);
+
+      setCarrierFlash(true);
+      setTimeout(() => setCarrierFlash(false), 900);
+
+      triggerToast(`¡Patente [${cleanPatente}] asignada correctamente!`, 'success');
+      playSuccessSound();
+    }, 400);
   };
 
   const [removingUtcId, setRemovingUtcId] = useState<string | null>(null);
@@ -949,7 +980,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
           <div />
         )}
 
-        <span className="text-[10px] sm:text-xs font-mono font-bold text-[#009D4E] bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 px-3 py-1 rounded-full shadow-2xs">
+        <span className="text-[10px] sm:text-xs font-mono font-bold text-[#009D4E] dark:text-[#03F77C] bg-[#EEFBF4] dark:bg-[#03F77C]/15 border border-[#A7F3D0] dark:border-[#03F77C]/40 px-3 py-1 rounded-full shadow-2xs">
           Rampa {activeRampa.numero} - {activeRampa.destino}
         </span>
       </div>
@@ -1023,9 +1054,9 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
         </div>
       </div>
 
-      {/* Componente de Cabecera con Título, Subtítulo y Control (Quitar UTC) */}
+      {/* Componente de Cabecera con Título, Subtítulo y Control (Quitar Nómina) */}
       <div className="bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-4 sm:p-5 shadow-2xs shrink-0 w-full space-y-1.5 transition-all">
-        {/* Fila Principal: Título (Despacho) + Control (Quitar UTC en la misma fila) */}
+        {/* Fila Principal: Título (Despacho) + Control (Quitar Nómina en la misma fila) */}
         <div className="flex items-center justify-between gap-3 w-full">
           <h2 className="text-lg sm:text-xl font-black text-[#303030] dark:text-hub-text1 font-sans tracking-tight">
             {stepDespacho === 1 && 'Despacho'}
@@ -1033,11 +1064,11 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             {stepDespacho === 3 && 'Confirmación de Despacho'}
           </h2>
 
-          {/* Control Switch: Quitar UTC (En la misma fila del título) */}
+          {/* Control Switch: Quitar Nómina (En la misma fila del título) */}
           {stepDespacho === 1 && (
             <div className="flex items-center gap-2.5 shrink-0">
               <span className="text-xs font-semibold text-gray-600 dark:text-hub-text2 font-sans">
-                Quitar UTC
+                Quitar Nómina
               </span>
 
               {/* Pill Toggle Switch */}
@@ -1047,10 +1078,10 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   const nextState = !isQuitarUtcToggleOn;
                   setIsQuitarUtcToggleOn(nextState);
                   if (nextState) {
-                    triggerToast('Modo Quitar UTC activado. Escanea una UTC para eliminarla de la nómina.', 'warning');
+                    triggerToast('Modo Quitar Nómina activado. Escanea una Nómina para eliminarla de la nómina.', 'warning');
                     playWarningSound();
                   } else {
-                    triggerToast('Modo Quitar UTC desactivado', 'warning');
+                    triggerToast('Modo Quitar Nómina desactivado', 'warning');
                   }
                 }}
                 className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 cursor-pointer ${
@@ -1069,18 +1100,18 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
         {/* Subtítulo debajo de la fila principal */}
         <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-normal text-left">
-          {stepDespacho === 1 && 'Revisa las UTC cargadas para este despacho.'}
+          {stepDespacho === 1 && 'Revisa las Nóminas cargadas para este despacho.'}
           {stepDespacho === 2 && 'Escanea el código QR del transportista para incorporar sus datos.'}
           {stepDespacho === 3 && 'Revisión final de cantidades, insumos y transportista.'}
         </p>
 
-        {/* Helper Rosado/Rojo Quitar UTC DENTRO DE LA CARD */}
+        {/* Helper Rosado/Rojo Quitar Nómina DENTRO DE LA CARD */}
         {stepDespacho === 1 && isQuitarUtcToggleOn && (
           <div className="p-3 mt-2 bg-[#FFF0F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-800/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-fadeIn w-full">
             <div className="flex items-center gap-2.5">
               <AlertCircle className="w-4 h-4 text-[#E11D48] dark:text-rose-400 shrink-0 stroke-[2.2]" />
               <p className="text-xs text-[#E11D48] dark:text-rose-300 font-sans font-medium leading-tight">
-                <strong className="font-bold">Quitar UTC activo:</strong> Al escanear las UTC, estas se eliminarán de la nómina de despacho.
+                <strong className="font-bold">Quitar Nómina activo:</strong> Al escanear las Nóminas, estas se eliminarán de la nómina de despacho.
               </p>
             </div>
 
@@ -1201,10 +1232,17 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
           </div>
         )}
 
-        {/* ── STEP 2: ASIGNACIÓN DE TRANSPORTISTA (QR O PATENTE) ── */}
+        {/* ── STEP 2: ASIGNACIÓN DE TRANSPORTISTA ── */}
         {stepDespacho === 2 && (
           <div className="space-y-2.5 sm:space-y-4 py-1 font-sans">
-            {!transportistaAsignado ? (
+            {isCarrierUpdating ? (
+              <div className="p-8 border-2 border-dashed border-[#009D4E] dark:border-emerald-700 rounded-2xl sm:rounded-3xl bg-emerald-50/70 dark:bg-emerald-950/40 flex flex-col items-center justify-center space-y-3 animate-pulse my-2">
+                <RefreshCw className="w-8 h-8 text-[#009D4E] dark:text-emerald-400 animate-spin" />
+                <span className="text-xs font-black text-[#009D4E] dark:text-emerald-300 font-sans tracking-wide">
+                  Actualizando datos del transportista...
+                </span>
+              </div>
+            ) : !transportistaAsignado ? (
               <div className="p-3.5 sm:p-6 border-2 border-dashed border-gray-200 dark:border-hub-border rounded-2xl sm:rounded-3xl bg-gray-50/50 dark:bg-slate-800/30 flex flex-col items-center justify-center space-y-2.5 sm:space-y-4">
                 {/* Ícono representativo de sin transportista */}
                 <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/80 flex items-center justify-center text-[#009D4E] dark:text-emerald-400 shadow-2xs shrink-0">
@@ -1267,10 +1305,20 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-3 animate-fadeIn font-sans">
-                {/* Bar de Cambio Rápido de Patente en la parte superior (Cápsula unificada) */}
-                <div className="p-2 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-xl sm:rounded-2xl shadow-xs">
-                  <div className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider mb-1">
-                    <span>Cambiar Patente</span>
+                {/* Bar de Cambio Rápido de Patente / QR Conductor */}
+                <div className="p-2 sm:p-3 bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-xl sm:rounded-2xl shadow-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold text-gray-400 dark:text-hub-text3 uppercase tracking-wider">
+                      Cambiar Datos de Transportista
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleSimularQrTransportista}
+                      className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950 dark:hover:bg-emerald-900 border border-emerald-300 dark:border-emerald-700 text-[#009D4E] dark:text-emerald-300 font-extrabold text-[10px] rounded-lg flex items-center gap-1 transition-all cursor-pointer active:scale-95"
+                    >
+                      <QrCode className="w-3 h-3" />
+                      <span>Simular otro QR</span>
+                    </button>
                   </div>
                   <form onSubmit={handleAsignarPorPatente} className="flex flex-row items-center w-full rounded-xl border border-gray-300 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 shadow-2xs focus-within:ring-2 focus-within:ring-[#009D4E]">
                     {/* Input en el lado izquierdo */}
@@ -1293,18 +1341,29 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       type="submit"
                       className="px-3 py-1.5 sm:py-2 bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] hover:bg-[#1f1f1f] dark:hover:bg-[#03F77C]/90 font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 whitespace-nowrap border-l border-gray-300 dark:border-slate-700"
                     >
-                      <span>Cambiar</span>
+                      <span>Cambiar Patente</span>
                     </button>
                   </form>
                 </div>
 
-                {/* Tarjeta de Información del Transportista Asignado (Compacta sin scroll en PDA) */}
-                <div className="p-3 sm:p-4 bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] rounded-xl sm:rounded-2xl space-y-2 shadow-xs font-sans">
+                {/* Tarjeta de Información del Transportista Asignado con animación Flash al actualizar */}
+                <div
+                  className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl space-y-2 font-sans transition-all duration-500 ${
+                    carrierFlash
+                      ? 'bg-emerald-100 dark:bg-emerald-950/90 border-4 border-[#009D4E] ring-4 ring-emerald-400/50 shadow-lg scale-[1.02]'
+                      : 'bg-emerald-50/50 dark:bg-hub-elevated border-2 border-[#009D4E] shadow-xs'
+                  }`}
+                >
                   {/* Encabezado limpio en una sola fila sin botón quitar asignación */}
                   <div className="border-b border-emerald-200 dark:border-hub-border pb-1.5 flex items-center justify-between">
                     <span className="text-xs font-extrabold text-[#009D4E] dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                       <UserCheck className="w-4 h-4 stroke-[2.2]" /> Transportista Asignado
                     </span>
+                    {carrierFlash && (
+                      <span className="text-[10px] font-mono font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-200 dark:bg-emerald-800 px-2 py-0.5 rounded-full animate-bounce">
+                        ¡Datos Actualizados! ✨
+                      </span>
+                    )}
                   </div>
 
                   {/* Grilla compacta de 2 columnas para mobile y desktop sin necesidad de scroll */}
@@ -1335,6 +1394,13 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     </div>
                   </div>
                 </div>
+
+                {/* Nota informativa de reemplazo por escaneo QR */}
+                <div className="flex items-center justify-center p-2.5 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/50 rounded-xl text-center">
+                  <p className="text-xs text-gray-600 dark:text-hub-text2 font-medium font-sans leading-tight">
+                    <strong className="font-bold text-[#009D4E] dark:text-emerald-300">Nota:</strong> Puedes escanear otro código QR de transportista en cualquier momento para reemplazar la asignación actual.
+                  </p>
+                </div>
               </div>
             )}
           </div>
@@ -1352,7 +1418,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                     <Layers className="w-4 h-4 text-blue-600 dark:text-sky-400 stroke-[2.2]" /> Resumen Carga
                   </span>
                   <span className="text-xs font-mono font-black text-blue-600 dark:text-sky-400 bg-blue-50 dark:bg-blue-950/80 border border-blue-200 dark:border-blue-800/80 px-2.5 py-0.5 rounded-full">
-                    {despachoUtcsList.length > 0 ? despachoUtcsList.length : 10} UTCs
+                    {despachoUtcsList.length > 0 ? despachoUtcsList.length : 10} Nóminas
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-center text-xs pt-0.5">
@@ -1622,7 +1688,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
                       <div className="flex flex-col text-left min-w-0 leading-tight">
                         <span className="text-sm font-extrabold text-white dark:text-hub-text1 truncate tracking-tight">
-                          Nominar Encargos
+                          Nominar
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
                           Clasificación y Nómina
@@ -1644,7 +1710,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
                       <div className="flex flex-col text-left min-w-0 leading-tight">
                         <span className="text-sm font-extrabold text-white dark:text-hub-text1 truncate tracking-tight">
-                          Despachar Rampa
+                          Despachar
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
                           Emisión de Manifiesto
@@ -1676,7 +1742,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       </div>
                       <div className="flex flex-col text-left min-w-0 leading-tight">
                         <span className="text-sm font-extrabold text-white dark:text-hub-text1 truncate tracking-tight">
-                          Reubicar Encargo
+                          Reubicar
                         </span>
                         <span className="text-[11px] text-gray-300 dark:text-hub-text2 font-medium truncate">
                           Cambiar Estación QR
@@ -1697,7 +1763,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
               <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider block">
                 Proceso de Nominación
               </span>
-              <span className="text-[10px] font-mono font-bold text-[#009D4E] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full shadow-2xs">
+              <span className="text-[10px] font-mono font-bold text-[#009D4E] dark:text-[#03F77C] bg-[#EEFBF4] dark:bg-[#03F77C]/15 border border-[#A7F3D0] dark:border-[#03F77C]/40 px-2.5 py-0.5 rounded-full shadow-2xs">
                 Rampa {activeRampa.numero} - {activeRampa.destino}
               </span>
             </div>
@@ -2097,7 +2163,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   <QrCode className="w-10 h-10 stroke-[2.2]" />
                 </div>
 
-                <span className="px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-bold uppercase mb-3 border border-emerald-300 dark:border-emerald-800">
+                <span className="px-3.5 py-1 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 text-[#009D4E] dark:text-[#03F77C] border border-[#A7F3D0] dark:border-[#03F77C]/40 text-xs font-mono font-bold uppercase mb-3">
                   PRIMERA ACCIÓN REQUERIDA
                 </span>
 
@@ -2161,7 +2227,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <Box className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Nominar Encargos</span>
+                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Nominar</span>
                       <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Escaneo y clasificación de carga</span>
                     </div>
                   </button>
@@ -2184,7 +2250,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       )}
                     </div>
                     <div>
-                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Despachar Rampa</span>
+                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Despachar</span>
                       <span className="text-xs text-gray-500 dark:text-hub-text2 font-medium font-sans">Cierre de manifiesto y salida</span>
                     </div>
                   </button>
@@ -2202,7 +2268,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       <RefreshCw className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Reubicar Encargo</span>
+                      <span className="text-base font-extrabold block leading-tight text-[#009D4E] dark:text-emerald-300">Reubicar</span>
                       <span className="text-xs text-gray-500 dark:text-hub-text2 font-normal font-sans">Cambiar o re-escanear ubicación</span>
                     </div>
                   </button>
@@ -2223,7 +2289,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             >
               <ArrowLeft className="w-4 h-4" /> Volver a Selección de Rampa
             </button>
-            <div className="px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-bold">
+            <div className="px-3.5 py-1 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold">
               Ubicación Activa: Rampa {activeRampa.numero} ({activeRampa.destino})
             </div>
           </div>

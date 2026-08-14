@@ -28,42 +28,42 @@ const INITIAL_ENCARGOS: EncargoEncasillado[] = [
     id: 'ENC-3129890',
     codigoEncargo: 'OF-3129890',
     pasilloAsignado: 'ROJO',
-    rampaLigada: 'Rampa 02 - Salida Sur (Concepción / Temuco)',
+    rampaLigada: 'Rampa 01 - Salida Norte (Santiago / V Región)',
     horaEscaneo: '12:29 p. m.',
   },
   {
     id: 'ENC-4092326',
     codigoEncargo: 'OF-4092326',
     pasilloAsignado: 'AZUL',
-    rampaLigada: 'Rampa 01 - Salida Norte (Santiago / V Región)',
+    rampaLigada: 'Rampa 24 - Puerto Montt (Chiloé / Los Lagos)',
     horaEscaneo: '12:29 p. m.',
   },
   {
     id: 'ENC-6288804',
     codigoEncargo: 'OF-6288804',
     pasilloAsignado: 'AZUL',
-    rampaLigada: 'Rampa 01 - Salida Norte (Santiago / V Región)',
+    rampaLigada: 'Rampa 24 - Puerto Montt (Chiloé / Los Lagos)',
     horaEscaneo: '12:28 p. m.',
   },
   {
     id: 'ENC-9075807',
     codigoEncargo: 'OF-9075807',
     pasilloAsignado: 'AZUL',
-    rampaLigada: 'Rampa 01 - Salida Norte (Santiago / V Región)',
+    rampaLigada: 'Rampa 24 - Puerto Montt (Chiloé / Los Lagos)',
     horaEscaneo: '12:28 p. m.',
   },
   {
     id: 'ENC-3305338',
     codigoEncargo: 'OF-3305338',
     pasilloAsignado: 'VERDE',
-    rampaLigada: 'Rampa 03 - Expreso / Regiones Extremas',
+    rampaLigada: 'Rampa 12 - Concepción (Biobío / Temuco)',
     horaEscaneo: '12:28 p. m.',
   },
   {
     id: 'ENC-5008021',
     codigoEncargo: 'OF-5008021',
     pasilloAsignado: 'VERDE',
-    rampaLigada: 'Rampa 03 - Expreso / Regiones Extremas',
+    rampaLigada: 'Rampa 12 - Concepción (Biobío / Temuco)',
     horaEscaneo: '12:28 p. m.',
   },
 ];
@@ -81,6 +81,9 @@ export const EncasilladoModule: React.FC = () => {
   const [encargosList, setEncargosList] = useState<EncargoEncasillado[]>(INITIAL_ENCARGOS);
   const [latestScannedId, setLatestScannedId] = useState<string | null>(null);
   const [activeFlashPasillo, setActiveFlashPasillo] = useState<PasilloType | null>(null);
+
+  // PDA Tab selection state
+  const [activePdaTab, setActivePdaTab] = useState<PasilloType | 'TODOS'>('AZUL');
 
   // Floating Toast Notification State
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -122,14 +125,13 @@ export const EncasilladoModule: React.FC = () => {
     return () => clearTimeout(timer);
   }, [activeLocation, encargosList]);
 
-
-
   // Calculate live counts per aisle
   const countsByPasillo = {
     AZUL: encargosList.filter((item) => item.pasilloAsignado === 'AZUL').length,
     ROJO: encargosList.filter((item) => item.pasilloAsignado === 'ROJO').length,
     VERDE: encargosList.filter((item) => item.pasilloAsignado === 'VERDE').length,
   };
+
 
   // Process encargo scan
   const handleProcessScan = (code: string) => {
@@ -200,7 +202,7 @@ export const EncasilladoModule: React.FC = () => {
     }, 1000);
 
     triggerToast(
-      `Encargo clasificado en ${assignedPasillo === 'AZUL' ? 'Rampa 24' : assignedPasillo === 'ROJO' ? 'Rampa 01' : 'Rampa 12'}`,
+      `Encargo clasificado en ${assignedPasillo === 'AZUL' ? 'Pasillo Azul (Rampa 24)' : assignedPasillo === 'ROJO' ? 'Pasillo Rojo (Rampa 01)' : 'Pasillo Verde (Rampa 12)'}`,
       'success',
       uppercaseCode,
       rampaName
@@ -216,13 +218,131 @@ export const EncasilladoModule: React.FC = () => {
     enableGlobal: true,
   });
 
+  // Render individual package item inside pasillo card
+  const renderPackageItem = (item: EncargoEncasillado) => {
+    const isLatest = item.id === latestScannedId;
+    return (
+      <div
+        key={item.id}
+        className={`p-3 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-3 text-xs font-mono shadow-2xs ${
+          isLatest
+            ? 'bg-[#EEFBF4] dark:bg-emerald-950/80 border-[#A7F3D0] dark:border-emerald-700/80 ring-2 ring-emerald-500/40 border-l-4 border-l-[#009D4E] font-bold animate-fadeIn'
+            : 'bg-white dark:bg-hub-elevated/90 border-gray-200/80 dark:border-hub-border hover:border-gray-300 dark:hover:border-slate-700'
+        }`}
+      >
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-[#414745] dark:text-hub-text1 text-xs truncate">
+              {item.codigoEncargo}
+            </span>
+            {isLatest && (
+              <span className="px-1.5 py-0.5 rounded text-[9px] bg-[#009D4E] text-white font-sans font-bold animate-pulse">
+                NUEVO
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-gray-400 dark:text-hub-text3 font-sans block mt-0.5">
+            Escaneado: {item.horaEscaneo}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
+  // Render Pasillo Card Component
+  const renderPasilloCard = (
+    pasillo: PasilloType,
+    title: string,
+    rampaInfo: string,
+    theme: {
+      bgCard: string;
+      borderNormal: string;
+      borderFlash: string;
+      badgeBg: string;
+      badgeText: string;
+      badgeBorder: string;
+      rampBg: string;
+      rampText: string;
+      rampBorder: string;
+      iconColor: string;
+      emptyBg: string;
+      emptyBorder: string;
+      emptyText: string;
+    }
+  ) => {
+    const items = encargosList.filter((item) => item.pasilloAsignado === pasillo);
+    const count = items.length;
+    const isFlashing = activeFlashPasillo === pasillo;
 
-  // --- RENDER PDA MOBILE VIEW (MODO CLARO IGUAL A ESCRITORIO) ---
+    return (
+      <div
+        className={`rounded-3xl p-5 shadow-sm border transition-all duration-500 flex flex-col justify-between ${
+          isFlashing ? theme.borderFlash : theme.borderNormal
+        }`}
+      >
+        <div>
+          {/* Card Header: Pasillo Badge + Count Badge */}
+          <div className="flex items-center justify-between mb-4">
+            <span
+              className={`px-3.5 py-1 rounded-full text-xs font-extrabold uppercase border font-sans ${theme.badgeBg} ${theme.badgeText} ${theme.badgeBorder}`}
+            >
+              {title}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-black bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-hub-text1">
+                {count} {count === 1 ? 'bulto' : 'bultos'}
+              </span>
+            </div>
+          </div>
+
+          {/* Ramp Info Banner */}
+          <div
+            className={`flex items-center gap-2 p-3 rounded-2xl border text-xs font-sans mb-4 ${theme.rampBg} ${theme.rampText} ${theme.rampBorder}`}
+          >
+            <Truck className={`w-4 h-4 shrink-0 stroke-[2.2] ${theme.iconColor}`} />
+            <span className="font-semibold truncate leading-tight">{rampaInfo}</span>
+          </div>
+
+          {/* List Section Header */}
+          <div className="flex items-center justify-between pb-2 mb-3 border-b border-gray-100 dark:border-hub-border">
+            <span className="text-xs font-bold text-gray-600 dark:text-hub-text2 flex items-center gap-1.5 font-sans">
+              <Box className="w-3.5 h-3.5 text-gray-400" /> Encargos clasificados
+            </span>
+            <span className="text-[10px] font-mono text-gray-400 font-bold">
+              {count} items
+            </span>
+          </div>
+
+          {/* Package List Container */}
+          {count === 0 ? (
+            <div
+              className={`py-12 text-center border-2 border-dashed rounded-2xl ${theme.emptyBg} ${theme.emptyBorder}`}
+            >
+              <Box className={`w-10 h-10 mx-auto mb-2 opacity-50 ${theme.iconColor}`} />
+              <p className={`text-xs font-medium font-sans ${theme.emptyText}`}>
+                Sin encargos en {title}
+              </p>
+            </div>
+          ) : (
+            <div className="max-h-[360px] overflow-y-auto space-y-2 pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {items.map(renderPackageItem)}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // --- RENDER PDA MOBILE VIEW ---
   if (isPda) {
+    const activeItems =
+      activePdaTab === 'TODOS'
+        ? encargosList
+        : encargosList.filter((item) => item.pasilloAsignado === activePdaTab);
+
     return (
       <div className="flex flex-col h-full bg-[#FAFDFC] dark:bg-hub-base text-[#414745] dark:text-hub-text1 p-3 select-none relative font-sans">
-        {/* Floating Toast Notification for PDA (Flotante en el TOP - Sin desplazar contenido) */}
+        {/* Floating Toast Notification for PDA */}
         {toast && (
           <div
             key={toast.id}
@@ -293,37 +413,60 @@ export const EncasilladoModule: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Pasillo Counters Grid for PDA in Light Mode */}
+            {/* Pasillo Tabs Filter for PDA */}
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="bg-[#EFF6FF] dark:bg-sky-950/70 border border-[#BFDBFE] dark:border-sky-800 rounded-2xl p-2 text-center shadow-2xs">
-                <span className="text-[9px] uppercase font-mono font-bold text-[#2563EB] dark:text-sky-300 block">P. AZUL</span>
-                <span className="text-xl font-mono font-black text-[#2563EB] dark:text-sky-300">{countsByPasillo.AZUL}</span>
-              </div>
-              <div className="bg-[#FFF0F2] dark:bg-rose-950/70 border border-[#FECDD3] dark:border-rose-800 rounded-2xl p-2 text-center shadow-2xs">
-                <span className="text-[9px] uppercase font-mono font-bold text-[#E11D48] dark:text-rose-300 block">P. ROJO</span>
-                <span className="text-xl font-mono font-black text-[#E11D48] dark:text-rose-300">{countsByPasillo.ROJO}</span>
-              </div>
-              <div className="bg-[#ECFDF5] dark:bg-emerald-950/70 border border-[#A7F3D0] dark:border-emerald-800 rounded-2xl p-2 text-center shadow-2xs">
-                <span className="text-[9px] uppercase font-mono font-bold text-[#059669] dark:text-emerald-300 block">P. VERDE</span>
-                <span className="text-xl font-mono font-black text-[#059669] dark:text-emerald-300">{countsByPasillo.VERDE}</span>
-              </div>
+              <button
+                onClick={() => setActivePdaTab('AZUL')}
+                className={`border rounded-2xl p-2 text-center transition-all ${
+                  activePdaTab === 'AZUL'
+                    ? 'bg-[#EFF6FF] border-[#2563EB] ring-2 ring-blue-400/40 text-[#2563EB] dark:bg-sky-950 dark:border-sky-700 dark:text-sky-300 font-bold'
+                    : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2'
+                }`}
+              >
+                <span className="text-[9px] uppercase font-mono font-bold block">P. AZUL</span>
+                <span className="text-lg font-mono font-black">{countsByPasillo.AZUL}</span>
+              </button>
+
+              <button
+                onClick={() => setActivePdaTab('ROJO')}
+                className={`border rounded-2xl p-2 text-center transition-all ${
+                  activePdaTab === 'ROJO'
+                    ? 'bg-[#FFF0F2] border-[#E11D48] ring-2 ring-rose-400/40 text-[#E11D48] dark:bg-rose-950 dark:border-rose-700 dark:text-rose-300 font-bold'
+                    : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2'
+                }`}
+              >
+                <span className="text-[9px] uppercase font-mono font-bold block">P. ROJO</span>
+                <span className="text-lg font-mono font-black">{countsByPasillo.ROJO}</span>
+              </button>
+
+              <button
+                onClick={() => setActivePdaTab('VERDE')}
+                className={`border rounded-2xl p-2 text-center transition-all ${
+                  activePdaTab === 'VERDE'
+                    ? 'bg-[#ECFDF5] border-[#059669] ring-2 ring-emerald-400/40 text-[#059669] dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-300 font-bold'
+                    : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2'
+                }`}
+              >
+                <span className="text-[9px] uppercase font-mono font-bold block">P. VERDE</span>
+                <span className="text-lg font-mono font-black">{countsByPasillo.VERDE}</span>
+              </button>
             </div>
 
-            {/* Scan Bar & Quitar Switch for PDA in Light Mode */}
+            {/* Scan Bar & Switch for PDA */}
             <div className="bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-3 mb-3 shadow-xs">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-1.5">
-                  <Scan className="w-4 h-4 text-[#009D4E]" /> Escanea los encargos
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-1.5 font-sans">
+                  <Scan className="w-4 h-4 text-[#009D4E]" /> Escanear encargo
                 </span>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-[13px] text-gray-500 dark:text-hub-text2 font-semibold">Quitar encargo</span>
+                  <span className="text-[11px] text-gray-500 dark:text-hub-text2 font-semibold">Quitar encargo</span>
                   <input
                     type="checkbox"
                     checked={isRemoveMode}
                     onChange={(e) => setIsRemoveMode(e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-9 h-5 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-600 relative"></div>
+                  <div className="w-8 h-4 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-rose-600 relative"></div>
                 </label>
               </div>
 
@@ -345,65 +488,48 @@ export const EncasilladoModule: React.FC = () => {
                     triggerScan(dynamicCode);
                   }
                 }}
-                className={`w-full h-10 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 font-sans text-white ${isRemoveMode ? 'bg-[#E11D48] hover:bg-[#BE123C]' : 'bg-[#009D4E] hover:bg-[#008743]'
-                  }`}
+                className={`w-full h-10 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center justify-center gap-2 font-sans text-white ${
+                  isRemoveMode ? 'bg-[#E11D48] hover:bg-[#BE123C]' : 'bg-[#009D4E] hover:bg-[#008743]'
+                }`}
               >
                 <Scan className="w-4 h-4" />
                 <span>Simular Escaneo PDA</span>
               </button>
-
-              {/* Helper al activar Quitar encargo en PDA */}
-              {isRemoveMode && (
-                <div className="mt-2.5 p-2.5 bg-[#FFF0F2] dark:bg-rose-950/50 border border-[#FECDD3] dark:border-rose-800 rounded-xl flex items-center gap-2 text-xs animate-fadeIn">
-                  <AlertCircle className="w-4 h-4 text-[#E11D48] dark:text-rose-400 shrink-0 stroke-[2.2]" />
-                  <p className="text-[11px] text-[#E11D48] dark:text-rose-300 font-sans font-medium leading-tight">
-                    <strong className="font-bold">Quitar encargo activo:</strong> Al escanear los encargos, estos se eliminarán de la vista.
-                  </p>
-                </div>
-              )}
             </div>
 
-            {/* Enlisted Packages List for PDA in Light Mode */}
+            {/* Selected Pasillo Ramp Info & Package List Container for PDA */}
             <div className="flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-3 shadow-xs flex flex-col">
+              {/* Ramp Banner in PDA */}
+              <div className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 dark:bg-hub-elevated border border-gray-100 dark:border-hub-border text-xs font-sans mb-2.5">
+                <Truck className="w-3.5 h-3.5 text-[#009D4E] shrink-0" />
+                <span className="font-semibold text-gray-700 dark:text-hub-text2 truncate leading-tight">
+                  {activePdaTab === 'AZUL'
+                    ? 'Rampa 24 - Puerto Montt'
+                    : activePdaTab === 'ROJO'
+                    ? 'Rampa 01 - Salida Norte'
+                    : 'Rampa 12 - Concepción'}
+                </span>
+              </div>
+
               {/* Header Fijo */}
-              <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-gray-100/90 dark:border-hub-border shrink-0">
-                <span className="text-xs font-bold text-[#414745] dark:text-hub-text1">Lista de encargos</span>
-                <span className="text-[10px] font-mono font-bold text-[#414745] dark:text-hub-text2">
-                  {encargosList.length} bultos
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-hub-border shrink-0">
+                <span className="text-xs font-bold text-[#414745] dark:text-hub-text1">
+                  Pasillo {activePdaTab}
+                </span>
+                <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text2">
+                  {activeItems.length} bultos
                 </span>
               </div>
 
               {/* Scrollable Data Rows */}
               <div className="flex-1 overflow-y-auto space-y-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {encargosList.map((item) => {
-                  const isLatest = item.id === latestScannedId;
-                  return (
-                    <div
-                      key={item.id}
-                      className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-mono transition-all duration-500 ${isLatest
-                        ? 'bg-[#EEFBF4] dark:bg-emerald-950/70 border-[#A7F3D0] dark:border-emerald-700 border-l-4 border-l-[#009D4E] font-bold'
-                        : 'bg-gray-50/80 dark:bg-hub-elevated/80 border-gray-200/80 dark:border-hub-border'
-                        }`}
-                    >
-                      <div>
-                        <strong className="text-[#414745] dark:text-hub-text1 block font-bold">
-                          {item.codigoEncargo}
-                        </strong>
-                        <span className="text-[10px] text-gray-400">{item.horaEscaneo}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${item.pasilloAsignado === 'AZUL'
-                          ? 'bg-[#EFF6FF] dark:bg-sky-950 text-[#2563EB] dark:text-sky-300 border-[#BFDBFE] dark:border-sky-800'
-                          : item.pasilloAsignado === 'ROJO'
-                            ? 'bg-[#FFF0F2] dark:bg-rose-950 text-[#E11D48] dark:text-rose-300 border-[#FECDD3] dark:border-rose-800'
-                            : 'bg-[#ECFDF5] dark:bg-emerald-950 text-[#059669] dark:text-emerald-300 border-[#A7F3D0] dark:border-emerald-800'
-                          }`}>
-                          {item.pasilloAsignado === 'AZUL' ? 'P. AZUL' : item.pasilloAsignado === 'ROJO' ? 'P. ROJO' : 'P. VERDE'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                {activeItems.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-gray-400">
+                    No hay encargos en este pasillo.
+                  </div>
+                ) : (
+                  activeItems.map(renderPackageItem)
+                )}
               </div>
             </div>
           </>
@@ -414,17 +540,18 @@ export const EncasilladoModule: React.FC = () => {
 
   // --- RENDER DESKTOP (PC) VIEW ---
   return (
-    <div className="space-y-6 animate-fadeIn relative">
-      {/* Floating Toast Notification (Estilo Imagen 2 con Botón X) */}
+    <div className="space-y-6 animate-fadeIn relative font-sans">
+      {/* Floating Toast Notification */}
       {toast && (
         <div
           key={toast.id}
-          className={`fixed top-4 right-6 z-50 max-w-md w-full animate-toast-pop shadow-xl rounded-2xl p-4 flex items-center justify-between gap-3 border font-mono transition-all ${toast.type === 'success'
-            ? 'bg-[#EEFBF4] dark:bg-emerald-950/90 border-[#A7F3D0] dark:border-emerald-700/80 text-[#065F46] dark:text-emerald-200'
-            : toast.type === 'warning'
+          className={`fixed top-4 right-6 z-50 max-w-md w-full animate-toast-pop shadow-xl rounded-2xl p-4 flex items-center justify-between gap-3 border font-mono transition-all ${
+            toast.type === 'success'
+              ? 'bg-[#EEFBF4] dark:bg-emerald-950/90 border-[#A7F3D0] dark:border-emerald-700/80 text-[#065F46] dark:text-emerald-200'
+              : toast.type === 'warning'
               ? 'bg-[#FFFBEB] dark:bg-amber-950/90 border-[#FDE68A] dark:border-amber-700/80 text-[#92400E] dark:text-amber-200'
               : 'bg-[#FEF2F2] dark:bg-rose-950/90 border-[#FCA5A5] dark:border-rose-700/80 text-[#991B1B] dark:text-rose-200'
-            }`}
+          }`}
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {toast.type === 'success' ? (
@@ -442,12 +569,13 @@ export const EncasilladoModule: React.FC = () => {
 
           <button
             onClick={() => setToast(null)}
-            className={`p-1 rounded-lg transition-colors shrink-0 ${toast.type === 'success'
-              ? 'text-[#059669]/70 hover:text-[#065F46] dark:text-emerald-400/70 dark:hover:text-emerald-200'
-              : toast.type === 'warning'
+            className={`p-1 rounded-lg transition-colors shrink-0 ${
+              toast.type === 'success'
+                ? 'text-[#059669]/70 hover:text-[#065F46] dark:text-emerald-400/70 dark:hover:text-emerald-200'
+                : toast.type === 'warning'
                 ? 'text-[#D97706]/70 hover:text-[#92400E] dark:text-amber-400/70 dark:hover:text-amber-200'
                 : 'text-[#DC2626]/70 hover:text-[#991B1B] dark:text-rose-400/70 dark:hover:text-rose-200'
-              }`}
+            }`}
             title="Cerrar notificación"
           >
             <X className="w-4 h-4 stroke-[2.2]" />
@@ -455,13 +583,13 @@ export const EncasilladoModule: React.FC = () => {
         </div>
       )}
 
-      {/* Card 1: Main Scan Control Bar */}
+      {/* Main Scan Control Bar */}
       <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-hub-border flex flex-col gap-3.5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <Scan className="w-5 h-5 text-emerald-600 dark:text-emerald-400 stroke-[2.2]" />
+            <Scan className="w-5 h-5 text-[#009D4E] dark:text-emerald-400 stroke-[2.2]" />
             <h3 className="text-base font-bold text-[#414745] dark:text-hub-text1 font-sans">
-              Escanea los encargos para agregarlos a la lista de encasillado
+              Escanea los encargos para clasificarlos automáticamente por pasillo
             </h3>
           </div>
 
@@ -476,10 +604,7 @@ export const EncasilladoModule: React.FC = () => {
                     const checked = e.target.checked;
                     setIsRemoveMode(checked);
                     if (checked) {
-                      triggerToast(
-                        'Quitar encargo activado.',
-                        'warning'
-                      );
+                      triggerToast('Quitar encargo activado.', 'warning');
                       playWarningSound();
                     } else {
                       triggerToast('Agregar encargo activado.', 'success');
@@ -497,7 +622,6 @@ export const EncasilladoModule: React.FC = () => {
               onClick={() => {
                 if (isRemoveMode) {
                   if (encargosList.length > 0) {
-                    // Selecciona un encargo existente de la lista para simular su eliminación real
                     const randomIndex = Math.floor(Math.random() * encargosList.length);
                     const codeToRemove = encargosList[randomIndex].codigoEncargo;
                     triggerScan(codeToRemove);
@@ -511,10 +635,11 @@ export const EncasilladoModule: React.FC = () => {
                   triggerScan(dynamicCode);
                 }
               }}
-              className={`px-4 py-2.5 text-white font-bold rounded-full text-xs transition-all shadow-xs flex items-center gap-2 font-sans ${isRemoveMode
-                ? 'bg-[#E11D48] hover:bg-[#BE123C]'
-                : 'bg-emerald-600 hover:bg-emerald-700'
-                }`}
+              className={`px-4 py-2.5 text-white font-bold rounded-full text-xs transition-all shadow-xs flex items-center gap-2 font-sans ${
+                isRemoveMode
+                  ? 'bg-[#E11D48] hover:bg-[#BE123C]'
+                  : 'bg-[#009D4E] hover:bg-[#008743]'
+              }`}
             >
               <Scan className="w-4 h-4" />
               <span>Simular Escaneo PDA</span>
@@ -522,173 +647,83 @@ export const EncasilladoModule: React.FC = () => {
           </div>
         </div>
 
-        {/* Helper informativo al activar Quitar encargo en Escritorio */}
+        {/* Helper informativo al activar Quitar encargo */}
         {isRemoveMode && (
-          <div className="mt-3.5 p-3 bg-[#FFF0F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-800/60 rounded-xl flex items-center gap-2.5 text-xs animate-fadeIn">
+          <div className="mt-2 p-3 bg-[#FFF0F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-800/60 rounded-xl flex items-center gap-2.5 text-xs animate-fadeIn">
             <AlertCircle className="w-4 h-4 text-[#E11D48] dark:text-rose-400 shrink-0 stroke-[2.2]" />
             <p className="text-xs text-[#E11D48] dark:text-rose-300 font-sans font-medium leading-tight">
-              <strong className="font-bold">
-                Quitar encargo activo:</strong> Al escanear los encargos, estos se eliminarán de la vista.
+              <strong className="font-bold">Quitar encargo activo:</strong> Al escanear los encargos, estos se eliminarán de la lista del pasillo.
             </p>
           </div>
         )}
       </div>
 
-      {/* Grid of 3 Pasillo Conteo Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Pasillo Azul Card */}
-        <div
-          className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-500 flex flex-col justify-between ${activeFlashPasillo === 'AZUL'
-            ? 'border-[#2563EB] shadow-md shadow-blue-500/20 bg-blue-50/20 dark:bg-sky-950/40'
-            : 'border-gray-200/80 dark:border-hub-border'
-            }`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="px-3.5 py-1 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 text-xs font-extrabold uppercase border border-sky-200 dark:border-sky-800 font-sans">
-              Pasillo Azul
-            </span>
-            <div className="flex items-baseline gap-1 font-mono">
-              <span className="text-3xl font-extrabold text-[#414745] dark:text-hub-text1 font-mono">{countsByPasillo.AZUL}</span>
-              <span className="text-xs text-gray-400 dark:text-hub-text3 font-sans font-medium">un.</span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-hub-text2 font-sans flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-hub-border">
-            <Truck className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span className="truncate">Rampa 24 - Puerto Montt (Chiloé / Los Lagos)</span>
-          </div>
-        </div>
+      {/* Grid of 3 Pasillo Classification Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Pasillo Azul Classification Card */}
+        {renderPasilloCard(
+          'AZUL',
+          'Pasillo Azul',
+          'Rampa 24 - Puerto Montt (Chiloé / Los Lagos)',
+          {
+            bgCard: 'bg-white dark:bg-hub-surface',
+            borderNormal: 'border-sky-200/80 dark:border-sky-900/60 bg-white dark:bg-hub-surface',
+            borderFlash: 'border-[#2563EB] ring-2 ring-blue-400/50 shadow-lg shadow-blue-500/20 bg-blue-50/30 dark:bg-sky-950/50',
+            badgeBg: 'bg-sky-100 dark:bg-sky-950',
+            badgeText: 'text-[#2563EB] dark:text-sky-300',
+            badgeBorder: 'border-sky-200 dark:border-sky-800',
+            rampBg: 'bg-sky-50/80 dark:bg-sky-950/40',
+            rampText: 'text-sky-900 dark:text-sky-200',
+            rampBorder: 'border-sky-100 dark:border-sky-900/60',
+            iconColor: 'text-[#2563EB] dark:text-sky-400',
+            emptyBg: 'bg-sky-50/30 dark:bg-sky-950/20',
+            emptyBorder: 'border-sky-100 dark:border-sky-900/40',
+            emptyText: 'text-sky-600 dark:text-sky-400',
+          }
+        )}
 
-        {/* Pasillo Rojo Card */}
-        <div
-          className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-500 flex flex-col justify-between ${activeFlashPasillo === 'ROJO'
-            ? 'border-[#E11D48] shadow-md shadow-rose-500/20 bg-rose-50/20 dark:bg-rose-950/40'
-            : 'border-gray-200/80 dark:border-hub-border'
-            }`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="px-3.5 py-1 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-xs font-extrabold uppercase border border-rose-200 dark:border-rose-800 font-sans">
-              Pasillo Rojo
-            </span>
-            <div className="flex items-baseline gap-1 font-mono">
-              <span className="text-3xl font-extrabold text-[#414745] dark:text-hub-text1 font-mono">{countsByPasillo.ROJO}</span>
-              <span className="text-xs text-gray-400 dark:text-hub-text3 font-sans font-medium">un.</span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-hub-text2 font-sans flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-hub-border">
-            <Truck className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span className="truncate">Rampa 01 - Salida Norte (Santiago / V Región)</span>
-          </div>
-        </div>
+        {/* Pasillo Rojo Classification Card */}
+        {renderPasilloCard(
+          'ROJO',
+          'Pasillo Rojo',
+          'Rampa 01 - Salida Norte (Santiago / V Región)',
+          {
+            bgCard: 'bg-white dark:bg-hub-surface',
+            borderNormal: 'border-rose-200/80 dark:border-rose-900/60 bg-white dark:bg-hub-surface',
+            borderFlash: 'border-[#E11D48] ring-2 ring-rose-400/50 shadow-lg shadow-rose-500/20 bg-rose-50/30 dark:bg-rose-950/50',
+            badgeBg: 'bg-rose-100 dark:bg-rose-950',
+            badgeText: 'text-[#E11D48] dark:text-rose-300',
+            badgeBorder: 'border-rose-200 dark:border-rose-800',
+            rampBg: 'bg-rose-50/80 dark:bg-rose-950/40',
+            rampText: 'text-rose-900 dark:text-rose-200',
+            rampBorder: 'border-rose-100 dark:border-rose-900/60',
+            iconColor: 'text-[#E11D48] dark:text-rose-400',
+            emptyBg: 'bg-rose-50/30 dark:bg-rose-950/20',
+            emptyBorder: 'border-rose-100 dark:border-rose-900/40',
+            emptyText: 'text-rose-600 dark:text-rose-400',
+          }
+        )}
 
-        {/* Pasillo Verde Card */}
-        <div
-          className={`bg-white dark:bg-hub-surface rounded-3xl p-5 shadow-sm border transition-all duration-500 flex flex-col justify-between ${activeFlashPasillo === 'VERDE'
-            ? 'border-[#059669] shadow-md shadow-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/40'
-            : 'border-gray-200/80 dark:border-hub-border'
-            }`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <span className="px-3.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold uppercase border border-emerald-200 dark:border-emerald-800 font-sans">
-              Pasillo Verde
-            </span>
-            <div className="flex items-baseline gap-1 font-mono">
-              <span className="text-3xl font-extrabold text-[#414745] dark:text-hub-text1 font-mono">{countsByPasillo.VERDE}</span>
-              <span className="text-xs text-gray-400 dark:text-hub-text3 font-sans font-medium">un.</span>
-            </div>
-          </div>
-          <div className="text-xs text-gray-500 dark:text-hub-text2 font-sans flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-hub-border">
-            <Truck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="truncate">Rampa 12 - Concepción (Biobío / Temuco)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Card: Lista de encargos a encasillar */}
-      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-hub-border">
-        {/* Header Bar */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2.5">
-            <Box className="w-5 h-5 text-[#009D4E] stroke-[2.2]" />
-            <h3 className="text-base font-bold text-[#414745] dark:text-hub-text1 font-sans">
-              Lista de encargos
-            </h3>
-          </div>
-
-          <span className="text-xs font-mono font-bold text-[#414745] dark:text-hub-text2">
-            {encargosList.length} bultos escaneados
-          </span>
-        </div>
-
-        {/* Table Content Container */}
-        {encargosList.length === 0 ? (
-          <div className="py-16 text-center border-2 border-dashed border-gray-100 dark:border-hub-border rounded-2xl bg-gray-50/50 dark:bg-hub-base/40">
-            <Box className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-slate-600" />
-            <p className="text-sm font-semibold font-sans text-gray-500 dark:text-hub-text2">
-              No hay encargos en la lista aún. Escanea un código para agregar.
-            </p>
-          </div>
-        ) : (
-          <div className="border border-gray-200/80 dark:border-hub-border rounded-2xl overflow-hidden shadow-2xs">
-            {/* Fixed Header Row - Outside Scroll Container */}
-            <div className="bg-[#F3F6FA] dark:bg-hub-elevated border-b border-gray-200/80 dark:border-hub-border">
-              <table className="w-full text-left border-collapse table-fixed">
-                <thead className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-hub-text2 font-bold font-sans">
-                  <tr>
-                    <th className="w-[26%] pl-6 pr-4 py-3.5">CÓDIGO ENCARGO</th>
-                    <th className="w-[24%] px-4 py-3.5">PASILLO ASIGNADO</th>
-                    <th className="w-[32%] px-4 py-3.5">RAMPA LIGADA</th>
-                    <th className="w-[18%] pr-6 pl-4 py-3.5 text-right">HORA ESCANEO</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-
-            {/* Scrollable Data Rows Container - Scrollbar starts below header at the first row */}
-            <div className="max-h-[250px] overflow-y-auto overflow-x-auto">
-              <table className="w-full text-left border-collapse table-fixed">
-                <tbody className="divide-y divide-gray-100 dark:divide-slate-800/80 bg-white dark:bg-hub-surface">
-                  {encargosList.map((item) => {
-                    const isLatest = item.id === latestScannedId;
-                    return (
-                      <tr
-                        key={item.id}
-                        className={`transition-all duration-500 text-xs ${isLatest
-                          ? 'bg-emerald-50/90 dark:bg-emerald-950/70 border-l-4 border-l-[#009D4E] font-bold'
-                          : 'hover:bg-gray-50/50 dark:hover:bg-slate-800/40'
-                          }`}
-                      >
-                        <td className="w-[26%] pl-6 pr-4 py-3.5 font-bold text-[#414745] dark:text-hub-text1 text-xs font-mono">
-                          {item.codigoEncargo}
-                        </td>
-                        <td className="w-[24%] px-4 py-3.5">
-                          <span
-                            className={`px-3 py-0.5 rounded-full text-xs font-sans font-semibold inline-flex items-center justify-center border ${item.pasilloAsignado === 'AZUL'
-                              ? 'bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE] dark:bg-sky-950 dark:text-sky-300 dark:border-sky-800'
-                              : item.pasilloAsignado === 'ROJO'
-                                ? 'bg-[#FFF0F2] text-[#E11D48] border-[#FECDD3] dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800'
-                                : 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0] dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
-                              }`}
-                          >
-                            {item.pasilloAsignado === 'AZUL'
-                              ? 'Pasillo Azul'
-                              : item.pasilloAsignado === 'ROJO'
-                                ? 'Pasillo Rojo'
-                                : 'Pasillo Verde'}
-                          </span>
-                        </td>
-                        <td className="w-[32%] px-4 py-3.5 text-gray-600 dark:text-hub-text2 font-sans text-xs truncate">
-                          {item.rampaLigada}
-                        </td>
-                        <td className="w-[18%] pr-6 pl-4 py-3.5 text-gray-400 dark:text-hub-text3 font-mono text-xs text-right">
-                          {item.horaEscaneo}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        {/* Pasillo Verde Classification Card */}
+        {renderPasilloCard(
+          'VERDE',
+          'Pasillo Verde',
+          'Rampa 12 - Concepción (Biobío / Temuco)',
+          {
+            bgCard: 'bg-white dark:bg-hub-surface',
+            borderNormal: 'border-emerald-200/80 dark:border-emerald-900/60 bg-white dark:bg-hub-surface',
+            borderFlash: 'border-[#059669] ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-950/50',
+            badgeBg: 'bg-emerald-100 dark:bg-emerald-950',
+            badgeText: 'text-[#059669] dark:text-emerald-300',
+            badgeBorder: 'border-emerald-200 dark:border-emerald-800',
+            rampBg: 'bg-emerald-50/80 dark:bg-emerald-950/40',
+            rampText: 'text-emerald-900 dark:text-emerald-200',
+            rampBorder: 'border-emerald-100 dark:border-emerald-900/60',
+            iconColor: 'text-[#059669] dark:text-emerald-400',
+            emptyBg: 'bg-emerald-50/30 dark:bg-emerald-950/20',
+            emptyBorder: 'border-emerald-100 dark:border-emerald-900/40',
+            emptyText: 'text-emerald-600 dark:text-emerald-400',
+          }
         )}
       </div>
 
