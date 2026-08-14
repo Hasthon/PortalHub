@@ -374,25 +374,25 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   ))}
                 </div>
 
-                {/* Botones inferiores: Confirmar Insumos & Cancelar */}
-                <div className="space-y-2.5 pt-2">
+                {/* Botones inferiores: Confirmar Insumos & Cancelar en una sola fila (Secundario Izquierda | Primario Derecha) */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsInsumosModalOpen(false)}
+                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                  >
+                    <span>Cancelar</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
                       setInsumosModalStep('SUCCESS_SCREEN');
                       playSuccessSound();
                     }}
-                    className="w-full h-12 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-black rounded-full text-sm shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer order-1 sm:order-2"
                   >
                     <span>Confirmar Insumos</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsInsumosModalOpen(false)}
-                    className="w-full h-12 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-gray-100 dark:hover:bg-[#03F77C]/10 font-black rounded-full text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                  >
-                    <span>Cancelar</span>
                   </button>
                 </div>
               </div>
@@ -413,44 +413,46 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                   </p>
                 </div>
 
-                {/* 3 Botones de Acción */}
-                <div className="w-full space-y-2.5 pt-2">
-                  {/* Botón 1: Despachar (Primario #303030 en claro, #03F77C en dark) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsInsumosModalOpen(false);
-                      const currentUtcs = encargosNominados.filter((i) => i.tipoCarga === 'UTC');
-                      setDespachoUtcsList(currentUtcs.length >= 4 ? currentUtcs : INITIAL_NOMINADOS.filter((i) => i.tipoCarga === 'UTC'));
-                      setStepDespacho(1);
-                      setStep('DESPACHO_FLOW');
-                    }}
-                    className="w-full h-12 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-black rounded-full text-sm shadow-md flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                  >
-                    <span>Despachar</span>
-                  </button>
+                {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) */}
+                <div className="w-full space-y-3 pt-2">
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    {/* Botón Secundario (Izquierda): Crear otra nómina */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsInsumosModalOpen(false);
+                        setEncargosNominados([]);
+                        triggerToast('Nueva nómina iniciada', 'success');
+                      }}
+                      className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                    >
+                      <span>Crear otra nómina</span>
+                    </button>
 
-                  {/* Botón 2: Crear otra nómina (Estilo stroke neón) */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsInsumosModalOpen(false);
-                      setEncargosNominados([]);
-                      triggerToast('Nueva nómina iniciada', 'success');
-                    }}
-                    className="w-full h-12 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-gray-100 dark:hover:bg-[#03F77C]/10 font-black rounded-full text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                  >
-                    <span>Crear otra nómina</span>
-                  </button>
+                    {/* Botón Primario (Derecha): Despachar */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsInsumosModalOpen(false);
+                        const currentUtcs = encargosNominados.filter((i) => i.tipoCarga === 'UTC');
+                        setDespachoUtcsList(currentUtcs.length >= 4 ? currentUtcs : INITIAL_NOMINADOS.filter((i) => i.tipoCarga === 'UTC'));
+                        setStepDespacho(1);
+                        setStep('DESPACHO_FLOW');
+                      }}
+                      className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                    >
+                      <span>Despachar</span>
+                    </button>
+                  </div>
 
-                  {/* Botón 3: Volver al inicio (Hipervínculo subrayado sin bg - 14px) */}
+                  {/* Volver al inicio */}
                   <button
                     type="button"
                     onClick={() => {
                       setIsInsumosModalOpen(false);
                       if (onBackHome) onBackHome();
                     }}
-                    className="w-full pt-1.5 pb-1 text-[#414745] hover:text-[#303030] dark:text-hub-text2 dark:hover:text-slate-200 font-bold underline underline-offset-4 text-sm flex items-center justify-center transition-all cursor-pointer bg-transparent border-0"
+                    className="w-full pt-1 pb-1 text-[#414745] hover:text-[#303030] dark:text-hub-text2 dark:hover:text-slate-200 font-bold underline underline-offset-4 text-xs flex items-center justify-center transition-all cursor-pointer bg-transparent border-0"
                   >
                     <span>Volver al inicio</span>
                   </button>
@@ -491,35 +493,37 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 </p>
               </div>
 
-              {/* 2 Botones de Acción */}
-              <div className="w-full space-y-2.5 pt-2">
-                {/* Botón 1: Crear otra nómina */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDespachoSuccessModalOpen(false);
-                    setEncargosNominados([]);
-                    setDespachoUtcsList([]);
-                    setStep('NOMINACION_PROCESS');
-                  }}
-                  className="w-full h-12 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-black rounded-full text-sm shadow-md flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <span>Crear otra nómina</span>
-                </button>
+              {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) */}
+              <div className="w-full pt-2">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  {/* Botón Secundario (Izquierda): Salir */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDespachoSuccessModalOpen(false);
+                      setEncargosNominados([]);
+                      setDespachoUtcsList([]);
+                      setStep('RAMPA_SELECTION');
+                    }}
+                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-[#009D4E]/10 dark:hover:bg-[#03F77C]/10 font-extrabold rounded-2xl text-xs shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                  >
+                    <span>Salir</span>
+                  </button>
 
-                {/* Botón 2: Salir */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsDespachoSuccessModalOpen(false);
-                    setEncargosNominados([]);
-                    setDespachoUtcsList([]);
-                    setStep('RAMPA_SELECTION');
-                  }}
-                  className="w-full h-12 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-gray-100 dark:hover:bg-[#03F77C]/10 font-black rounded-full text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <span>Salir</span>
-                </button>
+                  {/* Botón Primario (Derecha): Crear otra nómina */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsDespachoSuccessModalOpen(false);
+                      setEncargosNominados([]);
+                      setDespachoUtcsList([]);
+                      setStep('NOMINACION_PROCESS');
+                    }}
+                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                  >
+                    <span>Crear otra nómina</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -557,30 +561,32 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                 </p>
               </div>
 
-              {/* 2 Botones de Acción */}
-              <div className="w-full space-y-2.5 pt-2">
-                {/* Botón 1: Mantenerme aquí */}
-                <button
-                  type="button"
-                  onClick={() => setIsExitConfirmationModalOpen(false)}
-                  className="w-full h-12 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-black rounded-full text-sm shadow-md flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <span>Mantenerme aquí</span>
-                </button>
+              {/* Botones de Acción en Fila (Secundario Izquierda | Primario Derecha) */}
+              <div className="w-full pt-2">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  {/* Botón Secundario (Izquierda): Salir ahora */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsExitConfirmationModalOpen(false);
+                      setEncargosNominados([]);
+                      setDespachoUtcsList([]);
+                      setStep('RAMPA_SELECTION');
+                    }}
+                    className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-rose-500 text-[#303030] dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-extrabold rounded-2xl text-xs shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
+                  >
+                    <span>Salir ahora</span>
+                  </button>
 
-                {/* Botón 2: Salir ahora */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsExitConfirmationModalOpen(false);
-                    setEncargosNominados([]);
-                    setDespachoUtcsList([]);
-                    setStep('RAMPA_SELECTION');
-                  }}
-                  className="w-full h-12 border-2 border-[#303030] dark:border-[#03F77C] text-[#303030] dark:text-[#03F77C] hover:bg-gray-100 dark:hover:bg-[#03F77C]/10 font-black rounded-full text-sm shadow-xs flex items-center justify-center transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <span>Salir ahora</span>
-                </button>
+                  {/* Botón Primario (Derecha): Mantenerme aquí */}
+                  <button
+                    type="button"
+                    onClick={() => setIsExitConfirmationModalOpen(false)}
+                    className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
+                  >
+                    <span>Mantenerme aquí</span>
+                  </button>
+                </div>
               </div>
             </div>
 
