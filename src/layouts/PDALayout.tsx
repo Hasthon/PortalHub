@@ -41,7 +41,7 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
     <div className="w-full h-full min-h-[100dvh] md:min-h-screen bg-[#FAFDFC] dark:bg-hub-base md:bg-[#F3F6FA] md:dark:bg-hub-base text-[#414745] dark:text-hub-text1 flex items-center justify-center p-0 md:p-4 select-none font-sans overflow-hidden">
       {/* Outer frame container */}
       <div className="w-full h-[100dvh] md:max-w-[440px] md:h-[840px] bg-[#FAFDFC] dark:bg-hub-base border-0 md:border-8 md:border-slate-800 rounded-none md:rounded-[36px] shadow-none md:shadow-2xl flex flex-col overflow-hidden relative">
-        
+
         {/* Top Status Bar (Fondo #303030) */}
         <header className="bg-[#303030] dark:bg-hub-surface border-b border-gray-800 dark:border-hub-border px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-xs">
           <div className="flex items-center gap-2.5">
@@ -108,10 +108,10 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                 {activeModule === 'encasillado'
                   ? 'Encasillado y Clasificación'
                   : activeModule === 'nominacion'
-                  ? 'Nominación y Despacho'
-                  : activeModule === 'escaneo'
-                  ? 'Escaneo General'
-                  : 'Módulo Operativo'}
+                    ? 'Nominación y Despacho'
+                    : activeModule === 'escaneo'
+                      ? 'Escaneo General'
+                      : 'Módulo Operativo'}
               </span>
             </nav>
           </div>
@@ -228,12 +228,10 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                       )}
                       <span>{isDark ? 'Modo Oscuro' : 'Modo Claro'}</span>
                     </div>
-                    <div className={`w-9 h-5 rounded-full transition-colors duration-300 relative ${
-                      isDark ? 'bg-[#009D4E]' : 'bg-gray-300'
-                    }`}>
-                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 ${
-                        isDark ? 'translate-x-4' : 'translate-x-0'
-                      }`} />
+                    <div className={`w-9 h-5 rounded-full transition-colors duration-300 relative ${isDark ? 'bg-[#009D4E]' : 'bg-gray-300'
+                      }`}>
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-300 ${isDark ? 'translate-x-4' : 'translate-x-0'
+                        }`} />
                     </div>
                   </button>
                 </div>
