@@ -1,7 +1,6 @@
 import React from 'react';
 import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
-import { useDevice } from '../context/DeviceContext';
 import {
   Scan,
   Truck,
@@ -12,7 +11,6 @@ import {
   Settings,
   Sun,
   Moon,
-  Monitor,
 } from 'lucide-react';
 
 interface DesktopLayoutProps {
@@ -37,7 +35,6 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   operatorId = 'OP-4921',
 }) => {
   const { isDark, toggleTheme } = useTheme();
-  const { toggleMode } = useDevice();
 
   return (
     <div className="h-screen overflow-hidden bg-[#FAFDFC] dark:bg-hub-base text-gray-900 dark:text-gray-100 flex flex-col font-sans">
