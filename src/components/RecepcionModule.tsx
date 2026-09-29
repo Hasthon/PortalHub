@@ -321,8 +321,8 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   const [valijaCodigoEtiqueta, setValijaCodigoEtiqueta] = useState('123465874654654132135321264671001');
   const [pendingValijaNomina, setPendingValijaNomina] = useState<NominaContenedora | null>(null);
   const [valijasEntregadasBins, setValijasEntregadasBins] = useState(0);
-  const [valijasPendientesLista, setValijasPendientesLista] = useState<string[]>(['VAL-1759', 'VAL-6696', 'VAL-9930']);
-  const [valijasPendientesBins, setValijasPendientesBins] = useState(3);
+  const [valijasPendientesLista, setValijasPendientesLista] = useState<string[]>([]);
+  const [valijasPendientesBins, setValijasPendientesBins] = useState(0);
 
   // ── Modal Cierre / Cuadratura Bifurcado State ─────────────────────────────
   const [cierreModalOpen, setCierreModalOpen] = useState(false);
@@ -913,8 +913,8 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setNominaPendienteValidacion(null);
     setTipoContenedorSeleccionado(null);
     setValijasEntregadasBins(0);
-    setValijasPendientesLista(['VAL-1759', 'VAL-6696', 'VAL-9930']);
-    setValijasPendientesBins(3);
+    setValijasPendientesLista([]);
+    setValijasPendientesBins(0);
     setLastScanCode('');
     setLastScanResult('idle');
     setLastEncargoScanned(null);
