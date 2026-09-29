@@ -29,6 +29,7 @@ import {
   Trash2,
   Sparkles,
   Pencil,
+  ScanBarcode,
 } from 'lucide-react';
 
 interface ToastMessage {
@@ -84,8 +85,11 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
   // Step y Estados del Flujo de Despacho
   const [stepDespacho, setStepDespacho] = useState<1 | 2 | 3>(1);
-  const [isQuitarUtcToggleOn, setIsQuitarUtcToggleOn] = useState(false);
+  const [modoDespachoUtc, setModoDespachoUtc] = useState<'AGREGAR' | 'QUITAR'>('AGREGAR');
+  const isQuitarUtcToggleOn = modoDespachoUtc === 'QUITAR';
   const [despachoUtcsList, setDespachoUtcsList] = useState<EncargoNominado[]>(INITIAL_NOMINADOS.filter(i => i.tipoCarga === 'UTC'));
+  const [excluidasUtcsList, setExcluidasUtcsList] = useState<EncargoNominado[]>([]);
+  const [reincorporatingUtcId, setReincorporatingUtcId] = useState<string | null>(null);
   const [transportistaAsignado, setTransportistaAsignado] = useState<{
     nombre: string;
     rut: string;
@@ -178,7 +182,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
     setRemovingUtcId(utcId);
     playWarningSound();
-    triggerToast(`Eliminando UTC [${item.codigoEncargo}]...`, 'warning', item.codigoEncargo);
+    triggerToast(`Nómina [${item.codigoEncargo}] excluida del despacho.`, 'warning', item.codigoEncargo);
 
     const el = document.getElementById(`utc-card-${utcId}`);
     if (el) {
@@ -187,17 +191,52 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
     setTimeout(() => {
       setDespachoUtcsList((prev) => prev.filter((i) => i.id !== utcId));
+      setExcluidasUtcsList((prev) => [item, ...prev.filter((i) => i.id !== utcId)]);
       setRemovingUtcId(null);
-    }, 650);
+    }, 450);
   };
 
-  const handleSimulateScanUtcRemoval = () => {
-    if (despachoUtcsList.length > 0) {
-      const itemToRemove = despachoUtcsList[despachoUtcsList.length - 1];
-      handleRemoveUtcFromDespacho(itemToRemove.id);
+  const handleReincorporarUtcAlDespacho = (utcId: string) => {
+    const item = excluidasUtcsList.find((i) => i.id === utcId);
+    if (!item) return;
+
+    setReincorporatingUtcId(utcId);
+    playSuccessSound();
+    triggerToast(`Nómina [${item.codigoEncargo}] reincorporada al despacho`, 'success', item.codigoEncargo);
+
+    const el = document.getElementById(`utc-excluded-${utcId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    setTimeout(() => {
+      setExcluidasUtcsList((prev) => prev.filter((i) => i.id !== utcId));
+      setDespachoUtcsList((prev) => [...prev, item]);
+      setReincorporatingUtcId(null);
+    }, 450);
+  };
+
+  const handleToggleUtcScan = (code: string) => {
+    const uppercase = code.toUpperCase().trim();
+    if (modoDespachoUtc === 'QUITAR') {
+      const inDespacho = despachoUtcsList.find(
+        (i) => i.codigoEncargo === uppercase || i.codigoBarras26 === uppercase || i.id === uppercase
+      );
+      if (inDespacho) {
+        handleRemoveUtcFromDespacho(inDespacho.id);
+        return;
+      }
+      triggerToast(`La nómina [${uppercase}] no se encuentra en el despacho`, 'warning');
+      playWarningSound();
     } else {
-      triggerToast('No hay más UTCs en la nómina para eliminar', 'warning');
-      playErrorSound();
+      const inExcluidas = excluidasUtcsList.find(
+        (i) => i.codigoEncargo === uppercase || i.codigoBarras26 === uppercase || i.id === uppercase
+      );
+      if (inExcluidas) {
+        handleReincorporarUtcAlDespacho(inExcluidas.id);
+        return;
+      }
+      triggerToast(`La nómina [${uppercase}] ya está asignada al despacho`, 'warning');
     }
   };
 
@@ -510,6 +549,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setIsDespachoModalOpen(false);
                       const currentUtcs = encargosNominados.filter((i) => i.tipoCarga === 'UTC');
                       setDespachoUtcsList(currentUtcs.length >= 4 ? currentUtcs : INITIAL_NOMINADOS.filter((i) => i.tipoCarga === 'UTC'));
+                      setExcluidasUtcsList([]);
+                      setModoDespachoUtc('AGREGAR');
                       setStepDespacho(1);
                       setStep('DESPACHO_FLOW');
                     }}
@@ -739,6 +780,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setIsDespachoSuccessModalOpen(false);
                       setEncargosNominados([]);
                       setDespachoUtcsList([]);
+                      setExcluidasUtcsList([]);
                       setStep('NOMINACION_PROCESS');
                     }}
                     className="w-full sm:w-1/2 h-11 bg-[#303030] dark:bg-[#03F77C] hover:bg-[#1f1f1f] hover:dark:bg-[#02D66B] active:bg-black dark:active:bg-[#02B55A] text-white dark:text-[#303030] font-extrabold rounded-2xl text-xs shadow-md flex items-center justify-center transition-all cursor-pointer order-1 sm:order-2"
@@ -793,6 +835,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                       setIsExitConfirmationModalOpen(false);
                       setEncargosNominados([]);
                       setDespachoUtcsList([]);
+                      setExcluidasUtcsList([]);
                       setStep('RAMPA_SELECTION');
                     }}
                     className="w-full sm:w-1/2 h-11 border-2 border-[#303030] dark:border-rose-500 text-[#303030] dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-extrabold rounded-2xl text-xs shadow-xs flex items-center justify-center transition-all cursor-pointer order-2 sm:order-1"
@@ -933,6 +976,8 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
         }
       } else if (step === 'NOMINACION_PROCESS') {
         handleProcessScan(code);
+      } else if (step === 'DESPACHO_FLOW' && stepDespacho === 1) {
+        handleToggleUtcScan(code);
       }
     },
     enableGlobal: true,
@@ -1051,63 +1096,77 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
             {stepDespacho === 3 && 'Confirmación de Despacho'}
           </h2>
 
-          {/* Control Switch: Quitar Nómina (En la misma fila del título) */}
+          {/* Segmented Pill Control: Agregar / Quitar (Estilo referencia con cambio de color dinámico) */}
           {stepDespacho === 1 && (
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="text-xs font-semibold text-gray-600 dark:text-hub-text2 font-sans">
-                Quitar Nómina
-              </span>
-
-              {/* Pill Toggle Switch */}
+            <div
+              className={`p-0.5 sm:p-1 rounded-full flex items-center transition-all duration-300 shadow-2xs ${
+                modoDespachoUtc === 'AGREGAR'
+                  ? 'bg-[#009D4E] ring-2 ring-[#009D4E]/20'
+                  : 'bg-[#E11D48] ring-2 ring-[#E11D48]/20'
+              }`}
+            >
+              {/* Opción Agregar */}
               <button
                 type="button"
                 onClick={() => {
-                  const nextState = !isQuitarUtcToggleOn;
-                  setIsQuitarUtcToggleOn(nextState);
-                  if (nextState) {
-                    triggerToast('Modo Quitar Nómina activado. Escanea una Nómina para eliminarla de la nómina.', 'warning');
-                    playWarningSound();
-                  } else {
-                    triggerToast('Modo Quitar Nómina desactivado', 'warning');
-                  }
+                  setModoDespachoUtc('AGREGAR');
+                  triggerToast('Modo Agregar activo. Escanea una nómina excluida para incorporarla.', 'success');
+                  playSuccessSound();
                 }}
-                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors duration-300 cursor-pointer ${isQuitarUtcToggleOn ? 'bg-rose-600' : 'bg-gray-300 dark:bg-slate-700'
-                  }`}
+                className={`px-3 sm:px-3.5 py-1 rounded-full text-xs transition-all duration-300 cursor-pointer ${
+                  modoDespachoUtc === 'AGREGAR'
+                    ? 'bg-white text-[#009D4E] font-black shadow-xs'
+                    : 'text-white/90 hover:text-white font-extrabold'
+                }`}
               >
-                <div
-                  className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-300 ${isQuitarUtcToggleOn ? 'translate-x-5' : 'translate-x-0'
-                    }`}
-                />
+                Agregar
+              </button>
+
+              {/* Opción Quitar */}
+              <button
+                type="button"
+                onClick={() => {
+                  setModoDespachoUtc('QUITAR');
+                  triggerToast('Modo Quitar activo. Escanea una nómina para quitarla del despacho.', 'warning');
+                  playWarningSound();
+                }}
+                className={`px-3 sm:px-3.5 py-1 rounded-full text-xs transition-all duration-300 cursor-pointer ${
+                  modoDespachoUtc === 'QUITAR'
+                    ? 'bg-white text-[#E11D48] font-black shadow-xs'
+                    : 'text-white/90 hover:text-white font-extrabold'
+                }`}
+              >
+                Quitar
               </button>
             </div>
           )}
         </div>
 
-        {/* Subtítulo debajo de la fila principal */}
-        <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-normal text-left">
-          {stepDespacho === 1 && 'Revisa las Nóminas cargadas para este despacho.'}
-          {stepDespacho === 2 && 'Escanea el código QR del transportista para incorporar sus datos.'}
-          {stepDespacho === 3 && 'Revisión final de cantidades, insumos y transportista.'}
-        </p>
+        {/* Subtítulo debajo de la fila principal (para pasos 2 y 3) */}
+        {(stepDespacho === 2 || stepDespacho === 3) && (
+          <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium leading-normal text-left">
+            {stepDespacho === 2 && 'Escanea el código QR del transportista para incorporar sus datos.'}
+            {stepDespacho === 3 && 'Revisión final de cantidades, insumos y transportista.'}
+          </p>
+        )}
 
-        {/* Helper Rosado/Rojo Quitar Nómina DENTRO DE LA CARD */}
-        {stepDespacho === 1 && isQuitarUtcToggleOn && (
-          <div className="p-3 mt-2 bg-[#FFF0F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-800/80 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs animate-fadeIn w-full">
-            <div className="flex items-center gap-2.5">
-              <AlertCircle className="w-4 h-4 text-[#E11D48] dark:text-rose-400 shrink-0 stroke-[2.2]" />
-              <p className="text-xs text-[#E11D48] dark:text-rose-300 font-sans font-medium leading-tight">
-                <strong className="font-bold">Quitar Nómina activo:</strong> Al escanear las Nóminas, estas se eliminarán de la nómina de despacho.
-              </p>
-            </div>
+        {/* Helper Informativo Quitar Nómina DENTRO DE LA CARD */}
+        {stepDespacho === 1 && modoDespachoUtc === 'QUITAR' && (
+          <div className="p-3 mt-2 bg-[#FFF0F2] dark:bg-rose-950/40 border border-[#FECDD3] dark:border-rose-800/80 rounded-xl flex items-center gap-2.5 text-xs animate-fadeIn w-full">
+            <ScanBarcode className="w-4 h-4 text-[#E11D48] dark:text-rose-400 shrink-0 stroke-[2.2]" />
+            <p className="text-xs text-[#E11D48] dark:text-rose-300 font-sans font-medium leading-tight">
+              <strong className="font-bold">Quitar Nómina activo:</strong> Escanea una nómina para quitarla del despacho.
+            </p>
+          </div>
+        )}
 
-            <button
-              type="button"
-              onClick={handleSimulateScanUtcRemoval}
-              className="px-3 py-1.5 bg-[#E11D48] hover:bg-[#BE123C] active:scale-[0.97] text-white font-extrabold text-xs rounded-lg shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer transition-all self-end sm:self-auto"
-            >
-              <QrCode className="w-3.5 h-3.5" />
-              <span>Simular Escaneo</span>
-            </button>
+        {/* Helper Informativo Reincorporar Nómina (Modo Agregar con Nóminas Excluidas) */}
+        {stepDespacho === 1 && modoDespachoUtc === 'AGREGAR' && excluidasUtcsList.length > 0 && (
+          <div className="p-3 mt-2 bg-[#EEFBF4] dark:bg-emerald-950/40 border border-[#A7F3D0] dark:border-emerald-800/80 rounded-xl flex items-center gap-2.5 text-xs animate-fadeIn w-full">
+            <ScanBarcode className="w-4 h-4 text-[#009D4E] dark:text-emerald-400 shrink-0 stroke-[2.2]" />
+            <p className="text-xs text-[#007A3D] dark:text-emerald-300 font-sans font-medium leading-tight">
+              Escanea una nómina excluida para volver a agregarla al despacho.
+            </p>
           </div>
         )}
       </div>
@@ -1117,57 +1176,89 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
         {/* ── STEP 1: RESUMEN DE UTCS ── */}
         {stepDespacho === 1 && (
-          <div className="space-y-3">
-            {/* Header del bloque de UTCs */}
-            <div className="flex items-center justify-between px-1 shrink-0">
-              <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text2 uppercase tracking-wider">
-                Contenido de la Nómina
-              </span>
-              <span className="text-xs font-extrabold text-gray-600 dark:text-hub-text2 font-sans">
-                Nóminas Agregadas ({despachoUtcsList.length})
-              </span>
-            </div>
+          <div className="space-y-4">
+            {/* 1. SECCIÓN: NÓMINAS EN DESPACHO */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between px-1 shrink-0">
+                <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text2 uppercase tracking-wider">
+                  Contenido de la Nómina
+                </span>
+                <span className="text-xs font-extrabold text-[#009D4E] dark:text-emerald-400 font-sans">
+                  En Despacho ({despachoUtcsList.length})
+                </span>
+              </div>
 
-            {/* Contenedor de Tarjetas de UTC con Alto Ajustado para Mostrar 2.5 Tarjetas */}
-            <div className="max-h-[290px] sm:max-h-[300px] overflow-y-auto no-scrollbar pr-1">
-              {despachoUtcsList.length === 0 ? (
-                <div className="py-12 text-center border-2 border-dashed border-gray-200 dark:border-hub-border rounded-3xl">
-                  <p className="text-xs text-gray-400 font-medium">
-                    No quedan nóminas en este despacho.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {despachoUtcsList.map((utc, index) => {
+              <div className="space-y-2.5">
+                {despachoUtcsList.length === 0 ? (
+                  <div className="py-8 text-center border-2 border-dashed border-gray-200 dark:border-hub-border rounded-2xl bg-gray-50/50 dark:bg-slate-800/20">
+                    <p className="text-xs text-gray-400 font-medium">
+                      No hay nóminas asignadas a este despacho.
+                    </p>
+                    {excluidasUtcsList.length > 0 && (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold mt-1">
+                        Puedes reincorporar las nóminas excluidas abajo.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  despachoUtcsList.map((utc, index) => {
                     const isBeingRemoved = removingUtcId === utc.id;
                     return (
                       <div
                         key={utc.id}
                         id={`utc-card-${utc.id}`}
-                        className={`border rounded-2xl p-3.5 shadow-2xs font-sans transition-all duration-300 flex flex-col justify-between ${isBeingRemoved
-                          ? 'bg-rose-100 dark:bg-rose-950/80 border-rose-500 text-rose-800 scale-[0.98] ring-2 ring-rose-400/80 animate-pulse'
-                          : 'bg-white dark:bg-slate-800/90 border-gray-200/90 dark:border-slate-700/80 hover:border-emerald-400 dark:hover:border-emerald-600'
-                          }`}
+                        onClick={() => {
+                          if (isQuitarUtcToggleOn && !isBeingRemoved) {
+                            handleRemoveUtcFromDespacho(utc.id);
+                          }
+                        }}
+                        className={`border rounded-2xl p-3.5 shadow-2xs font-sans transition-all duration-300 flex flex-col justify-between ${
+                          isBeingRemoved
+                            ? 'bg-rose-100 dark:bg-rose-950/80 border-rose-500 text-rose-800 scale-[0.98] ring-2 ring-rose-400/80 animate-pulse'
+                            : isQuitarUtcToggleOn
+                            ? 'bg-white dark:bg-slate-800/90 border-gray-200/90 dark:border-slate-700/80 hover:border-rose-400 hover:ring-1 hover:ring-rose-300 cursor-pointer'
+                            : 'bg-white dark:bg-slate-800/90 border-gray-200/90 dark:border-slate-700/80'
+                        }`}
                       >
                         {/* Cabecera Tarjeta (Fila 1): Título, ID Carga y Badge */}
                         <div className="flex items-center justify-between pb-2.5 border-b border-gray-100 dark:border-slate-700/60">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${isBeingRemoved ? 'bg-rose-600 animate-ping' : 'bg-purple-600'
-                              }`} />
+                            <span
+                              className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${
+                                isBeingRemoved ? 'bg-rose-600 animate-ping' : 'bg-purple-600'
+                              }`}
+                            />
                             <h4 className="text-sm font-extrabold text-[#303030] dark:text-hub-text1 font-sans shrink-0">
                               Nómina {String(index + 1).padStart(2, '0')}
                             </h4>
+                            <span className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 truncate">
+                              {utc.codigoEncargo}
+                            </span>
                           </div>
 
-                          {isBeingRemoved ? (
-                            <span className="px-2.5 py-0.5 bg-rose-600 text-white text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0 animate-bounce">
-                              Eliminando... <Trash2 className="w-3 h-3 stroke-[2.5]" />
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0">
-                              Asignada <Check className="w-3 h-3 stroke-[2.5]" />
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {isBeingRemoved ? (
+                              <span className="px-2.5 py-0.5 bg-rose-600 text-white text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0 animate-bounce">
+                                Excluyendo... <Trash2 className="w-3 h-3 stroke-[2.5]" />
+                              </span>
+                            ) : isQuitarUtcToggleOn ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveUtcFromDespacho(utc.id);
+                                }}
+                                className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 active:scale-95 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-300 text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0 transition-all cursor-pointer"
+                              >
+                                <Minus className="w-3 h-3 stroke-[3]" />
+                                <span>Quitar</span>
+                              </button>
+                            ) : (
+                              <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[#009D4E] dark:text-emerald-300 text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0">
+                                Asignada <Check className="w-3 h-3 stroke-[2.5]" />
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Cuerpo Tarjeta: Fila 2 (Cargas) y Fila 3 (Insumos) */}
@@ -1208,10 +1299,81 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
                         </div>
                       </div>
                     );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* 2. SECCIÓN: NÓMINAS EXCLUIDAS / FUERA DE DESPACHO */}
+            {excluidasUtcsList.length > 0 && (
+              <div className="space-y-2.5 pt-3 border-t border-dashed border-gray-200 dark:border-slate-700/80 animate-fadeIn">
+                <div className="flex items-center justify-between px-1 shrink-0">
+                  <span className="text-[11px] font-bold text-gray-400 dark:text-hub-text2 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-gray-400" />
+                    Nóminas Excluidas ({excluidasUtcsList.length})
+                  </span>
+                  <span className="text-[11px] text-gray-400 dark:text-hub-text3 font-medium">
+                    No suben a este despacho
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {excluidasUtcsList.map((utc) => {
+                    const isBeingReincorporated = reincorporatingUtcId === utc.id;
+                    return (
+                      <div
+                        key={utc.id}
+                        id={`utc-excluded-${utc.id}`}
+                        onClick={() => {
+                          if (!isBeingReincorporated) {
+                            handleReincorporarUtcAlDespacho(utc.id);
+                          }
+                        }}
+                        className={`border border-dashed rounded-2xl p-3.5 shadow-2xs font-sans transition-all duration-300 flex flex-col justify-between bg-gray-50/80 dark:bg-slate-900/40 border-gray-300 dark:border-slate-700 text-gray-500 hover:border-emerald-400 dark:hover:border-emerald-500 cursor-pointer ${
+                          isBeingReincorporated
+                            ? 'ring-2 ring-emerald-500/80 scale-[0.98] bg-emerald-50 dark:bg-emerald-950/60 animate-pulse'
+                            : ''
+                        }`}
+                      >
+                        {/* Cabecera Tarjeta: Título, ID Carga y Botón Reincorporar */}
+                        <div className="flex items-center justify-between pb-2 border-b border-gray-200/60 dark:border-slate-800">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-gray-300 dark:bg-slate-600" />
+                            <h4 className="text-sm font-extrabold text-gray-600 dark:text-slate-300 font-sans shrink-0">
+                              {utc.codigoEncargo}
+                            </h4>
+                            <span className="text-[10px] font-mono text-gray-400 dark:text-slate-500">
+                              (Excluida)
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleReincorporarUtcAlDespacho(utc.id);
+                            }}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[11px] font-extrabold rounded-full flex items-center gap-1 shadow-2xs shrink-0 transition-all cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3 stroke-[3]" />
+                            <span>Reincorporar</span>
+                          </button>
+                        </div>
+
+                        {/* Detalle resumido */}
+                        <div className="pt-2 flex items-center gap-2 text-xs text-gray-400 dark:text-slate-500">
+                          <span className="text-[11px]">20 Contenedoras</span>
+                          <span>•</span>
+                          <span className="text-[11px]">50 Encargos</span>
+                          <span>•</span>
+                          <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">Quedará en rampa/piso</span>
+                        </div>
+                      </div>
+                    );
                   })}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

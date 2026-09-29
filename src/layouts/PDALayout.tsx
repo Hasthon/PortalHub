@@ -109,9 +109,11 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                   ? 'Encasillado y Clasificación'
                   : activeModule === 'nominacion'
                     ? 'Nominación y Despacho'
-                    : activeModule === 'escaneo'
-                      ? 'Escaneo General'
-                      : 'Módulo Operativo'}
+                    : activeModule === 'recepcion'
+                      ? 'Recepción'
+                      : activeModule === 'escaneo'
+                        ? 'Escaneo General'
+                        : 'Módulo Operativo'}
               </span>
             </nav>
           </div>

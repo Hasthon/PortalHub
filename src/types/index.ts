@@ -74,4 +74,60 @@ export interface EncargoNominado {
   codigoOF9?: string;
 }
 
-export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion';
+export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion' | 'recepcion';
+
+// --- TIPOS PARA EL MÓDULO DE RECEPCIÓN ---
+
+export type TipoContenedor = 'ENCARGO' | 'BINS' | 'VALIJA' | 'PALLET' | 'JAULA';
+
+export type EstadoNomina = 'EN_TRANSITO' | 'TERMINAL' | 'DESPACHADA' | 'EMITIDA';
+
+export type EstadoEncargo =
+  | 'NORMAL'
+  | 'DEVOLUCION'
+  | 'REDIMENSIONADA'
+  | 'FALTA_REDIMENSIONAR';
+
+export type PrioridadSemaforo = 'P1_ATRASADO' | 'P2_A_TIEMPO' | 'P3_ADELANTADO';
+
+export type ModoRecepcion = 'CON_INTEGRIDAD' | 'SIN_INTEGRIDAD';
+
+export interface EncargoRecepcion {
+  id: string;
+  codigoOF: string;
+  codigoBarras: string;
+  estado: EstadoEncargo;
+  prioridad?: PrioridadSemaforo;
+  esUltimaMilla: boolean;
+  recepcionado: boolean;
+  recepcionadoAt?: string;
+  nominaId: string;
+}
+
+export interface NominaContenedora {
+  id: string;
+  codigo: string;
+  tipo: TipoContenedor;
+  estado: EstadoNomina;
+  totalEncargos: number;
+  encargosRecepcionados: number;
+  encargos: EncargoRecepcion[];
+  scannedAt: string;
+}
+
+export interface RecepcionSession {
+  ubicacionCodigo: string;
+  ubicacionNombre: string;
+  modoRecepcion: ModoRecepcion;
+  nominasActivas: NominaContenedora[];
+}
+
+export interface TrazabilidadEvento {
+  id: string;
+  ubicacion: string;
+  of: string;
+  fecha: string;
+  evento: string;
+  usuario: string;
+  detalle: string;
+}

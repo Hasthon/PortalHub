@@ -6,6 +6,7 @@ import { PDALayout } from './layouts/PDALayout';
 import { ScanModule } from './components/ScanModule';
 import { EncasilladoModule } from './components/EncasilladoModule';
 import { NominacionDespachoModule } from './components/NominacionDespachoModule';
+import { RecepcionModule } from './components/RecepcionModule';
 import { HomeModule } from './components/HomeModule';
 import { LoginModule } from './components/LoginModule';
 import { ConfiguracionModule } from './components/ConfiguracionModule';
@@ -68,6 +69,13 @@ const MainApp: React.FC = () => {
       case 'nominacion':
         return (
           <NominacionDespachoModule
+            onRegisterBackHandler={handleRegisterBackHandler}
+            onBackHome={() => setActiveModule('home')}
+          />
+        );
+      case 'recepcion':
+        return (
+          <RecepcionModule
             onRegisterBackHandler={handleRegisterBackHandler}
             onBackHome={() => setActiveModule('home')}
           />

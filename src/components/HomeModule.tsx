@@ -5,6 +5,7 @@ import {
   Layers,
   Truck,
   ChevronRight,
+  PackageCheck,
 } from 'lucide-react';
 
 interface HomeModuleProps {
@@ -38,6 +39,15 @@ const MODULES_LIST: ModuleCardDef[] = [
     description: 'Escanear estación QR, clasificar cargas por pasillo (Azul, Rojo, Verde) y validar bultos.',
     icon: Layers,
     accentColor: 'from-blue-600 to-indigo-700',
+    badgeText: 'OPERATIVO',
+  },
+  {
+    id: 'recepcion',
+    title: 'Recepción',
+    subtitle: '',
+    description: 'Recepcionar nóminas contenedoras (Bins, Valija, Pallet, Jaula), validar encargos y cuadrar recepciones.',
+    icon: PackageCheck,
+    accentColor: 'from-amber-500 to-orange-600',
     badgeText: 'OPERATIVO',
   },
 ];

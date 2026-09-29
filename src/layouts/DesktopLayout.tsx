@@ -11,6 +11,7 @@ import {
   Settings,
   Sun,
   Moon,
+  PackageCheck,
 } from 'lucide-react';
 
 interface DesktopLayoutProps {
@@ -80,7 +81,7 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 <span>PORTAL HUBS</span>
                 <span>/</span>
                 <span className={`font-extrabold ${isDark ? 'text-emerald-400' : 'text-[#00E676]'}`}>
-                  {activeModule === 'home' ? 'MENÚ PRINCIPAL' : activeModule === 'encasillado' ? 'ENCASILLADO' : activeModule === 'nominacion' ? 'NOMINACIÓN Y DESPACHO' : activeModule === 'escaneo' ? 'LECTURA DE ENCARGOS' : activeModule === 'configuracion' ? 'CONFIGURACIÓN' : activeModule.toUpperCase()}
+                  {activeModule === 'home' ? 'MENÚ PRINCIPAL' : activeModule === 'encasillado' ? 'ENCASILLADO' : activeModule === 'nominacion' ? 'NOMINACIÓN Y DESPACHO' : activeModule === 'recepcion' ? 'RECEPCIÓN' : activeModule === 'escaneo' ? 'LECTURA DE ENCARGOS' : activeModule === 'configuracion' ? 'CONFIGURACIÓN' : activeModule.toUpperCase()}
                 </span>
               </nav>
               <h2 className={`text-base sm:text-lg font-bold leading-tight truncate ${isDark ? 'text-hub-text1' : 'text-white'
@@ -91,11 +92,13 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     ? 'Módulo de Encasillado y Clasificación'
                     : activeModule === 'nominacion'
                       ? 'Módulo de Nominación y Despacho'
-                      : activeModule === 'escaneo'
-                        ? 'Módulo de Lectura de Encargos'
-                        : activeModule === 'configuracion'
-                          ? 'Configuración del Sistema'
-                          : `Módulo ${activeModule}`}
+                      : activeModule === 'recepcion'
+                        ? 'Módulo de Recepción'
+                        : activeModule === 'escaneo'
+                          ? 'Módulo de Lectura de Encargos'
+                          : activeModule === 'configuracion'
+                            ? 'Configuración del Sistema'
+                            : `Módulo ${activeModule}`}
               </h2>
             </div>
           </div>
@@ -179,6 +182,28 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     : 'text-emerald-400'
                 }`} />
               <span>Nominación y Despacho</span>
+            </button>
+
+            {/* Módulo de Recepción */}
+            <button
+              type="button"
+              onClick={() => onSelectModule?.('recepcion')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${activeModule === 'recepcion'
+                  ? isDark
+                    ? 'bg-[#03F77C]/15 text-[#03F77C] border border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'bg-[#009D4E] text-white border border-[#00E676]/70 font-black shadow-md ring-2 ring-[#00E676]/25'
+                  : isDark
+                    ? 'text-gray-300 border border-transparent hover:bg-[#03F77C]/10 hover:text-[#03F77C] hover:border-[#03F77C]/30 font-semibold'
+                    : 'text-gray-300 border border-transparent hover:bg-white/10 hover:text-white font-medium'
+                }`}
+            >
+              <PackageCheck className={`w-4 h-4 ${isDark
+                  ? 'text-[#03F77C]'
+                  : activeModule === 'recepcion'
+                    ? 'text-white'
+                    : 'text-emerald-400'
+                }`} />
+              <span>Recepción</span>
             </button>
 
             <div className={`pt-3 mt-2 border-t ${isDark ? 'border-hub-border' : 'border-[#404040]'}`}>
@@ -290,10 +315,12 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
         </aside>
 
         {/* Main Content Area (Costado Derecho con fondo ultra clarito #FAFDFC) */}
-        <main className="flex-1 overflow-y-auto p-6 w-full bg-[#FAFDFC] dark:bg-hub-base">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+        <main className="flex-1 overflow-y-auto w-full bg-[#FAFDFC] dark:bg-hub-base flex flex-col">
+          {activeModule === 'nominacion' || activeModule === 'recepcion' ? (
+            <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
+          ) : (
+            <div className="p-6"><div className="max-w-7xl mx-auto">{children}</div></div>
+          )}
         </main>
       </div>
     </div>
