@@ -1887,7 +1887,11 @@ const DerivarIncidenciasModal: React.FC<DerivarIncidenciasModalProps> = ({
                 type="button"
                 disabled={valijasActivadas.length === 0}
                 onClick={() => setPaso('SCAN_CONTENEDOR')}
-                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#009D4E] hover:bg-[#008743] disabled:bg-gray-200 dark:disabled:bg-hub-elevated disabled:text-gray-400 dark:disabled:text-hub-text3 disabled:cursor-not-allowed text-white font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
+                className={`flex-1 py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 ${
+                  valijasActivadas.length === 0
+                    ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed shadow-none'
+                    : 'bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer'
+                }`}
               >
                 <span>Continuar</span>
               </button>
@@ -1988,7 +1992,7 @@ const DerivarIncidenciasModal: React.FC<DerivarIncidenciasModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#009D4E] hover:bg-[#008743] text-white font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center"
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center"
             >
               Aceptar
             </button>
@@ -2295,7 +2299,7 @@ const CierreRecepcionModal: React.FC<CierreRecepcionModalProps> = ({
               <button
                 type="button"
                 onClick={onNuevaRecepcion}
-                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#009D4E] hover:bg-[#008743] dark:bg-[#03F77C] dark:hover:bg-[#02D66B] text-white dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
+                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] active:bg-black dark:bg-[#03F77C] dark:hover:bg-[#02D66B] text-white dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Nueva recepción</span>
