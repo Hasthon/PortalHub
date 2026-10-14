@@ -316,7 +316,7 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
         {/* Main Content Area (Costado Derecho con fondo ultra clarito #FAFDFC) */}
         <main className="flex-1 overflow-y-auto w-full bg-[#FAFDFC] dark:bg-hub-base flex flex-col">
-          {activeModule === 'nominacion' || activeModule === 'recepcion' ? (
+          {activeModule === 'nominacion' || activeModule === 'recepcion' || activeModule === 'encasillado' ? (
             <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
           ) : (
             <div className="p-6"><div className="max-w-7xl mx-auto">{children}</div></div>

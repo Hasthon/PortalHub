@@ -22,9 +22,27 @@ const MainApp: React.FC = () => {
   });
   const [activeModule, setActiveModule] = useState<ActiveModule>('home');
   const backHandlerRef = useRef<(() => void) | null>(null);
+  const navigationGuardRef = useRef<((targetModule: ActiveModule) => boolean) | null>(null);
 
   const handleRegisterBackHandler = (handler: (() => void) | null) => {
     backHandlerRef.current = handler;
+  };
+
+  const handleRegisterNavigationGuard = (guard: ((targetModule: ActiveModule) => boolean) | null) => {
+    navigationGuardRef.current = guard;
+  };
+
+  const handleSelectModule = (target: ActiveModule) => {
+    if (target === activeModule) return;
+    if (navigationGuardRef.current) {
+      const canProceed = navigationGuardRef.current(target);
+      if (!canProceed) return; // Guard blocked navigation (e.g., opened confirmation modal)
+    }
+    setActiveModule(target);
+  };
+
+  const handleForceNavigate = (target: ActiveModule) => {
+    setActiveModule(target);
   };
 
   const handleLoginSuccess = (opData: { name: string; rut: string; id: string }) => {
@@ -42,7 +60,7 @@ const MainApp: React.FC = () => {
     if (backHandlerRef.current) {
       backHandlerRef.current();
     } else {
-      setActiveModule('home');
+      handleSelectModule('home');
     }
   };
 
@@ -63,21 +81,28 @@ const MainApp: React.FC = () => {
   const renderModuleContent = () => {
     switch (activeModule) {
       case 'home':
-        return <HomeModule onSelectModule={setActiveModule} />;
+        return <HomeModule onSelectModule={handleSelectModule} />;
       case 'encasillado':
-        return <EncasilladoModule />;
+        return (
+          <EncasilladoModule
+            onRegisterBackHandler={handleRegisterBackHandler}
+            onRegisterNavigationGuard={handleRegisterNavigationGuard}
+            onNavigateModule={handleForceNavigate}
+            onBackHome={() => handleSelectModule('home')}
+          />
+        );
       case 'nominacion':
         return (
           <NominacionDespachoModule
             onRegisterBackHandler={handleRegisterBackHandler}
-            onBackHome={() => setActiveModule('home')}
+            onBackHome={() => handleSelectModule('home')}
           />
         );
       case 'recepcion':
         return (
           <RecepcionModule
             onRegisterBackHandler={handleRegisterBackHandler}
-            onBackHome={() => setActiveModule('home')}
+            onBackHome={() => handleSelectModule('home')}
           />
         );
       case 'escaneo':
@@ -91,7 +116,7 @@ const MainApp: React.FC = () => {
           />
         );
       default:
-        return <HomeModule onSelectModule={setActiveModule} />;
+        return <HomeModule onSelectModule={handleSelectModule} />;
     }
   };
 
@@ -99,7 +124,7 @@ const MainApp: React.FC = () => {
     return (
       <PDALayout
         activeModule={activeModule}
-        onSelectModule={setActiveModule}
+        onSelectModule={handleSelectModule}
         onBack={handleGlobalBack}
         isAuthenticated={isAuthenticated}
         onLogout={handleLogout}
@@ -115,7 +140,7 @@ const MainApp: React.FC = () => {
   return (
     <DesktopLayout
       activeModule={activeModule}
-      onSelectModule={setActiveModule}
+      onSelectModule={handleSelectModule}
       isAuthenticated={isAuthenticated}
       onLogout={handleLogout}
       operatorName={operator.name}
