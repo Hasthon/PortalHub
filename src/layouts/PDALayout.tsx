@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
-import { Scan, MapPin, ArrowLeft, ChevronRight, Menu, User, LockKeyholeOpen, Settings, LogOut, X, Sun, Moon } from 'lucide-react';
+import { Scan, MapPin, ArrowLeft, Menu, User, LockKeyholeOpen, Settings, LogOut, X, Sun, Moon } from 'lucide-react';
 
 interface PDALayoutProps {
   children: React.ReactNode;
@@ -42,69 +42,64 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
       {/* Outer frame container */}
       <div className="w-full h-[100dvh] md:max-w-[440px] md:h-[840px] bg-[#FAFDFC] dark:bg-hub-base border-0 md:border-8 md:border-slate-800 rounded-none md:rounded-[36px] shadow-none md:shadow-2xl flex flex-col overflow-hidden relative">
 
-        {/* Top Status Bar (Fondo #303030) */}
-        <header className="bg-[#303030] dark:bg-hub-surface border-b border-gray-800 dark:border-hub-border px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-emerald-500/20 dark:bg-emerald-500/15 border border-emerald-500/30 dark:border-emerald-500/40 rounded-xl flex items-center justify-center text-[#009D4E] dark:text-hub-accent">
-              <Scan className="w-4 h-4 text-[#009D4E] dark:text-hub-accent stroke-[2.5]" />
+        {/* Top Status Bar (Fondo #303030) - Solo visible en el menú principal */}
+        {activeModule === 'home' && (
+          <header className="h-[52px] bg-[#303030] dark:bg-hub-surface border-b border-gray-800 dark:border-hub-border px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-emerald-500/20 dark:bg-emerald-500/15 border border-emerald-500/30 dark:border-emerald-500/40 rounded-xl flex items-center justify-center text-[#009D4E] dark:text-hub-accent">
+                <Scan className="w-4 h-4 text-[#009D4E] dark:text-hub-accent stroke-[2.5]" />
+              </div>
+              <div>
+                <span className="text-sm font-extrabold tracking-tight text-white flex items-center gap-1 leading-none">
+                  <span className="text-white">Portal</span>
+                  <span className="text-[#009D4E] dark:text-hub-accent">Hubs</span>
+                </span>
+                <span className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 block leading-tight">Plataforma Mantenedor</span>
+              </div>
             </div>
-            <div>
-              <span className="text-sm font-extrabold tracking-tight text-white flex items-center gap-1 leading-none">
-                <span className="text-white">Portal</span>
-                <span className="text-[#009D4E] dark:text-hub-accent">Hubs</span>
-              </span>
-              <span className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 block leading-tight">Plataforma Mantenedor</span>
-            </div>
-          </div>
 
-          {/* Botones a la Derecha: Toggle Tema Rápido + Menú Hamburguesa */}
-          {isAuthenticated && (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
-                title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-              >
-                {isDark ? (
-                  <Sun className="w-4 h-4 text-amber-400 stroke-[2.2]" />
-                ) : (
-                  <Moon className="w-4 h-4 text-slate-200 stroke-[2.2]" />
-                )}
-              </button>
+            {/* Botones a la Derecha: Toggle Tema Rápido + Menú Hamburguesa */}
+            {isAuthenticated && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
+                  title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                >
+                  {isDark ? (
+                    <Sun className="w-4 h-4 text-amber-400 stroke-[2.2]" />
+                  ) : (
+                    <Moon className="w-4 h-4 text-slate-200 stroke-[2.2]" />
+                  )}
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
-                title="Menú de Opciones"
-              >
-                <Menu className="w-4.5 h-4.5 text-white stroke-[2.2]" />
-              </button>
-            </div>
-          )}
-        </header>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
+                  title="Menú de Opciones"
+                >
+                  <Menu className="w-4.5 h-4.5 text-white stroke-[2.2]" />
+                </button>
+              </div>
+            )}
+          </header>
+        )}
 
-        {/* Sub-Header: Flecha Atrás + Migajas de Pan (Fondo Blanco) */}
+        {/* Sub-Header: Flecha Atrás + Migajas de Pan (Misma altura h-[52px] y estilo que el Header) + Menú Hamburguesa */}
         {activeModule !== 'home' && (
-          <div className="bg-white dark:bg-hub-surface border-b border-gray-200 dark:border-hub-border px-3 py-2 flex items-center gap-2.5 shrink-0 shadow-2xs">
-            <button
-              onClick={handleBack}
-              className="w-7 h-7 rounded-xl bg-gray-100 dark:bg-hub-elevated hover:bg-gray-200 dark:hover:bg-hub-elevated flex items-center justify-center text-[#414745] dark:text-hub-text1 transition-all active:scale-95 shrink-0"
-              title="Volver atrás"
-            >
-              <ArrowLeft className="w-4 h-4 text-[#414745] dark:text-hub-text1 stroke-[2.2]" />
-            </button>
-
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 min-w-0 text-xs font-sans">
+          <div className="h-[52px] bg-[#303030] dark:bg-hub-surface border-b border-gray-800 dark:border-hub-border px-3.5 py-2.5 flex items-center justify-between gap-2.5 shrink-0 shadow-xs">
+            <div className="flex items-center gap-2.5 min-w-0">
               <button
-                onClick={() => onSelectModule?.('home')}
-                className="text-gray-400 dark:text-hub-text3 hover:text-gray-600 dark:hover:text-slate-300 font-medium shrink-0 transition-colors"
+                onClick={handleBack}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition-all active:scale-95 shrink-0"
+                title="Volver atrás"
               >
-                Inicio
+                <ArrowLeft className="w-4 h-4 text-white stroke-[2.2]" />
               </button>
-              <ChevronRight className="w-3.5 h-3.5 text-gray-300 dark:text-slate-600 shrink-0 stroke-[2.2]" />
-              <span className="font-bold text-[#414745] dark:text-hub-text1 truncate tracking-tight">
+
+              <h1 className="text-sm font-bold text-white truncate tracking-tight">
                 {activeModule === 'encasillado'
                   ? 'Encasillado y Clasificación'
                   : activeModule === 'nominacion'
@@ -114,8 +109,20 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                       : activeModule === 'escaneo'
                         ? 'Escaneo General'
                         : 'Módulo Operativo'}
-              </span>
-            </nav>
+              </h1>
+            </div>
+
+            {/* Menú Hamburguesa integrado en la barra de migajas de pan */}
+            {isAuthenticated && (
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition-all active:scale-95 shrink-0 ml-auto"
+                title="Menú de Opciones"
+              >
+                <Menu className="w-4.5 h-4.5 text-white stroke-[2.2]" />
+              </button>
+            )}
           </div>
         )}
 

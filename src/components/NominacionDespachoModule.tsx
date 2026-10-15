@@ -251,14 +251,14 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
   // Dynamic back navigation handler for header back arrow button
   useEffect(() => {
     const handleBack = () => {
-      if ((step === 'NOMINACION_PROCESS' || step === 'DESPACHO_FLOW') && encargosNominados.length > 0) {
-        setIsExitConfirmationModalOpen(true);
-      } else if (step === 'DESPACHO_FLOW') {
+      if (step === 'DESPACHO_FLOW') {
         if (stepDespacho > 1) {
           setStepDespacho((prev) => (prev - 1) as 1 | 2 | 3);
         } else {
           setStep('NOMINACION_PROCESS');
         }
+      } else if (step === 'NOMINACION_PROCESS' && encargosNominados.length > 0) {
+        setIsExitConfirmationModalOpen(true);
       } else if (step === 'NOMINACION_PROCESS') {
         setStep('RAMPA_SELECTION');
       } else if (isLocationScanned) {

@@ -17,7 +17,6 @@ import {
   Check,
   AlertTriangle,
   RotateCcw,
-  Sparkles,
   Layers,
   PackageCheck,
   Trash2,
@@ -33,13 +32,6 @@ export type EncasilladoPhase =
   | 'FASE_PASILLO_COMPLETO'      // Fase 2.4: Pasillo actual finalizado
   | 'FASE_RESUMEN_FINAL';        // Fase 2.5: Todos los pasillos completados con éxito
 
-interface ToastMessage {
-  id: number;
-  text: string;
-  type: 'success' | 'error' | 'warning';
-  codeScanned?: string;
-  rampaName?: string;
-}
 
 export interface RampaPutawayState {
   rampaId: string; // ej: "Rampa 24" o "Rampa 04"
@@ -150,40 +142,16 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
     status: 'waiting' | 'approved';
   } | null>(null);
 
-  // ─── Toast y Notificaciones ───────────────────────────────────────────────
-  const [toast, setToast] = useState<ToastMessage | null>(null);
-  const [isToastLeaving, setIsToastLeaving] = useState(false);
-  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // ─── Notificaciones (Desactivadas en este módulo) ──────────────────────────
   const highlightTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pasilloTimerRef = useRef<NodeJS.Timeout | null>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDismissToast = useCallback(() => {
-    setIsToastLeaving(true);
-    setTimeout(() => {
-      setToast(null);
-      setIsToastLeaving(false);
-    }, 280);
-  }, []);
-
   const triggerToast = useCallback(
-    (text: string, type: 'success' | 'error' | 'warning', codeScanned?: string, rampaName?: string) => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      setIsToastLeaving(false);
-
-      setToast({
-        id: Date.now(),
-        text,
-        type,
-        codeScanned,
-        rampaName,
-      });
-
-      toastTimerRef.current = setTimeout(() => {
-        handleDismissToast();
-      }, 3600);
+    (_text?: string, _type?: 'success' | 'error' | 'warning', _codeScanned?: string, _rampaName?: string) => {
+      // Notificaciones flotantes eliminadas en este módulo a solicitud del usuario
     },
-    [handleDismissToast]
+    []
   );
 
   // ─── Indicador de Progreso No Consolidado (Para Guard de Navegación) ──────
@@ -205,11 +173,20 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
   // ─── Registro de Guard de Navegación y Botón Atrás ────────────────────────
   useEffect(() => {
     const handleBack = () => {
+      // 1. Si está depositando en una rampa específica dentro del Step 2, vuelve a la lista de rampas
+      if (activeTargetRampaId !== null) {
+        setActiveTargetRampaId(null);
+        return;
+      }
+      // 2. Si está en Step 2 (o fase posterior), vuelve a la pantalla anterior (Step 1: Clasificación)
+      if (phase !== 'FASE_CLASIFICACION') {
+        setPhase('FASE_CLASIFICACION');
+        return;
+      }
+      // 3. Si está en Step 1 y tiene bultos clasificados, advertir antes de salir al menú
       if (hasUnsavedProgress) {
         setPendingExitTarget('home');
         setIsExitConfirmationModalOpen(true);
-      } else if (phase !== 'FASE_CLASIFICACION') {
-        setPhase('FASE_CLASIFICACION');
       } else {
         onBackHome?.();
       }
@@ -217,7 +194,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
 
     onRegisterBackHandler?.(handleBack);
     return () => onRegisterBackHandler?.(null);
-  }, [hasUnsavedProgress, phase, onBackHome, onRegisterBackHandler]);
+  }, [hasUnsavedProgress, phase, activeTargetRampaId, onBackHome, onRegisterBackHandler]);
 
   useEffect(() => {
     const guard = (targetModule: ActiveModule): boolean => {
@@ -449,7 +426,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
     setPhase('FASE_VALIDAR_UBICACION');
     playSuccessSound();
     triggerToast(
-      `Lote consolidado (${encargosList.length} bultos). Escanea el QR del pasillo para iniciar guardado.`,
+      `Lote consolidado: ${encargosList.length} bultos`,
       'success'
     );
   };
@@ -653,7 +630,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
     const remainingPending = currentBatch.pendingItems.filter((i) => !isThisRampa(i));
     const remainingDeposited = currentBatch.depositedItems.filter((i) => !isThisRampa(i));
 
-    // Actualizar lote del pasillo activo
+    // Actualizar lote del pasillo activo contabilizando las incidencias de los encargos limpiados
     setAisleBatches((prev) => {
       const cur = prev[activePutawayAisle];
       const newTotal = Math.max(0, cur.total - totalInRampa);
@@ -666,6 +643,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
           pendingItems: remainingPending,
           depositedItems: remainingDeposited,
           isCompleted: isFinished,
+          incidencias: (cur.incidencias || 0) + totalInRampa,
         },
       };
     });
@@ -764,44 +742,19 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
     return (
       <div
         key={item.id}
-        className={`p-3 rounded-2xl border transition-all duration-300 flex items-center justify-between gap-3 text-xs font-mono shadow-2xs ${
+        className={`h-[35px] px-2.5 rounded-xl border transition-all duration-300 flex items-center justify-between gap-2 text-xs font-mono shadow-2xs shrink-0 ${
           isLatest
             ? 'bg-[#EEFBF4] dark:bg-emerald-950/80 border-[#A7F3D0] dark:border-emerald-700/80 ring-2 ring-emerald-500/40 border-l-4 border-l-[#009D4E] font-bold animate-fadeIn'
             : 'bg-white dark:bg-hub-elevated/90 border-gray-200/80 dark:border-hub-border hover:border-gray-300 dark:hover:border-slate-700'
         }`}
       >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-bold text-[#414745] dark:text-hub-text1 text-xs truncate tracking-tight">
-              {item.codigoBarras26 || item.codigoEncargo}
-            </span>
-            {isLatest && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] bg-[#009D4E] text-white font-sans font-bold animate-pulse shrink-0">
-                NUEVO
-              </span>
-            )}
-          </div>
-          <div className="mt-1">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-gray-100 dark:bg-hub-surface text-gray-600 dark:text-hub-text2 border border-gray-200/90 dark:border-hub-border shrink-0">
-              OF: {item.codigoOF9 || '382104712'}
-            </span>
-          </div>
-        </div>
+        <span className="font-bold text-[#414745] dark:text-hub-text1 text-[11px] font-mono truncate tracking-tight min-w-0 flex-1">
+          {item.codigoBarras26 || item.codigoEncargo}
+        </span>
 
-        {isRemoveMode && (
-          <button
-            type="button"
-            onClick={() => {
-              setEncargosList((prev) => prev.filter((it) => it.id !== item.id));
-              triggerToast(`Encargo [${item.codigoBarras26 || item.codigoEncargo}] eliminado`, 'warning');
-              playWarningSound();
-            }}
-            className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors"
-            title="Eliminar encargo"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        )}
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9.5px] font-mono font-semibold bg-gray-100 dark:bg-hub-surface text-gray-600 dark:text-hub-text2 border border-gray-200/90 dark:border-hub-border shrink-0">
+          OF: {item.codigoOF9 || '382104712'}
+        </span>
       </div>
     );
   };
@@ -1141,48 +1094,6 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
     );
   };
 
-  // Toast flotante
-  const renderToastNotification = () => {
-    if (!toast) return null;
-    return (
-      <div
-        key={toast.id}
-        className={`fixed top-4 right-4 left-4 md:left-auto md:max-w-md z-[9999] shadow-2xl rounded-2xl p-3.5 flex items-center justify-between gap-2.5 border font-mono cursor-pointer transition-all ${
-          isToastLeaving ? 'animate-toast-slide-up' : 'animate-toast-slide-down'
-        } ${
-          toast.type === 'success'
-            ? 'bg-[#EEFBF4] dark:bg-emerald-950/90 border-[#A7F3D0] dark:border-emerald-700/80 text-[#065F46] dark:text-emerald-200'
-            : toast.type === 'warning'
-            ? 'bg-[#FFFBEB] dark:bg-amber-950/90 border-[#FDE68A] dark:border-amber-700/80 text-[#92400E] dark:text-amber-200'
-            : 'bg-[#FEF2F2] dark:bg-rose-950/90 border-[#FCA5A5] dark:border-rose-700/80 text-[#991B1B] dark:text-rose-200'
-        }`}
-        onClick={handleDismissToast}
-      >
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          {toast.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-[#059669] shrink-0 stroke-[2.2]" />
-          ) : toast.type === 'warning' ? (
-            <AlertCircle className="w-4 h-4 text-[#D97706] shrink-0 stroke-[2.2]" />
-          ) : (
-            <ShieldAlert className="w-4 h-4 text-[#DC2626] shrink-0 stroke-[2.2]" />
-          )}
-          <p className="text-xs font-bold font-mono leading-snug whitespace-normal break-words">
-            {toast.text}
-          </p>
-        </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleDismissToast();
-          }}
-          className="p-1 rounded-lg shrink-0 hover:bg-black/5 dark:hover:bg-white/10"
-          title="Cerrar notificación"
-        >
-          <X className="w-3.5 h-3.5 stroke-[2.2]" />
-        </button>
-      </div>
-    );
-  };
 
   // ═══════════════════════════════════════════════════════════════════════════
   // VISTAS DE FASE 2: DEPÓSITO FÍSICO EN PASILLOS
@@ -1294,15 +1205,36 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
             const activeTheme = getAisleTheme(activePutawayAisle);
 
             return (
-              <div className={isPda ? "flex flex-col gap-2 h-full min-h-0" : "flex flex-col gap-3 sm:gap-4 h-full min-h-0"}>
+              <div className={isPda ? "flex flex-col gap-1.5 h-full min-h-0" : "flex flex-col gap-2.5 sm:gap-3 h-full min-h-0"}>
                 {/* Master: Selector de Pasillos (Tabs en PDA, Fila de Cards en Desktop) */}
                 {isPda ? (
-                  <div className="grid grid-cols-3 gap-1.5 shrink-0">
+                  <div className="grid grid-cols-3 gap-1.5 mb-1.5 shrink-0">
                     {(['AZUL', 'ROJO', 'VERDE'] as PasilloType[]).map((pKey) => {
                       const b = aisleBatches[pKey];
-                      const theme = getAisleTheme(pKey);
                       const isSelected = pKey === activePutawayAisle;
                       const isOtherAisleLocked = isDepositing && !isSelected;
+
+                      // Estilos Opción 3: Pasillos listos descansan en gris neutro con check verde
+                      const getPdaAisleStyles = () => {
+                        if (isOtherAisleLocked) {
+                          return 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-hub-surface/40 border-gray-200 dark:border-hub-border text-gray-400';
+                        }
+                        if (b.isCompleted) {
+                          return isSelected
+                            ? 'bg-gray-100 dark:bg-slate-800 border-2 border-gray-400 text-gray-700 dark:text-gray-200 font-bold'
+                            : 'bg-gray-100/90 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400';
+                        }
+                        if (isSelected) {
+                          if (pKey === 'AZUL') {
+                            return 'bg-[#EFF6FF] border-[#2563EB] ring-2 ring-blue-400/40 text-[#2563EB] dark:bg-sky-950 dark:border-sky-700 dark:text-sky-300 font-bold';
+                          }
+                          if (pKey === 'ROJO') {
+                            return 'bg-[#FFF0F2] border-[#E11D48] ring-2 ring-rose-400/40 text-[#E11D48] dark:bg-rose-950 dark:border-rose-700 dark:text-rose-300 font-bold';
+                          }
+                          return 'bg-[#ECFDF5] border-[#059669] ring-2 ring-emerald-400/40 text-[#059669] dark:bg-emerald-950 dark:border-emerald-700 dark:text-emerald-300 font-bold';
+                        }
+                        return 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2 hover:bg-gray-50';
+                      };
 
                       return (
                         <button
@@ -1314,35 +1246,37 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                             setActivePutawayAisle(pKey);
                             setActiveTargetRampaId(null);
                           }}
-                          className={`py-1.5 px-1 rounded-xl border text-center transition-all flex flex-col items-center justify-center ${
-                            isOtherAisleLocked
-                              ? 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-hub-surface/40 border-gray-200 dark:border-hub-border'
-                              : b.isCompleted
-                              ? isSelected
-                                ? 'border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/50 shadow-xs ring-2 ring-emerald-500/20'
-                                : 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-800'
-                              : isSelected
-                              ? `border-2 ${theme.border} bg-white dark:bg-hub-surface shadow-xs ring-2 ring-emerald-500/20 cursor-pointer`
-                              : 'bg-white dark:bg-hub-surface border-gray-200/80 dark:border-hub-border hover:bg-gray-50 cursor-pointer'
-                          }`}
+                          className={`h-[34px] border rounded-xl px-1 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer ${getPdaAisleStyles()}`}
                         >
-                          <span className={`text-[11px] font-mono font-black ${isSelected ? 'text-gray-900 dark:text-hub-text1' : 'text-gray-600 dark:text-hub-text2'}`}>
-                            P. {pKey}
+                          <span className="text-[9.5px] uppercase font-bold tracking-tight leading-none mb-0.5">
+                            PASILLO {pKey}
                           </span>
-                          <span className={`text-[10px] font-mono font-bold ${b.isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}>
-                            {b.isCompleted ? '✓ Listo' : isOtherAisleLocked ? '🔒 Bloq.' : `${b.pendingItems.length} pend.`}
+                          <span className="text-[10px] font-mono font-black leading-none">
+                            {b.isCompleted ? (
+                              <span className={!isSelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''}>
+                                ✓ Listo
+                              </span>
+                            ) : isOtherAisleLocked ? (
+                              '🔒 Bloq.'
+                            ) : (
+                              `${b.pendingItems.length} pend.`
+                            )}
                           </span>
                         </button>
                       );
                     })}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-3 sm:gap-4 shrink-0">
+                  <div className="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
                     {(['AZUL', 'ROJO', 'VERDE'] as PasilloType[]).map((pKey) => {
                       const b = aisleBatches[pKey];
                       const theme = getAisleTheme(pKey);
                       const isSelected = pKey === activePutawayAisle;
                       const isOtherAisleLocked = isDepositing && !isSelected;
+
+                      const assignedRampasCount = Array.from(
+                        new Set([...b.pendingItems, ...b.depositedItems].map((i) => i.rampaLigada))
+                      ).length;
 
                       return (
                         <button
@@ -1354,54 +1288,43 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                             setActivePutawayAisle(pKey);
                             setActiveTargetRampaId(null);
                           }}
-                          className={`p-3.5 sm:p-4 rounded-2xl border text-left transition-all ${
+                          className={`h-11 px-3 sm:px-3.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2 shadow-2xs ${
                             isOtherAisleLocked
                               ? 'opacity-40 cursor-not-allowed bg-gray-50 dark:bg-hub-surface/40 border-gray-200 dark:border-hub-border'
                               : b.isCompleted
                               ? isSelected
-                                ? 'border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/50 shadow-md ring-2 ring-emerald-500/30 cursor-pointer'
-                                : 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800 hover:bg-emerald-50/80 hover:border-emerald-400 cursor-pointer shadow-xs'
+                                ? 'border-2 border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/50 shadow-sm ring-2 ring-emerald-500/30 cursor-pointer'
+                                : 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-300/80 dark:border-emerald-800 hover:bg-emerald-50/80 hover:border-emerald-400 cursor-pointer'
                               : isSelected
-                              ? `border-2 ${theme.border} bg-white dark:bg-hub-surface shadow-md ring-2 ring-emerald-500/20 cursor-pointer`
+                              ? `border-2 ${theme.border} bg-white dark:bg-hub-surface shadow-sm ring-2 ring-emerald-500/20 cursor-pointer`
                               : 'bg-white dark:bg-hub-surface border-gray-200/80 dark:border-hub-border hover:bg-gray-50 cursor-pointer'
                           }`}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className={`px-2.5 py-0.5 rounded-lg text-xs font-mono font-black border ${theme.badge}`}>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className={`px-2 py-0.5 rounded-lg text-xs font-mono font-black border ${theme.badge} shrink-0`}>
                               PASILLO {pKey}
                             </span>
+                            <span className={`text-[11px] truncate hidden md:inline ${b.isCompleted ? 'font-bold text-emerald-700 dark:text-emerald-300' : 'font-medium text-gray-500 dark:text-hub-text2'}`}>
+                              {assignedRampasCount} {assignedRampasCount === 1 ? 'rampa' : 'rampas'}
+                            </span>
+                          </div>
+
+                          <div className="shrink-0 flex items-center gap-1.5">
                             {b.isCompleted ? (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 dark:bg-emerald-900/80 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 shadow-2xs">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 stroke-[2.5]" />
                                 <span>Listo</span>
                               </span>
                             ) : isOtherAisleLocked ? (
-                              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 font-mono">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 font-mono">
                                 🔒 Bloqueado
                               </span>
                             ) : (
-                              <span className="text-xs font-mono font-bold text-gray-500">
-                                {b.pendingItems.length} pendientes
+                              <span className="text-xs font-mono font-black text-gray-700 dark:text-hub-text1">
+                                {b.pendingItems.length} {b.pendingItems.length === 1 ? 'pend.' : 'pendientes'}
                               </span>
                             )}
                           </div>
-                          {(() => {
-                            const assignedRampasCount = Array.from(
-                              new Set([...b.pendingItems, ...b.depositedItems].map((i) => i.rampaLigada))
-                            ).length;
-                            return (
-                              <div className="flex items-center justify-between">
-                                <p className={`text-xs truncate ${b.isCompleted ? 'font-bold text-emerald-700 dark:text-emerald-300' : 'font-semibold text-gray-500 dark:text-hub-text2'}`}>
-                                  {assignedRampasCount} {assignedRampasCount === 1 ? 'rampa asignada' : 'rampas asignadas'}
-                                </p>
-                                {b.isCompleted && (
-                                  <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 font-mono shrink-0 ml-1">
-                                    ✓ 100%
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })()}
                         </button>
                       );
                     })}
@@ -1409,14 +1332,14 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                 )}
 
                 {/* Detail: Rampas del Pasillo Activo (Abajo tanto en Desktop como en PDA) */}
-                <div className={isPda ? "flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-2.5 sm:p-3 flex flex-col" : "flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-3xl p-4 sm:p-5 flex flex-col"}>
-                  <div className={`flex items-center justify-between ${isPda ? 'pb-2 mb-2' : 'pb-3 mb-3'} border-b border-gray-100 dark:border-hub-border shrink-0`}>
+                <div className={isPda ? "flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-2.5 sm:p-3 flex flex-col" : "flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border rounded-2xl p-3.5 sm:p-4 flex flex-col"}>
+                  <div className={`flex items-center justify-between ${isPda ? 'pb-1.5 mb-1.5' : 'pb-2 mb-2'} border-b border-gray-100 dark:border-hub-border shrink-0`}>
                     <div>
-                      <h3 className="font-black text-lg text-gray-900 dark:text-hub-text1">
+                      <h3 className={isPda ? "font-bold text-[13px] text-gray-900 dark:text-hub-text1" : "font-black text-base text-gray-900 dark:text-hub-text1"}>
                         Rampas de Pasillo {activePutawayAisle}
                       </h3>
                       {!isPda && (
-                        <p className="text-xs text-gray-500 dark:text-hub-text2">
+                        <p className="text-[11px] text-gray-500 dark:text-hub-text2 mt-0.5">
                           {isDepositing && activeTargetRampaId
                             ? `Encasillando en ${activeTargetRampaId}. Las demás rampas están bloqueadas hasta terminar o pausar.`
                             : 'Escanea el QR de la rampa en la cual quieras comenzar el encasillado.'}
@@ -1425,11 +1348,9 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                     </div>
 
                     {lastScannedDepositCode && isDepositing && (
-                      <div className="flex items-center gap-2">
-                        <span className="hidden sm:inline-flex px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                          ✓ Último: {lastScannedDepositCode}
-                        </span>
-                      </div>
+                      <span className="hidden sm:inline-flex px-2.5 py-1 rounded-xl text-xs font-mono font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        ✓ Último: {lastScannedDepositCode}
+                      </span>
                     )}
                   </div>
 
@@ -1602,44 +1523,29 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                               </div>
 
                               {/* Mini scroll interno: muestra 5 encargos sin expandir la pantalla */}
-                              <div className={`space-y-1.5 ${isPda ? 'max-h-[150px]' : 'max-h-[205px]'} overflow-y-auto pr-1 w-full [scrollbar-width:thin]`}>
+                              <div className={`space-y-1.5 ${isPda ? 'max-h-[150px]' : 'max-h-[205px]'} overflow-y-auto w-full [scrollbar-width:thin]`}>
                                 {[...rampaPending, ...rampaDeposited].map((item) => {
                                   const isItemDone = rampaDeposited.some((d) => d.id === item.id);
                                   return (
                                     <div
                                       key={item.id}
-                                      className={`w-full py-1.5 px-3 rounded-xl border transition-all flex items-center justify-between gap-2.5 shadow-2xs ${
+                                      className={`w-full p-2.5 sm:p-3 rounded-xl border transition-all flex items-center justify-between gap-2.5 shadow-2xs ${
                                         isItemDone
                                           ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 text-emerald-800 dark:text-emerald-300'
                                           : 'bg-white dark:bg-hub-elevated/90 border-gray-200/90 dark:border-hub-border hover:border-gray-300 dark:hover:border-slate-700'
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                                        <div
-                                          className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
-                                            isItemDone
-                                              ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300'
-                                              : 'bg-gray-100 dark:bg-hub-surface text-gray-700 dark:text-hub-text2'
-                                          }`}
-                                        >
-                                          {isItemDone ? (
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                          ) : (
-                                            <Box className="w-3.5 h-3.5 stroke-[2]" />
-                                          )}
-                                        </div>
-                                        <div className="flex flex-col min-w-0">
-                                          <span className={`font-mono font-bold text-xs sm:text-[13px] truncate ${
-                                            isItemDone
-                                              ? 'text-emerald-900 dark:text-emerald-200 line-through opacity-70'
-                                              : 'text-[#414745] dark:text-hub-text1'
-                                          }`}>
-                                            {item.codigoBarras26 || item.codigoEncargo}
-                                          </span>
-                                          <span className="text-[10px] font-mono font-medium text-gray-500 dark:text-hub-text2">
-                                            OF: {item.codigoOF9 || '382104712'}
-                                          </span>
-                                        </div>
+                                      <div className="flex flex-col min-w-0 flex-1">
+                                        <span className={`font-mono font-bold text-xs sm:text-[13px] truncate ${
+                                          isItemDone
+                                            ? 'text-emerald-900 dark:text-emerald-200 line-through opacity-70'
+                                            : 'text-[#414745] dark:text-hub-text1'
+                                        }`}>
+                                          {item.codigoBarras26 || item.codigoEncargo}
+                                        </span>
+                                        <span className="text-[10px] font-mono font-medium text-gray-500 dark:text-hub-text2">
+                                          OF: {item.codigoOF9 || '382104712'}
+                                        </span>
                                       </div>
 
                                       {isItemDone ? (
@@ -1717,44 +1623,33 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                               : 'bg-gray-50 dark:bg-hub-elevated border-gray-200/70 dark:border-hub-border hover:border-gray-300'
                           }`}
                         >
-                          <div className="min-w-0">
-                            <h4 className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-hub-text1">{rampaShort}</h4>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-extrabold text-xs sm:text-sm text-gray-900 dark:text-hub-text1">{rampaShort}</h4>
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800">
+                                {rampaPending.length} {rampaPending.length === 1 ? 'pendiente' : 'pendientes'}
+                              </span>
+                            </div>
                             <p className="text-[11px] sm:text-xs text-gray-400 truncate mt-0.5">{rampaSub}</p>
                           </div>
 
-                          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-                            <div className="text-right flex flex-col items-end justify-center min-w-[45px] sm:min-w-[58px]">
-                              <span className="font-mono font-black text-base sm:text-xl text-gray-900 dark:text-hub-text1 leading-none">
-                                {rampaPending.length}
-                              </span>
-                              <span className="text-[10px] sm:text-[11px] text-gray-400 block font-medium mt-0.5">
-                                {rampaDeposited.length > 0
-                                  ? `(${rampaDeposited.length} listos)`
-                                  : rampaPending.length === 1
-                                  ? 'pendiente'
-                                  : 'pendientes'}
-                              </span>
-                            </div>
-
-                            {rampaDone ? (
-                              <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                <span>✓ Lista</span>
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setActiveTargetRampaId(rampaShort);
-                                  setActiveAisleQrModal(activePutawayAisle);
-                                }}
-                                className={`h-8 sm:h-9 px-3 sm:px-3.5 ${activeTheme.btn} font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all`}
-                              >
-                                <QrCode className="w-3.5 h-3.5" />
-                                <span>Encasillar</span>
-                              </button>
-                            )}
-                          </div>
+                          {rampaDone ? (
+                            <span className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1 shrink-0">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>✓ Lista</span>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveTargetRampaId(rampaShort);
+                                setActiveAisleQrModal(activePutawayAisle);
+                              }}
+                              className={`h-7 px-3.5 ${activeTheme.btn} font-bold rounded-xl text-xs flex items-center justify-center cursor-pointer shadow-xs active:scale-95 transition-all shrink-0`}
+                            >
+                              <span>Encasillar</span>
+                            </button>
+                          )}
                         </div>
                       );
                     })}
@@ -2000,88 +1895,104 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
         )}
 
         {/* Tarjeta Principal de Resumen a Ancho Completo sin scroll */}
-        <div className={`w-full flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border ${isPda ? 'rounded-3xl p-4 sm:p-5' : 'rounded-3xl p-6 sm:p-8'} shadow-xs flex flex-col justify-between text-center font-sans overflow-hidden`}>
-          {/* Header con Ícono y Título (Alineado a la izquierda en Desktop según diseño) */}
+        <div className={`w-full flex-1 min-h-0 bg-white dark:bg-hub-surface border border-gray-200/80 dark:border-hub-border ${isPda ? 'rounded-2xl p-3' : 'rounded-2xl p-4 sm:p-5'} shadow-xs flex flex-col justify-between text-center font-sans overflow-hidden`}>
+          {/* Header con Ícono y Título */}
           <div
             className={
               isPda
-                ? 'flex flex-col items-center text-center max-w-md mx-auto shrink-0 pt-1'
-                : 'flex items-center gap-4 sm:gap-5 text-left max-w-4xl mx-auto w-full shrink-0 mb-3 sm:mb-4'
+                ? 'flex flex-col items-center text-center max-w-md mx-auto shrink-0 pt-0.5'
+                : 'flex items-center gap-3.5 text-left max-w-3xl mx-auto w-full shrink-0 mb-1'
             }
           >
-            <div className={`${isPda ? 'w-12 h-12 mb-2 rounded-2xl' : 'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl'} shrink-0 bg-[#009D4E]/15 dark:bg-[#009D4E]/25 text-[#009D4E] dark:text-[#03F77C] flex items-center justify-center border border-[#009D4E]/30 shadow-2xs animate-scaleUp`}>
-              <Sparkles className={`${isPda ? 'w-6 h-6' : 'w-7 h-7 sm:w-8 sm:h-8'} stroke-[2.2]`} />
+            <div className={`${isPda ? 'w-10 h-10 mb-1.5 rounded-xl' : 'w-11 h-11 rounded-xl'} shrink-0 bg-[#009D4E]/15 dark:bg-[#009D4E]/25 text-[#009D4E] dark:text-[#03F77C] flex items-center justify-center border border-[#009D4E]/30 shadow-2xs`}>
+              <PackageCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
 
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-[#009D4E] dark:text-[#03F77C] block mb-0.5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#009D4E] dark:text-[#03F77C] block leading-none mb-1">
                 Proceso Finalizado con Éxito
               </span>
-              <h2 className={`${isPda ? 'text-xl' : 'text-2xl sm:text-3xl'} font-black text-[#414745] dark:text-hub-text1 leading-tight tracking-tight mb-1`}>
+              <h2 className={`${isPda ? 'text-base' : 'text-lg sm:text-xl'} font-bold text-[#414745] dark:text-hub-text1 leading-tight tracking-tight mb-0.5`}>
                 Encasillado completo
               </h2>
-              <p className={`${isPda ? 'text-xs max-w-xs mx-auto' : 'text-xs sm:text-sm'} text-gray-500 dark:text-hub-text2 leading-relaxed`}>
+              <p className={`${isPda ? 'text-[11px] max-w-xs mx-auto' : 'text-xs'} text-gray-500 dark:text-hub-text2 leading-tight`}>
                 Todos los bultos han sido distribuidos físicamente y registrados en el sistema WMS.
               </p>
             </div>
           </div>
 
           {/* Métrica Global */}
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4 max-w-4xl mx-auto w-full shrink-0">
-            <div className={`${isPda ? 'p-3 rounded-2xl' : 'p-4 rounded-2xl'} bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 text-left flex items-center justify-between shadow-2xs`}>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 max-w-3xl mx-auto w-full shrink-0">
+            <div className={`${isPda ? 'p-2.5 rounded-xl' : 'p-3 rounded-xl'} bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 text-left flex items-center justify-between shadow-2xs`}>
               <div>
-                <span className="text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-300 font-bold block mb-0.5">
+                <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-bold block mb-1">
                   Total Encasillados
                 </span>
-                <span className={`${isPda ? 'text-2xl' : 'text-3xl'} font-black font-mono text-emerald-800 dark:text-emerald-100`}>
+                <span className={`${isPda ? 'text-xl' : 'text-xl sm:text-2xl'} font-black font-mono text-emerald-800 dark:text-emerald-100 leading-none`}>
                   {totalDepositados}
                 </span>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
-                <Box className="w-4 h-4 stroke-[2.2]" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                <Box className="w-3.5 h-3.5 stroke-[2.2]" />
               </div>
             </div>
 
-            <div className={`${isPda ? 'p-3 rounded-2xl' : 'p-4 rounded-2xl'} bg-gray-50 dark:bg-hub-elevated border border-gray-100 dark:border-hub-border text-left flex items-center justify-between shadow-2xs`}>
+            <div className={`${isPda ? 'p-2.5 rounded-xl' : 'p-3 rounded-xl'} ${
+              totalIncidencias > 0
+                ? 'bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800'
+                : 'bg-gray-50 dark:bg-hub-elevated border border-gray-100 dark:border-hub-border'
+            } text-left flex items-center justify-between shadow-2xs`}>
               <div>
-                <span className="text-[11px] sm:text-xs text-gray-500 dark:text-hub-text2 font-bold block mb-0.5">
+                <span className={`text-[11px] ${
+                  totalIncidencias > 0
+                    ? 'text-amber-700 dark:text-amber-300'
+                    : 'text-gray-500 dark:text-hub-text2'
+                } font-bold block mb-1`}>
                   Incidencias
                 </span>
-                <span className={`${isPda ? 'text-2xl' : 'text-3xl'} font-black font-mono text-gray-800 dark:text-hub-text1`}>
+                <span className={`${isPda ? 'text-xl' : 'text-xl sm:text-2xl'} font-black font-mono ${
+                  totalIncidencias > 0
+                    ? 'text-amber-800 dark:text-amber-200'
+                    : 'text-gray-800 dark:text-hub-text1'
+                } leading-none`}>
                   {totalIncidencias}
                 </span>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-gray-100 dark:bg-hub-surface text-gray-400 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-4 h-4 stroke-[2.2]" />
+              <div className={`w-7 h-7 rounded-lg ${
+                totalIncidencias > 0
+                  ? 'bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300'
+                  : 'bg-gray-100 dark:bg-hub-surface text-gray-400'
+              } flex items-center justify-center shrink-0`}>
+                <AlertTriangle className="w-3.5 h-3.5 stroke-[2.2]" />
               </div>
             </div>
           </div>
 
-          {/* Desglose por Pasillos (3 Columnas armónicas tanto en PDA como en Desktop) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-4xl mx-auto w-full text-left shrink-0">
+          {/* Desglose por Pasillos (3 Columnas armónicas) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-3xl mx-auto w-full text-left shrink-0">
             {(['AZUL', 'ROJO', 'VERDE'] as PasilloType[]).map((pKey) => {
               const b = aisleBatches[pKey];
               const theme = getAisleTheme(pKey);
               return (
                 <div
                   key={pKey}
-                  className={`${isPda ? 'p-2.5 rounded-2xl' : 'p-4 rounded-2xl'} bg-gray-50/70 dark:bg-hub-elevated/60 border border-gray-200/80 dark:border-hub-border flex flex-col justify-between gap-2 shadow-2xs`}
+                  className={`${isPda ? 'p-2 rounded-xl' : 'p-2.5 sm:p-3 rounded-xl'} bg-gray-50/70 dark:bg-hub-elevated/60 border border-gray-200/80 dark:border-hub-border flex flex-col justify-between gap-1 shadow-2xs`}
                 >
                   <div className="flex items-center justify-between gap-1">
-                    <span className={`px-2 py-0.5 rounded-lg ${isPda ? 'text-[10px]' : 'text-xs'} font-mono font-black border ${theme.badge} whitespace-nowrap`}>
+                    <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold border ${theme.badge} whitespace-nowrap`}>
                       {isPda ? pKey : `PASILLO ${pKey}`}
                     </span>
                     <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5] text-emerald-600 dark:text-emerald-400 shrink-0" />
                   </div>
                   <div>
-                    <span className={`${isPda ? 'text-xl' : 'text-2xl'} font-black font-mono text-[#414745] dark:text-hub-text1 block leading-none mb-0.5`}>
+                    <span className={`${isPda ? 'text-base' : 'text-base sm:text-lg'} font-black font-mono text-[#414745] dark:text-hub-text1 block leading-none mb-0.5`}>
                       {b.depositedItems.length}
                     </span>
-                    <span className="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-hub-text2 block">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-gray-500 dark:text-hub-text2 block leading-none">
                       {b.depositedItems.length === 1 ? 'depositado' : 'depositados'}
                     </span>
                     {b.incidencias > 0 && (
-                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 block mt-0.5">
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 block mt-0.5 leading-none">
                         {b.incidencias} incidencias
                       </span>
                     )}
@@ -2092,15 +2003,45 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
           </div>
 
           {/* Botón de Acción Centrado */}
-          <div className="flex justify-center w-full shrink-0 pt-1 pb-0.5">
+          <div className="flex justify-center w-full shrink-0 pt-0.5">
             <button
               type="button"
               onClick={() => {
                 setEncargosList([]);
+                setAisleBatches({
+                  AZUL: {
+                    pasillo: 'AZUL',
+                    rampa: 'Rampa 24 - Puerto Montt (Chiloé / Los Lagos)',
+                    total: 0,
+                    pendingItems: [],
+                    depositedItems: [],
+                    isCompleted: false,
+                    incidencias: 0,
+                  },
+                  ROJO: {
+                    pasillo: 'ROJO',
+                    rampa: 'Rampa 01 - Salida Norte (Santiago / V Región)',
+                    total: 0,
+                    pendingItems: [],
+                    depositedItems: [],
+                    isCompleted: false,
+                    incidencias: 0,
+                  },
+                  VERDE: {
+                    pasillo: 'VERDE',
+                    rampa: 'Rampa 12 - Concepción (Biobío / Temuco)',
+                    total: 0,
+                    pendingItems: [],
+                    depositedItems: [],
+                    isCompleted: false,
+                    incidencias: 0,
+                  },
+                });
+                setActiveTargetRampaId(null);
                 setPhase('FASE_CLASIFICACION');
                 triggerToast('Listo para iniciar un nuevo lote de encasillado.', 'success');
               }}
-              className={`w-full sm:w-auto sm:min-w-[320px] ${isPda ? 'h-11 text-xs rounded-2xl' : 'h-12 text-xs rounded-2xl'} bg-[#009D4E] hover:bg-[#008743] dark:bg-[#03F77C] hover:dark:bg-[#02D66B] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98`}
+              className={`w-full sm:w-auto sm:min-w-[280px] h-10 text-xs rounded-xl bg-[#009D4E] hover:bg-[#008743] dark:bg-[#03F77C] hover:dark:bg-[#02D66B] text-white dark:text-[#303030] font-black shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98`}
             >
               <RotateCcw className="w-4 h-4" />
               <span>Iniciar Nuevo Encasillado</span>
@@ -2117,7 +2058,6 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
   if (isPda) {
     return (
       <div className="flex flex-col h-full bg-[#FAFDFC] dark:bg-hub-base text-gray-900 dark:text-gray-100 select-none overflow-hidden relative font-sans">
-        {renderToastNotification()}
         {renderExitConfirmationModal()}
         {renderIncidenciaModal()}
         {renderUnencasillableModal()}
@@ -2222,7 +2162,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                 <div className="grid grid-cols-3 gap-2 mb-2 shrink-0">
                   <button
                     onClick={() => setActivePdaTab('AZUL')}
-                    className={`border rounded-xl py-1.5 px-2 text-center transition-all duration-300 ${
+                    className={`h-[40px] border rounded-xl px-1 flex flex-col items-center justify-center text-center transition-all duration-300 ${
                       activeFlashPasillo === 'AZUL'
                         ? 'bg-blue-100 dark:bg-blue-950 border-2 border-[#2563EB] ring-4 ring-blue-500/50 shadow-lg shadow-blue-500/30 scale-105 text-[#2563EB] dark:text-sky-300 font-black'
                         : activePdaTab === 'AZUL'
@@ -2230,13 +2170,13 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                         : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="text-[9px] uppercase font-mono font-bold block leading-none mb-1">P. AZUL</span>
-                    <span className="text-base font-mono font-black leading-none">{countsByPasillo.AZUL}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-tight leading-none mb-0.5">PASILLO AZUL</span>
+                    <span className="text-sm font-mono font-black leading-none">{countsByPasillo.AZUL}</span>
                   </button>
 
                   <button
                     onClick={() => setActivePdaTab('ROJO')}
-                    className={`border rounded-xl py-1.5 px-2 text-center transition-all duration-300 ${
+                    className={`h-[40px] border rounded-xl px-1 flex flex-col items-center justify-center text-center transition-all duration-300 ${
                       activeFlashPasillo === 'ROJO'
                         ? 'bg-rose-100 dark:bg-rose-950 border-2 border-[#E11D48] ring-4 ring-rose-500/50 shadow-lg shadow-rose-500/30 scale-105 text-[#E11D48] dark:text-rose-300 font-black'
                         : activePdaTab === 'ROJO'
@@ -2244,13 +2184,13 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                         : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="text-[9px] uppercase font-mono font-bold block leading-none mb-1">P. ROJO</span>
-                    <span className="text-base font-mono font-black leading-none">{countsByPasillo.ROJO}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-tight leading-none mb-0.5">PASILLO ROJO</span>
+                    <span className="text-sm font-mono font-black leading-none">{countsByPasillo.ROJO}</span>
                   </button>
 
                   <button
                     onClick={() => setActivePdaTab('VERDE')}
-                    className={`border rounded-xl py-1.5 px-2 text-center transition-all duration-300 ${
+                    className={`h-[40px] border rounded-xl px-1 flex flex-col items-center justify-center text-center transition-all duration-300 ${
                       activeFlashPasillo === 'VERDE'
                         ? 'bg-emerald-100 dark:bg-emerald-950 border-2 border-[#059669] ring-4 ring-emerald-500/50 shadow-lg shadow-emerald-500/30 scale-105 text-[#059669] dark:text-emerald-300 font-black'
                         : activePdaTab === 'VERDE'
@@ -2258,8 +2198,8 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
                         : 'bg-white border-gray-200 text-gray-600 dark:bg-hub-surface dark:border-hub-border dark:text-hub-text2 hover:bg-gray-50'
                     }`}
                   >
-                    <span className="text-[9px] uppercase font-mono font-bold block leading-none mb-1">P. VERDE</span>
-                    <span className="text-base font-mono font-black leading-none">{countsByPasillo.VERDE}</span>
+                    <span className="text-[10px] uppercase font-bold tracking-tight leading-none mb-0.5">PASILLO VERDE</span>
+                    <span className="text-sm font-mono font-black leading-none">{countsByPasillo.VERDE}</span>
                   </button>
                 </div>
 
@@ -2371,7 +2311,6 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
   // ═══════════════════════════════════════════════════════════════════════════
   return (
     <div className="h-full flex flex-col p-4 sm:p-5 max-w-7xl mx-auto w-full gap-3 sm:gap-4 overflow-hidden animate-fadeIn relative font-sans">
-      {renderToastNotification()}
       {renderExitConfirmationModal()}
       {renderIncidenciaModal()}
       {renderUnencasillableModal()}
