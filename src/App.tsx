@@ -7,9 +7,14 @@ import { ScanModule } from './components/ScanModule';
 import { EncasilladoModule } from './components/EncasilladoModule';
 import { NominacionDespachoModule } from './components/NominacionDespachoModule';
 import { RecepcionModule } from './components/RecepcionModule';
+import { RedimensionModule } from './components/RedimensionModule';
 import { HomeModule } from './components/HomeModule';
 import { LoginModule } from './components/LoginModule';
 import { ConfiguracionModule } from './components/ConfiguracionModule';
+import { SeguimientoModal } from './components/SeguimientoModal';
+import { AutorizacionesModule } from './components/AutorizacionesModule';
+import { AutorizacionToast } from './components/AutorizacionToast';
+import { AutorizacionesProvider } from './context/AutorizacionesContext';
 import { ActiveModule } from './types';
 
 const MainApp: React.FC = () => {
@@ -21,6 +26,8 @@ const MainApp: React.FC = () => {
     id: 'OP-4921',
   });
   const [activeModule, setActiveModule] = useState<ActiveModule>('home');
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [isSeguimientoOpen, setIsSeguimientoOpen] = useState<boolean>(false);
   const backHandlerRef = useRef<(() => void) | null>(null);
   const navigationGuardRef = useRef<((targetModule: ActiveModule) => boolean) | null>(null);
 
@@ -38,6 +45,7 @@ const MainApp: React.FC = () => {
       const canProceed = navigationGuardRef.current(target);
       if (!canProceed) return; // Guard blocked navigation (e.g., opened confirmation modal)
     }
+    setIsCameraActive(false);
     setActiveModule(target);
   };
 
@@ -105,6 +113,14 @@ const MainApp: React.FC = () => {
             onBackHome={() => handleSelectModule('home')}
           />
         );
+      case 'redimension':
+        return (
+          <RedimensionModule
+            onRegisterBackHandler={handleRegisterBackHandler}
+            onBackHome={() => handleSelectModule('home')}
+            onCameraToggle={setIsCameraActive}
+          />
+        );
       case 'escaneo':
         return <ScanModule />;
       case 'configuracion':
@@ -115,6 +131,12 @@ const MainApp: React.FC = () => {
             operatorId={operator.id}
           />
         );
+      case 'autorizaciones':
+        return (
+          <AutorizacionesModule
+            onBackHome={() => handleSelectModule('home')}
+          />
+        );
       default:
         return <HomeModule onSelectModule={handleSelectModule} />;
     }
@@ -122,33 +144,59 @@ const MainApp: React.FC = () => {
 
   if (isPda) {
     return (
-      <PDALayout
+      <>
+        <PDALayout
+          activeModule={activeModule}
+          onSelectModule={handleSelectModule}
+          onBack={handleGlobalBack}
+          isAuthenticated={isAuthenticated}
+          onLogout={handleLogout}
+          operatorName={operator.name}
+          operatorRut={operator.rut}
+          operatorId={operator.id}
+          hideHeader={isCameraActive}
+          hideFooter={isCameraActive}
+          onOpenSeguimiento={() => setIsSeguimientoOpen(true)}
+        >
+          {renderModuleContent()}
+        </PDALayout>
+
+        {/* Modal Global de Seguimiento de Encargo */}
+        <SeguimientoModal
+          isOpen={isSeguimientoOpen}
+          onClose={() => setIsSeguimientoOpen(false)}
+        />
+
+        {/* Toast flotante de alertas entrantes */}
+        <AutorizacionToast onNavigate={handleSelectModule} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DesktopLayout
         activeModule={activeModule}
         onSelectModule={handleSelectModule}
-        onBack={handleGlobalBack}
         isAuthenticated={isAuthenticated}
         onLogout={handleLogout}
         operatorName={operator.name}
         operatorRut={operator.rut}
         operatorId={operator.id}
+        onOpenSeguimiento={() => setIsSeguimientoOpen(true)}
       >
         {renderModuleContent()}
-      </PDALayout>
-    );
-  }
+      </DesktopLayout>
 
-  return (
-    <DesktopLayout
-      activeModule={activeModule}
-      onSelectModule={handleSelectModule}
-      isAuthenticated={isAuthenticated}
-      onLogout={handleLogout}
-      operatorName={operator.name}
-      operatorRut={operator.rut}
-      operatorId={operator.id}
-    >
-      {renderModuleContent()}
-    </DesktopLayout>
+      {/* Modal Global de Seguimiento de Encargo */}
+      <SeguimientoModal
+        isOpen={isSeguimientoOpen}
+        onClose={() => setIsSeguimientoOpen(false)}
+      />
+
+      {/* Toast flotante de alertas entrantes */}
+      <AutorizacionToast onNavigate={handleSelectModule} />
+    </>
   );
 };
 
@@ -156,7 +204,9 @@ export function App() {
   return (
     <ThemeProvider>
       <DeviceProvider>
-        <MainApp />
+        <AutorizacionesProvider>
+          <MainApp />
+        </AutorizacionesProvider>
       </DeviceProvider>
     </ThemeProvider>
   );

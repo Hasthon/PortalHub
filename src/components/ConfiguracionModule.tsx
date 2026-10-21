@@ -27,7 +27,7 @@ export const ConfiguracionModule: React.FC<ConfiguracionModuleProps> = ({
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <div className="w-full h-full overflow-y-auto animate-fadeIn font-sans">
+    <div className="w-full h-full overflow-y-auto animate-fadeIn font-sans p-4 sm:p-6 lg:p-8">
       <div className="max-w-3xl mx-auto space-y-6">
         {/* Header de Configuración */}
         <div>

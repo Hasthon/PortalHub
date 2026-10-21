@@ -6,6 +6,8 @@ import {
   Truck,
   ChevronRight,
   PackageCheck,
+  Ruler,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface HomeModuleProps {
@@ -49,6 +51,24 @@ const MODULES_LIST: ModuleCardDef[] = [
     icon: PackageCheck,
     accentColor: 'from-amber-500 to-orange-600',
     badgeText: 'OPERATIVO',
+  },
+  {
+    id: 'redimension',
+    title: 'Redimensión',
+    subtitle: '',
+    description: 'Escanear encargo, validar SKU y embalaje deficiente, registrar dimensiones y capturar fotografías.',
+    icon: Ruler,
+    accentColor: 'from-teal-600 to-emerald-700',
+    badgeText: 'OPERATIVO',
+  },
+  {
+    id: 'autorizaciones',
+    title: 'Supervisión Logística',
+    subtitle: '',
+    description: 'Gestionar y autorizar de forma presencial bloqueos por faltantes en recepción y encasillado.',
+    icon: ShieldCheck,
+    accentColor: 'from-amber-500 to-amber-700',
+    badgeText: 'SUPERVISIÓN',
   },
 ];
 
@@ -120,7 +140,7 @@ export const HomeModule: React.FC<HomeModuleProps> = ({ onSelectModule }) => {
 
   // VISTA DESKTOP: Grid completo con tarjetas ricas
   return (
-    <div className="flex-1 flex flex-col p-4 md:p-6 space-y-5 animate-fadeIn">
+    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn font-sans">
       {/* Saludo y Cabecera del Home */}
       <div className="bg-white dark:bg-hub-surface rounded-3xl p-5 md:p-6 border border-gray-200/80 dark:border-hub-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

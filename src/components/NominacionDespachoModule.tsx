@@ -2288,7 +2288,7 @@ export const NominacionDespachoModule: React.FC<NominacionDespachoModuleProps> =
 
   // --- RENDER VISTA ESCRITORIO (PC) ---
   return (
-    <div className="space-y-6 animate-fadeIn relative">
+    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6 animate-fadeIn relative font-sans">
       {/* Toast Notification Desktop */}
       {toast && (
         <div

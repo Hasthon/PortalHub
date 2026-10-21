@@ -2373,7 +2373,7 @@ const StepScanEncargo: React.FC<{
   const [pdaTab, setPdaTab] = useState<'ENCARGOS' | 'INCIDENCIAS'>('ENCARGOS');
 
   return (
-    <div className={`max-w-7xl mx-auto w-full font-sans animate-fadeIn ${isPda ? 'p-3 space-y-3' : 'p-4 md:p-8 space-y-6'}`}>
+    <div className={`max-w-7xl mx-auto w-full font-sans animate-fadeIn ${isPda ? 'p-3 space-y-3' : 'p-4 sm:p-6 lg:p-8 space-y-6'}`}>
       {/* ── Top Bar: Botón volver + Derivar incidencias + Badge de ubicación de la rampa ── */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         {!isPda && (

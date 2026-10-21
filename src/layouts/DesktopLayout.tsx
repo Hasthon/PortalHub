@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
+import { useAutorizaciones } from '../context/AutorizacionesContext';
 import {
   Scan,
   Truck,
@@ -12,6 +13,10 @@ import {
   Sun,
   Moon,
   PackageCheck,
+  Ruler,
+  Search,
+  Bell,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface DesktopLayoutProps {
@@ -23,6 +28,7 @@ interface DesktopLayoutProps {
   operatorName?: string;
   operatorRut?: string;
   operatorId?: string;
+  onOpenSeguimiento?: () => void;
 }
 
 export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
@@ -34,8 +40,10 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
   operatorName = 'Carlos Mendoza',
   operatorRut = '18.492.105-K',
   operatorId = 'OP-4921',
+  onOpenSeguimiento,
 }) => {
   const { isDark, toggleTheme } = useTheme();
+  const { pendingCount } = useAutorizaciones();
 
   return (
     <div className="h-screen overflow-hidden bg-[#FAFDFC] dark:bg-hub-base text-gray-900 dark:text-gray-100 flex flex-col font-sans">
@@ -81,7 +89,23 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                 <span>PORTAL HUBS</span>
                 <span>/</span>
                 <span className={`font-extrabold ${isDark ? 'text-emerald-400' : 'text-[#00E676]'}`}>
-                  {activeModule === 'home' ? 'MENÚ PRINCIPAL' : activeModule === 'encasillado' ? 'ENCASILLADO' : activeModule === 'nominacion' ? 'NOMINACIÓN Y DESPACHO' : activeModule === 'recepcion' ? 'RECEPCIÓN' : activeModule === 'escaneo' ? 'LECTURA DE ENCARGOS' : activeModule === 'configuracion' ? 'CONFIGURACIÓN' : activeModule.toUpperCase()}
+                  {activeModule === 'home'
+                    ? 'MENÚ PRINCIPAL'
+                    : activeModule === 'encasillado'
+                      ? 'ENCASILLADO'
+                      : activeModule === 'nominacion'
+                        ? 'NOMINACIÓN Y DESPACHO'
+                        : activeModule === 'recepcion'
+                          ? 'RECEPCIÓN'
+                          : activeModule === 'redimension'
+                            ? 'REDIMENSIÓN'
+                            : activeModule === 'autorizaciones'
+                              ? 'SUPERVISIÓN LOGÍSTICA'
+                              : activeModule === 'escaneo'
+                                ? 'LECTURA DE ENCARGOS'
+                                : activeModule === 'configuracion'
+                                  ? 'CONFIGURACIÓN'
+                                  : activeModule.toUpperCase()}
                 </span>
               </nav>
               <h2 className={`text-base sm:text-lg font-bold leading-tight truncate ${isDark ? 'text-hub-text1' : 'text-white'
@@ -94,12 +118,52 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       ? 'Módulo de Nominación y Despacho'
                       : activeModule === 'recepcion'
                         ? 'Módulo de Recepción'
-                        : activeModule === 'escaneo'
-                          ? 'Módulo de Lectura de Encargos'
-                          : activeModule === 'configuracion'
-                            ? 'Configuración del Sistema'
-                            : `Módulo ${activeModule}`}
+                        : activeModule === 'redimension'
+                          ? 'Módulo de Redimensión'
+                          : activeModule === 'autorizaciones'
+                            ? 'Supervisión Logística'
+                            : activeModule === 'escaneo'
+                              ? 'Módulo de Lectura de Encargos'
+                              : activeModule === 'configuracion'
+                                ? 'Configuración del Sistema'
+                                : `Módulo ${activeModule}`}
               </h2>
+            </div>
+
+            {/* Acciones Globales en Cabecera: Autorizaciones de Supervisor + Seguimiento de Encargo */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              {/* Campana Global de Autorizaciones de Supervisor */}
+              <button
+                type="button"
+                onClick={() => onSelectModule?.('autorizaciones')}
+                className={`relative px-3.5 py-2 rounded-xl font-extrabold text-xs flex items-center gap-2 border shadow-xs transition-all cursor-pointer group ${
+                  activeModule === 'autorizaciones'
+                    ? 'bg-amber-500/25 text-amber-300 border-amber-400/60 ring-2 ring-amber-400/30'
+                    : 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-white border-white/10 hover:border-amber-400/50'
+                }`}
+                title="Centro de Autorizaciones de Supervisor"
+              >
+                <div className="relative flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform stroke-[2.5]" />
+                  {pendingCount > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black font-mono flex items-center justify-center animate-pulse shadow-sm">
+                      {pendingCount}
+                    </span>
+                  )}
+                </div>
+                <span>Autorizaciones</span>
+              </button>
+
+              {/* Seguimiento de Encargo */}
+              <button
+                type="button"
+                onClick={onOpenSeguimiento}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white font-extrabold text-xs flex items-center gap-2 border border-white/10 shadow-xs transition-all cursor-pointer hover:border-[#00E676]/40 group"
+                title="Rastrear y consultar estado de un encargo"
+              >
+                <Search className="w-4 h-4 text-[#00E676] group-hover:scale-110 transition-transform stroke-[2.5]" />
+                <span>Seguimiento de Encargo</span>
+              </button>
             </div>
           </div>
         </div>
@@ -204,6 +268,57 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     : 'text-emerald-400'
                 }`} />
               <span>Recepción</span>
+            </button>
+
+            {/* Módulo de Redimensión */}
+            <button
+              type="button"
+              onClick={() => onSelectModule?.('redimension')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${activeModule === 'redimension'
+                  ? isDark
+                    ? 'bg-[#03F77C]/15 text-[#03F77C] border border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'bg-[#009D4E] text-white border border-[#00E676]/70 font-black shadow-md ring-2 ring-[#00E676]/25'
+                  : isDark
+                    ? 'text-gray-300 border border-transparent hover:bg-[#03F77C]/10 hover:text-[#03F77C] hover:border-[#03F77C]/30 font-semibold'
+                    : 'text-gray-300 border border-transparent hover:bg-white/10 hover:text-white font-medium'
+                }`}
+            >
+              <Ruler className={`w-4 h-4 ${isDark
+                  ? 'text-[#03F77C]'
+                  : activeModule === 'redimension'
+                    ? 'text-white'
+                    : 'text-emerald-400'
+                }`} />
+              <span>Redimensión</span>
+            </button>
+
+            {/* Módulo de Autorizaciones de Supervisor */}
+            <button
+              type="button"
+              onClick={() => onSelectModule?.('autorizaciones')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${activeModule === 'autorizaciones'
+                  ? isDark
+                    ? 'bg-[#03F77C]/15 text-[#03F77C] border border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'bg-[#009D4E] text-white border border-[#00E676]/70 font-black shadow-md ring-2 ring-[#00E676]/25'
+                  : isDark
+                    ? 'text-gray-300 border border-transparent hover:bg-[#03F77C]/10 hover:text-[#03F77C] hover:border-[#03F77C]/30 font-semibold'
+                    : 'text-gray-300 border border-transparent hover:bg-white/10 hover:text-white font-medium'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <ShieldCheck className={`w-4 h-4 ${isDark
+                    ? 'text-amber-400'
+                    : activeModule === 'autorizaciones'
+                      ? 'text-white'
+                      : 'text-amber-400'
+                  }`} />
+                <span>Supervisión Logística</span>
+              </div>
+              {pendingCount > 0 && (
+                <span className="min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-black flex items-center justify-center shrink-0 animate-pulse leading-none shadow-2xs">
+                  {pendingCount}
+                </span>
+              )}
             </button>
 
             <div className={`pt-3 mt-2 border-t ${isDark ? 'border-hub-border' : 'border-[#404040]'}`}>
@@ -316,11 +431,7 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
 
         {/* Main Content Area (Costado Derecho con fondo ultra clarito #FAFDFC) */}
         <main className="flex-1 overflow-y-auto w-full bg-[#FAFDFC] dark:bg-hub-base flex flex-col">
-          {activeModule === 'nominacion' || activeModule === 'recepcion' || activeModule === 'encasillado' ? (
-            <div className="flex-1 flex flex-col overflow-hidden">{children}</div>
-          ) : (
-            <div className="p-6"><div className="max-w-7xl mx-auto">{children}</div></div>
-          )}
+          <div className="flex-1 flex flex-col w-full overflow-hidden">{children}</div>
         </main>
       </div>
     </div>

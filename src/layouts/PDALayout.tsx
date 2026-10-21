@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
-import { Scan, MapPin, ArrowLeft, Menu, User, LockKeyholeOpen, Settings, LogOut, X, Sun, Moon } from 'lucide-react';
+import { useAutorizaciones } from '../context/AutorizacionesContext';
+import { Scan, MapPin, ArrowLeft, Menu, User, Settings, LogOut, X, Sun, Moon, Search, Bell, ShieldCheck } from 'lucide-react';
 
 interface PDALayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,9 @@ interface PDALayoutProps {
   operatorName?: string;
   operatorRut?: string;
   operatorId?: string;
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+  onOpenSeguimiento?: () => void;
 }
 
 export const PDALayout: React.FC<PDALayoutProps> = ({
@@ -25,9 +29,13 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
   operatorName = 'Carlos Mendoza',
   operatorRut = '18.492.105-K',
   operatorId = 'OP-4921',
+  hideHeader = false,
+  hideFooter = false,
+  onOpenSeguimiento,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
+  const { pendingCount } = useAutorizaciones();
 
   const handleBack = () => {
     if (onBack) {
@@ -58,20 +66,30 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
               </div>
             </div>
 
-            {/* Botones a la Derecha: Toggle Tema Rápido + Menú Hamburguesa */}
+            {/* Botones a la Derecha: Autorizaciones + Seguimiento Rápido + Toggle Tema + Menú Hamburguesa */}
             {isAuthenticated && (
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={toggleTheme}
-                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
-                  title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                  onClick={() => onSelectModule?.('autorizaciones')}
+                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95 relative"
+                  title="Autorizaciones de Supervisor"
                 >
-                  {isDark ? (
-                    <Sun className="w-4 h-4 text-amber-400 stroke-[2.2]" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-slate-200 stroke-[2.2]" />
+                  <Bell className="w-4 h-4 text-amber-400 stroke-[2.2]" />
+                  {pendingCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black font-mono flex items-center justify-center animate-pulse">
+                      {pendingCount}
+                    </span>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onOpenSeguimiento}
+                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
+                  title="Seguimiento de Encargo"
+                >
+                  <Search className="w-4 h-4 text-[#00E676] stroke-[2.5]" />
                 </button>
 
                 <button
@@ -88,7 +106,7 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
         )}
 
         {/* Sub-Header: Flecha Atrás + Migajas de Pan (Misma altura h-[52px] y estilo que el Header) + Menú Hamburguesa */}
-        {activeModule !== 'home' && (
+        {activeModule !== 'home' && !hideHeader && (
           <div className="h-[52px] bg-[#303030] dark:bg-hub-surface border-b border-gray-800 dark:border-hub-border px-3.5 py-2.5 flex items-center justify-between gap-2.5 shrink-0 shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
               <button
@@ -100,29 +118,62 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
               </button>
 
               <h1 className="text-sm font-bold text-white truncate tracking-tight">
-                {activeModule === 'encasillado'
-                  ? 'Encasillado y Clasificación'
-                  : activeModule === 'nominacion'
-                    ? 'Nominación y Despacho'
-                    : activeModule === 'recepcion'
-                      ? 'Recepción'
-                      : activeModule === 'escaneo'
-                        ? 'Escaneo General'
-                        : 'Módulo Operativo'}
+                {activeModule === 'autorizaciones'
+                  ? 'Supervisión Logística'
+                  : activeModule === 'encasillado'
+                    ? 'Encasillado y Clasificación'
+                    : activeModule === 'nominacion'
+                      ? 'Nominación y Despacho'
+                      : activeModule === 'recepcion'
+                        ? 'Recepción'
+                        : activeModule === 'redimension'
+                          ? 'Redimensión'
+                          : activeModule === 'escaneo'
+                            ? 'Escaneo General'
+                            : 'Módulo Operativo'}
               </h1>
             </div>
 
-            {/* Menú Hamburguesa integrado en la barra de migajas de pan */}
-            {isAuthenticated && (
+            {/* Acciones a la Derecha: Autorizaciones + Seguimiento Rápido + Menú Hamburguesa */}
+            <div className="flex items-center gap-1.5 shrink-0 ml-auto">
               <button
                 type="button"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition-all active:scale-95 shrink-0 ml-auto"
-                title="Menú de Opciones"
+                onClick={() => onSelectModule?.('autorizaciones')}
+                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all shrink-0 active:scale-95 relative ${
+                  activeModule === 'autorizaciones'
+                    ? 'bg-amber-500/30 text-amber-300 ring-2 ring-amber-400/50'
+                    : 'bg-white/10 hover:bg-white/20 active:bg-white/30 text-white'
+                }`}
+                title="Autorizaciones de Supervisor"
               >
-                <Menu className="w-4.5 h-4.5 text-white stroke-[2.2]" />
+                <Bell className="w-4 h-4 text-amber-400 stroke-[2.2]" />
+                {pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black font-mono flex items-center justify-center animate-pulse">
+                    {pendingCount}
+                  </span>
+                )}
               </button>
-            )}
+
+              <button
+                type="button"
+                onClick={onOpenSeguimiento}
+                className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 text-white flex items-center justify-center transition-all shrink-0 active:scale-95"
+                title="Seguimiento de Encargo"
+              >
+                <Search className="w-4 h-4 text-[#00E676] stroke-[2.5]" />
+              </button>
+
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-white transition-all active:scale-95 shrink-0"
+                  title="Menú de Opciones"
+                >
+                  <Menu className="w-4.5 h-4.5 text-white stroke-[2.2]" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
@@ -132,18 +183,20 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
         </main>
 
         {/* Footer Tecnológico Operario PDA in Light Mode */}
-        <footer className="bg-white dark:bg-hub-surface border-t border-gray-200 dark:border-hub-border px-3 py-2 shrink-0 flex items-center justify-between text-[10px] font-mono shadow-2xs">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-[#009D4E]"></span>
-            <span className="text-[#414745] dark:text-hub-text1 font-bold">Carlos Mendoza</span>
-            <span className="text-gray-300 dark:text-slate-700">|</span>
-            <span className="text-gray-500 dark:text-hub-text2">ID: OP-4921</span>
-          </div>
-          <div className="flex items-center gap-1 text-[#414745] dark:text-hub-text2">
-            <MapPin className="w-3 h-3 text-[#009D4E]" />
-            <span>CD San Bernardo</span>
-          </div>
-        </footer>
+        {!hideFooter && (
+          <footer className="bg-white dark:bg-hub-surface border-t border-gray-200 dark:border-hub-border px-3 py-2 shrink-0 flex items-center justify-between text-[10px] font-mono shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-[#009D4E]"></span>
+              <span className="text-[#414745] dark:text-hub-text1 font-bold">Carlos Mendoza</span>
+              <span className="text-gray-300 dark:text-slate-700">|</span>
+              <span className="text-gray-500 dark:text-hub-text2">ID: OP-4921</span>
+            </div>
+            <div className="flex items-center gap-1 text-[#414745] dark:text-hub-text2">
+              <MapPin className="w-3 h-3 text-[#009D4E]" />
+              <span>CD San Bernardo</span>
+            </div>
+          </footer>
+        )}
 
         {/* Slide-over Hamburger Drawer Menu for PDA */}
         {isMenuOpen && (
@@ -179,6 +232,19 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                   Opciones Operativas
                 </span>
 
+                {/* Opción Destacada: Seguimiento de Encargo */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onOpenSeguimiento?.();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 text-xs font-bold text-[#009D4E] dark:text-[#03F77C] flex items-center gap-3 transition-colors text-left border border-emerald-200/60 dark:border-emerald-800/40 cursor-pointer"
+                >
+                  <Search className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C] shrink-0 stroke-[2.5]" />
+                  <span>Seguimiento de Encargo</span>
+                </button>
+
                 {/* Option 1: Mi Perfil */}
                 <button
                   type="button"
@@ -186,23 +252,30 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                     setIsMenuOpen(false);
                     alert(`Perfil del Operario:\nNombre: ${operatorName}\nRUT: ${operatorRut}\nID: ${operatorId}\nRol: Operador de Hub\nCentro: CD San Bernardo`);
                   }}
-                  className="w-full py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-hub-elevated text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-3 transition-colors text-left"
+                  className="w-full py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-hub-elevated text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-3 transition-colors text-left cursor-pointer"
                 >
                   <User className="w-4 h-4 text-[#009D4E] shrink-0" />
                   <span>Mi Perfil</span>
                 </button>
 
-                {/* Option 2: Desbloqueo de Operarios */}
+                {/* Option 2: Autorizaciones de Supervisor */}
                 <button
                   type="button"
                   onClick={() => {
                     setIsMenuOpen(false);
-                    alert('Desbloqueo de Operarios:\nNo hay operarios bloqueados en la estación.');
+                    onSelectModule?.('autorizaciones');
                   }}
-                  className="w-full py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-hub-elevated text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-3 transition-colors text-left"
+                  className="w-full py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-hub-elevated text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center justify-between gap-3 transition-colors text-left cursor-pointer"
                 >
-                  <LockKeyholeOpen className="w-4 h-4 text-[#009D4E] shrink-0" />
-                  <span>Desbloqueo de Operarios</span>
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Autorizaciones Supervisor</span>
+                  </div>
+                  {pendingCount > 0 && (
+                    <span className="min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-[10px] font-mono font-black flex items-center justify-center shrink-0 animate-pulse leading-none shadow-2xs">
+                      {pendingCount}
+                    </span>
+                  )}
                 </button>
 
                 {/* Option 3: Configuración */}

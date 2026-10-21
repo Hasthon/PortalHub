@@ -2310,7 +2310,7 @@ export const EncasilladoModule: React.FC<EncasilladoModuleProps> = ({
   // RENDER MODO DESKTOP (PC)
   // ═══════════════════════════════════════════════════════════════════════════
   return (
-    <div className="h-full flex flex-col p-4 sm:p-5 max-w-7xl mx-auto w-full gap-3 sm:gap-4 overflow-hidden animate-fadeIn relative font-sans">
+    <div className="h-full flex flex-col p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full gap-4 sm:gap-6 overflow-hidden animate-fadeIn relative font-sans">
       {renderExitConfirmationModal()}
       {renderIncidenciaModal()}
       {renderUnencasillableModal()}
