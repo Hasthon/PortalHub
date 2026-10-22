@@ -1820,7 +1820,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
 interface ModalEncargoDevolucionProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirmar: () => void;
+  onConfirmar?: () => void;
   data: {
     codigoBarras26: string;
     codigoOF: string;
@@ -1832,7 +1832,6 @@ interface ModalEncargoDevolucionProps {
 const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
   isOpen,
   onClose,
-  onConfirmar,
   data,
 }) => {
   if (!isOpen || !data) return null;
@@ -1865,10 +1864,6 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
             <h3 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
               Encargo con Devolución
             </h3>
-
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-0.5 sm:mt-1 max-w-sm leading-relaxed">
-              Este encargo cuenta con orden de devolución activa hacia remitente o centro de origen.
-            </p>
           </div>
 
           {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
@@ -1905,23 +1900,14 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
           </div>
         </div>
 
-        {/* Botones de Acción */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5 pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
+        {/* Botón de Acción (solo botón cerrar) */}
+        <div className="pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 sm:py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+            className="w-full py-2.5 sm:py-3 px-5 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center"
           >
             Cerrar
-          </button>
-
-          <button
-            type="button"
-            onClick={onConfirmar}
-            className="w-full sm:flex-1 py-2.5 sm:py-3 px-5 bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:text-[#303030] font-extrabold rounded-full sm:rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
-          >
-            <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
-            <span>Entendido — Recepcionar Devolución</span>
           </button>
         </div>
       </div>
