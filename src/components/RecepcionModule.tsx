@@ -39,6 +39,7 @@ import {
   Barcode,
   Package,
   Pencil,
+  Copy,
 } from 'lucide-react';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -330,6 +331,15 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   // ── Modal Derivar Valijas a Incidencias (Modo Lote) ───────────────────────
   const [derivarModalOpen, setDerivarModalOpen] = useState(false);
+
+  // ── Modal Encargo Devolución / Carga Reubicada ───────────────────────────
+  const [modalDevolucionOpen, setModalDevolucionOpen] = useState(false);
+  const [devolucionData, setDevolucionData] = useState<{
+    codigoBarras26: string;
+    codigoOF: string;
+    rampaReubicada?: string;
+    motivoDevolucion?: string;
+  } | null>(null);
 
   // ── Testing Presets State (Discrete QA Toolbar) ───────────────────────────
   const [testTipo, setTestTipo] = useState<TipoContenedor>('ENCARGO');
@@ -885,6 +895,30 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     triggerToast(`Se derivaron ${codigos.length} valija(s) al contenedor ${contenedor}.`, 'success');
   }, [playSuccessSound, triggerToast]);
 
+  // ─── Simulación de Encargo con Devolución y Carga Reubicada ─────────────────
+  const handleSimularDevolucion = useCallback(() => {
+    const randomOfNum = Math.floor(100000000 + Math.random() * 900000000).toString();
+    const codigo26 = `98200192${randomOfNum}82910293`.slice(0, 26);
+    const codigoOF = `OF-${randomOfNum}`;
+
+    setDevolucionData({
+      codigoBarras26: codigo26,
+      codigoOF: codigoOF,
+      rampaReubicada: 'Rampa 04 - Sector Devoluciones (RM Caren)',
+      motivoDevolucion: 'Dirección errónea / Devolución a remitente solicitada',
+    });
+    setModalDevolucionOpen(true);
+    playWarningSound();
+  }, [playWarningSound]);
+
+  const handleConfirmarDevolucion = useCallback(() => {
+    if (devolucionData) {
+      handleScanEncargo(devolucionData.codigoOF, 'ENCARGO', 'SIN_INTEGRIDAD', true);
+      triggerToast(`Encargo ${devolucionData.codigoOF} registrado con aviso de devolución y carga reubicada`, 'warning', devolucionData.codigoOF);
+    }
+    setModalDevolucionOpen(false);
+  }, [devolucionData, handleScanEncargo, triggerToast]);
+
   // ─── Cierre / Cuadratura Bifurcado Handlers ───────────────────────────────
   const handleIniciarCierre = useCallback(() => {
     const faltantes = totalGlobal - recepcionadosGlobal;
@@ -1003,6 +1037,14 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         valijasPendientes={valijasPendientesBins}
       />
 
+      {/* ── Modal Encargo con Devolución / Carga Reubicada ── */}
+      <ModalCargaReubicadaDevolucion
+        isOpen={modalDevolucionOpen}
+        onClose={() => setModalDevolucionOpen(false)}
+        onConfirmar={handleConfirmarDevolucion}
+        data={devolucionData}
+      />
+
       {/* ── Trazabilidad Overlay ── */}
       {trazabilidadOpen && (
         <TrazabilidadOverlay
@@ -1080,6 +1122,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             testModo={testModo}
             setTestModo={setTestModo}
             onSimularScanPrimerEncargo={handleSimularScanPrimerEncargo}
+            onSimularDevolucion={handleSimularDevolucion}
             valijasEntregadasBins={valijasEntregadasBins}
             valijasPendientesBins={valijasPendientesBins}
             onCompletarValijaPendiente={() => {
@@ -1996,6 +2039,172 @@ const DerivarIncidenciasModal: React.FC<DerivarIncidenciasModalProps> = ({
   );
 };
 
+// ─── Modal Encargo con Devolución y Carga Reubicada ─────────────────────────
+
+interface ModalCargaReubicadaDevolucionProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirmar: () => void;
+  data: {
+    codigoBarras26: string;
+    codigoOF: string;
+    rampaReubicada?: string;
+    motivoDevolucion?: string;
+  } | null;
+}
+
+const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps> = ({
+  isOpen,
+  onClose,
+  onConfirmar,
+  data,
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  if (!isOpen || !data) return null;
+
+  const handleCopyCode = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(data.codigoBarras26);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[520px] w-full font-sans transition-all relative">
+        {/* Botón cerrar X superior */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer"
+          title="Cerrar aviso"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Encabezado con Icono de Alerta de Devolución */}
+        <div className="flex flex-col items-center text-center mb-5">
+          <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700/70 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3.5 shadow-sm">
+            <RotateCcw className="w-8 h-8 stroke-[2.2]" />
+          </div>
+
+          <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+            AVISO DE CARGA REUBICADA
+          </span>
+
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
+            Encargo con Devolución
+          </h3>
+
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-1 max-w-sm leading-relaxed">
+            Este encargo cuenta con orden de devolución activa y fue reubicado en el sistema logístico.
+          </p>
+        </div>
+
+        {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
+        <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
+          {/* Número de OF */}
+          <div className="flex items-center justify-between gap-2 border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Número de OF
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-[#009D4E] dark:text-[#03F77C]">
+                {data.codigoOF}
+              </span>
+            </div>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold font-mono">
+              ORDEN DE FLETE
+            </span>
+          </div>
+
+          {/* Número de Código (Código de barras 26 dígitos) */}
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider">
+                Número de Código (Bulto)
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="text-[11px] font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                title="Copiar código completo"
+              >
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-emerald-600 dark:text-emerald-400">Copiado</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copiar</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
+              {data.codigoBarras26}
+            </div>
+          </div>
+
+          {/* Rampa Reubicada y Motivo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Destino Reubicado
+              </span>
+              <span className="text-xs font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="truncate">{data.rampaReubicada || 'Rampa 04 - Devoluciones'}</span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Motivo
+              </span>
+              <span className="text-xs font-medium text-gray-700 dark:text-hub-text2 block mt-0.5">
+                {data.motivoDevolucion || 'Devolución solicitada'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Banner de instrucción operativa */}
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-3 flex items-start gap-2.5 mb-6 text-left">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed font-sans">
+            <span className="font-bold">Instrucción:</span> Segregar este bulto físicamente hacia el área de devoluciones o rampa asignada antes de completar el despacho.
+          </p>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:w-auto px-5 py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+          >
+            Cerrar
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirmar}
+            className="w-full sm:flex-1 py-3 px-5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007038] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
+          >
+            <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+            <span>Entendido — Recepcionar y Derivar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Modal Cierre Recepción (Bifurcaciones, Autorización Supervisor QR y Cuadratura) ───
 
 interface CierreRecepcionModalProps {
@@ -2329,6 +2538,7 @@ const StepScanEncargo: React.FC<{
   testModo: ModoRecepcion;
   setTestModo: (m: ModoRecepcion) => void;
   onSimularScanPrimerEncargo: (tipo?: TipoContenedor, modo?: ModoRecepcion) => void;
+  onSimularDevolucion: () => void;
   valijasEntregadasBins: number;
   valijasPendientesBins: number;
   onCompletarValijaPendiente?: () => void;
@@ -2346,6 +2556,7 @@ const StepScanEncargo: React.FC<{
   testModo,
   setTestModo,
   onSimularScanPrimerEncargo,
+  onSimularDevolucion,
   valijasEntregadasBins,
   valijasPendientesBins,
   onCompletarValijaPendiente,
@@ -2450,6 +2661,16 @@ const StepScanEncargo: React.FC<{
             <Scan className="w-3.5 h-3.5" />
             <span>Simular {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
           </button>
+
+          <button
+            type="button"
+            onClick={onSimularDevolucion}
+            className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
+            title="Simular encargo con devolución y aviso de carga reubicada"
+          >
+            <RotateCcw className="w-3 h-3 stroke-[2.2]" />
+            <span>Sim. Devolución</span>
+          </button>
         </div>
       ) : (
         <div className="flex justify-end items-center gap-3 shrink-0 flex-wrap">
@@ -2503,6 +2724,17 @@ const StepScanEncargo: React.FC<{
           >
             <Scan className="w-4 h-4" />
             <span>Simular Escaneo PDA {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
+          </button>
+
+          {/* Botón Simular Devolución y Carga Reubicada */}
+          <button
+            type="button"
+            onClick={onSimularDevolucion}
+            className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-2 font-sans cursor-pointer active:scale-95"
+            title="Simular encargo con devolución y aviso de carga reubicada"
+          >
+            <RotateCcw className="w-4 h-4 stroke-[2.2] text-amber-600 dark:text-amber-400" />
+            <span>Simular Devolución (+1)</span>
           </button>
         </div>
       )}
