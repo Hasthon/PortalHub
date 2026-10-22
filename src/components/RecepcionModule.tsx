@@ -3023,13 +3023,17 @@ const StepScanEncargo: React.FC<{
           </div>
         )}
 
-      {/* ── Botón Finalizar recepción en la esquina inferior derecha ── */}
-      <div className="flex justify-end pt-2">
+      {/* ── Botón Finalizar recepción ── */}
+      <div className={`pt-2 ${isPda ? 'w-full' : 'flex justify-end'}`}>
         <button
           type="button"
           disabled={recepcionadosGlobal === 0}
           onClick={onCuadrar}
-          className={`px-8 py-3.5 font-black rounded-2xl text-sm shadow-md flex items-center gap-3 transition-all font-sans ${
+          className={`font-black text-sm flex items-center justify-center gap-2.5 transition-all font-sans ${
+            isPda
+              ? 'w-full py-4 rounded-full shadow-md'
+              : 'px-8 py-3.5 rounded-2xl shadow-md'
+          } ${
             recepcionadosGlobal === 0
               ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed opacity-60 border border-gray-300/40 dark:border-hub-border'
               : 'bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer active:scale-[0.98] shadow-md dark:shadow-emerald-500/20'
