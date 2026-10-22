@@ -39,6 +39,8 @@ import {
   Barcode,
   Package,
   Pencil,
+  Clock,
+  PackageOpen,
 } from 'lucide-react';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -857,10 +859,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setValijaModalStep('ESPERANDO_SELLO');
   }, []);
 
-  const handleValijaIrABins = useCallback(() => {
-    setValijaModalStep('ESCANEO_BINS');
-  }, []);
-
   const handleValijaScanBinsExitoso = useCallback(() => {
     setValijaModalStep('BINS_EXITO');
     playSuccessSound();
@@ -876,19 +874,52 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     }, 1400);
   }, [pendingValijaNomina, playSuccessSound, triggerToast]);
 
-  const handleValijaDejarDespues = useCallback(() => {
-    setValijaModalStep('ALERTA_DEJAR_DESPUES');
-    playWarningSound();
-  }, [playWarningSound]);
+  const handleValijaQuitarIntegridad = useCallback(() => {
+    const baseValija = pendingValijaNomina || buildContenedorIntegridad('VALIJA', 300);
+    const encargosDesarmados = baseValija.encargos.map(e => ({
+      ...e,
+      recepcionado: false,
+      recepcionadoAt: undefined,
+    }));
 
-  const handleValijaConfirmarDejarDespues = useCallback(() => {
-    const nuevoCodigo = `VAL-${Math.floor(1000 + Math.random() * 9000)}`;
-    setValijasPendientesLista(prev => [...prev, nuevoCodigo]);
+    const valijaSinIntegridad: NominaContenedora = {
+      ...baseValija,
+      codigo: baseValija.codigo || `VALIJA-${valijaCodigoEtiqueta.slice(-6)}`,
+      totalEncargos: encargosDesarmados.length,
+      encargosRecepcionados: 0,
+      encargos: encargosDesarmados,
+    };
+
+    setNominasActivas(prev => {
+      const filtered = prev.filter(n => n.id !== valijaSinIntegridad.id && n.codigo !== valijaSinIntegridad.codigo);
+      return [...filtered, valijaSinIntegridad];
+    });
+
+    setValijaModalOpen(false);
+    setPendingValijaNomina(null);
+    setPrevStepStack([]);
+    setStep('SCAN_ENCARGO');
+    playSuccessSound();
+    triggerToast(
+      `Integridad retirada: Recepciona los ${encargosDesarmados.length} encargos de la valija 1 a 1`,
+      'warning',
+      valijaSinIntegridad.codigo
+    );
+  }, [pendingValijaNomina, valijaCodigoEtiqueta, playSuccessSound, triggerToast]);
+
+  const handleValijaDejarDespues = useCallback(() => {
+    const codValija = pendingValijaNomina?.codigo || `VALIJA-${valijaCodigoEtiqueta.slice(-6)}`;
+    setValijasPendientesLista(prev => (prev.includes(codValija) ? prev : [...prev, codValija]));
     setValijasPendientesBins(prev => prev + 1);
     setValijaModalOpen(false);
     setPendingValijaNomina(null);
-    triggerToast(`Valija ${nuevoCodigo} registrada como pendiente para contenedor de incidencias.`, 'warning');
-  }, [triggerToast]);
+    playWarningSound();
+    triggerToast(`Valija ${codValija} apartada físicamente para revisión posterior.`, 'warning', codValija);
+  }, [pendingValijaNomina, valijaCodigoEtiqueta, playWarningSound, triggerToast]);
+
+  const handleValijaConfirmarDejarDespues = useCallback(() => {
+    handleValijaDejarDespues();
+  }, [handleValijaDejarDespues]);
 
   const handleValijaCancelar = useCallback(() => {
     setValijaModalOpen(false);
@@ -1032,7 +1063,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         onCoincide={handleValijaSelloCoincide}
         onNoCoincide={handleValijaSelloNoCoincide}
         onReintentar={handleValijaReintentar}
-        onIrABins={handleValijaIrABins}
+        onQuitarIntegridad={handleValijaQuitarIntegridad}
         onScanBins={handleValijaScanBinsExitoso}
         onDejarDespues={handleValijaDejarDespues}
         onConfirmarDejarDespues={handleValijaConfirmarDejarDespues}
@@ -1549,7 +1580,7 @@ interface ValijaSelloModalProps {
   onCoincide: () => void;
   onNoCoincide: () => void;
   onReintentar: () => void;
-  onIrABins: () => void;
+  onQuitarIntegridad: () => void;
   onScanBins: () => void;
   onDejarDespues: () => void;
   onConfirmarDejarDespues: () => void;
@@ -1563,7 +1594,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
   onCoincide,
   onNoCoincide,
   onReintentar,
-  onIrABins,
+  onQuitarIntegridad,
   onScanBins,
   onDejarDespues,
   onConfirmarDejarDespues,
@@ -1645,35 +1676,80 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
           </div>
         )}
 
-        {/* ── 3. SELLO ERROR (Imagen 3) ── */}
+        {/* ── 3. SELLO ERROR (El sello no coincide) ── */}
         {step === 'SELLO_ERROR' && (
-          <div className="text-center pt-2">
-            <div className="w-14 h-14 rounded-full bg-[#EF5350] flex items-center justify-center text-white mx-auto mb-3 shadow-sm">
-              <X className="w-7 h-7 stroke-[2.8]" />
+          <div className="text-center pt-1 font-sans">
+            <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-950/60 border border-red-200 dark:border-red-800/80 flex items-center justify-center text-red-600 dark:text-red-400 mx-auto mb-3 shadow-xs">
+              <AlertCircle className="w-8 h-8 stroke-[2.4]" />
             </div>
 
-            <h3 className="text-lg font-black text-gray-900 dark:text-white font-sans">
+            <h3 className="text-xl font-black text-gray-900 dark:text-white">
               El sello no coincide
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 mb-6 font-sans">
-              Vuelve a escanear o deja este encargo en el contenedor de incidencias.
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1.5 mb-5 max-w-[420px] mx-auto leading-relaxed">
+              El sello físico no coincide con el registrado en el sistema. Selecciona la acción a seguir para continuar con la recepción:
             </p>
 
-            <div className="flex items-center gap-3 pt-2">
+            {/* Opciones operativas principales */}
+            <div className="space-y-3 mb-5 text-left">
+              {/* Opción 1: Quitar integridad y recepcionar 1 a 1 */}
               <button
                 type="button"
-                onClick={onIrABins}
-                className="flex-1 py-3.5 px-4 rounded-2xl border-2 border-gray-300 dark:border-hub-border text-gray-800 dark:text-white font-bold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-hub-elevated active:scale-95 transition-all cursor-pointer font-sans whitespace-nowrap text-center shadow-2xs"
+                onClick={onQuitarIntegridad}
+                className="w-full p-4 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border-2 border-[#009D4E] dark:border-[#03F77C]/60 text-left transition-all cursor-pointer group shadow-xs active:scale-[0.99] flex items-start gap-3.5"
               >
-                Dejar en contenedor de incidencias
+                <div className="w-10 h-10 rounded-xl bg-[#009D4E] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  <PackageOpen className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-black text-gray-900 dark:text-white">
+                      Quitar integridad y recepcionar 1 a 1
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 uppercase tracking-wider shrink-0">
+                      Continuar ahora
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 leading-snug">
+                    Desarma la valija en el sistema y pistolea cada encargo individualmente para verificar su contenido.
+                  </p>
+                </div>
               </button>
 
+              {/* Opción 2: Dejar para después */}
+              <button
+                type="button"
+                onClick={onDejarDespues}
+                className="w-full p-4 rounded-2xl bg-gray-50 hover:bg-amber-50/60 dark:bg-hub-elevated/40 dark:hover:bg-amber-950/20 border-2 border-gray-200 dark:border-hub-border hover:border-amber-400 dark:hover:border-amber-600 text-left transition-all cursor-pointer group shadow-2xs active:scale-[0.99] flex items-start gap-3.5"
+              >
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-black text-gray-900 dark:text-white">
+                      Dejar para después
+                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 uppercase tracking-wider shrink-0">
+                      Apartar física
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 leading-snug">
+                    Aparta la valija físicamente para revisión posterior sin detener la recepción del camión.
+                  </p>
+                </div>
+              </button>
+            </div>
+
+            {/* Acción de reintento */}
+            <div className="pt-2 border-t border-gray-100 dark:border-hub-border">
               <button
                 type="button"
                 onClick={onReintentar}
-                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] dark:bg-white text-white dark:text-[#303030] font-bold text-xs sm:text-sm shadow-md hover:opacity-95 active:scale-95 transition-all cursor-pointer font-sans whitespace-nowrap text-center"
+                className="w-full py-3 px-4 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-hub-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Reintentar escaneo
+                <RotateCcw className="w-4 h-4" />
+                <span>¿Fue un error de lectura? Reintentar escaneo del sello</span>
               </button>
             </div>
           </div>
