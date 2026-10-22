@@ -1920,7 +1920,7 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
 interface ModalCargaReubicadaProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirmar: () => void;
+  onConfirmar?: () => void;
   data: {
     codigoBarras26: string;
     codigoOF: string;
@@ -1932,7 +1932,6 @@ interface ModalCargaReubicadaProps {
 const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
   isOpen,
   onClose,
-  onConfirmar,
   data,
 }) => {
   if (!isOpen || !data) return null;
@@ -1952,23 +1951,19 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
 
         {/* Contenido con scroll interno para pantallas cortas */}
         <div className="overflow-y-auto pr-1 -mr-1 [scrollbar-width:thin] flex-1">
-          {/* Encabezado con Icono de Carga Reubicada */}
+          {/* Encabezado con Icono de Carga sin Redimensión */}
           <div className="flex flex-col items-center text-center mb-3.5 sm:mb-5">
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-blue-50 dark:bg-blue-950/60 border border-blue-300 dark:border-blue-700/70 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-2.5 sm:mb-3.5 shadow-sm">
               <ArrowRightLeft className="w-6 h-6 sm:w-8 sm:h-8 stroke-[2.2]" />
             </div>
 
             <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider mb-1.5">
-              AVISO DE CARGA REUBICADA
+              CARGA SIN REDIMENSIÓN
             </span>
 
             <h3 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
-              Carga Reubicada
+              Carga sin Redimensión
             </h3>
-
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-0.5 sm:mt-1 max-w-sm leading-relaxed">
-              Este encargo fue reubicado operativamente a otra rampa o ubicación logística en el sistema.
-            </p>
           </div>
 
           {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
@@ -1984,7 +1979,7 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
             </div>
 
             {/* Número de Código (Código de barras 26 dígitos) */}
-            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+            <div>
               <div className="mb-1">
                 <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
                   Número de Código (Bulto)
@@ -1994,55 +1989,25 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
                 {data.codigoBarras26}
               </div>
             </div>
-
-            {/* Nueva Rampa Asignada */}
-            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Nueva Rampa Asignada
-              </span>
-              <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                <span>{data.nuevaRampa || 'Rampa 06 - Zona B (Despacho Norte)'}</span>
-              </span>
-            </div>
-
-            {/* Motivo Reubicación */}
-            <div className="pt-0.5">
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Motivo Reubicación
-              </span>
-              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
-                {data.motivoReubicacion || 'Reasignación operativa de rampa / balance de carga'}
-              </span>
-            </div>
           </div>
 
           {/* Banner de instrucción operativa */}
           <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 mb-4 sm:mb-6 text-left">
             <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
             <p className="text-xs text-blue-900 dark:text-blue-200/90 leading-relaxed font-sans">
-              <span className="font-bold">Instrucción:</span> Traslada este bulto físicamente a la rampa indicada antes de completar la recepción.
+              <span className="font-bold">Instrucción:</span> aparta este encargo para posteriormente redimensionarlo.
             </p>
           </div>
         </div>
 
-        {/* Botones de Acción */}
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5 pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
+        {/* Botón de Acción (solo Cerrar) */}
+        <div className="pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2.5 sm:py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+            className="w-full py-2.5 sm:py-3 px-5 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center"
           >
             Cerrar
-          </button>
-
-          <button
-            type="button"
-            onClick={onConfirmar}
-            className="w-full sm:flex-1 py-2.5 sm:py-3 px-5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007038] text-white font-extrabold rounded-full sm:rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
-          >
-            <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
-            <span>Entendido — Confirmar Reubicación</span>
           </button>
         </div>
       </div>
@@ -2513,10 +2478,10 @@ const StepScanEncargo: React.FC<{
               type="button"
               onClick={onSimularReubicacion}
               className="py-1 px-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300/70 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
-              title="Simular aviso de carga reubicada"
+              title="Simular carga sin redimensión"
             >
               <ArrowRightLeft className="w-3 h-3 stroke-[2.2] shrink-0" />
-              <span className="truncate">Reubicada</span>
+              <span className="truncate">Sin Redimensión</span>
             </button>
           </div>
         </div>
@@ -2585,15 +2550,15 @@ const StepScanEncargo: React.FC<{
             <span>Simular Devolución (+1)</span>
           </button>
 
-          {/* Botón Simular Reubicación */}
+          {/* Botón Simular Carga Sin Redimensión */}
           <button
             type="button"
             onClick={onSimularReubicacion}
             className="px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
-            title="Simular aviso de carga reubicada a otra rampa"
+            title="Simular aviso de carga sin redimensión"
           >
             <ArrowRightLeft className="w-4 h-4 stroke-[2.2] text-blue-600 dark:text-blue-400" />
-            <span>Simular Reubicación (+1)</span>
+            <span>Simular Sin Redimensión (+1)</span>
           </button>
         </div>
       )}
