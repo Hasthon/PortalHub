@@ -331,13 +331,22 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   // ── Modal Derivar Valijas a Incidencias (Modo Lote) ───────────────────────
   const [derivarModalOpen, setDerivarModalOpen] = useState(false);
 
-  // ── Modal Encargo Devolución / Carga Reubicada ───────────────────────────
+  // ── Modal 1: Encargo con Devolución ───────────────────────────────────────
   const [modalDevolucionOpen, setModalDevolucionOpen] = useState(false);
   const [devolucionData, setDevolucionData] = useState<{
     codigoBarras26: string;
     codigoOF: string;
-    rampaReubicada?: string;
+    destinoDevolucion?: string;
     motivoDevolucion?: string;
+  } | null>(null);
+
+  // ── Modal 2: Aviso de Carga Reubicada ─────────────────────────────────────
+  const [modalReubicacionOpen, setModalReubicacionOpen] = useState(false);
+  const [reubicacionData, setReubicacionData] = useState<{
+    codigoBarras26: string;
+    codigoOF: string;
+    nuevaRampa?: string;
+    motivoReubicacion?: string;
   } | null>(null);
 
   // ── Testing Presets State (Discrete QA Toolbar) ───────────────────────────
@@ -894,7 +903,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     triggerToast(`Se derivaron ${codigos.length} valija(s) al contenedor ${contenedor}.`, 'success');
   }, [playSuccessSound, triggerToast]);
 
-  // ─── Simulación de Encargo con Devolución y Carga Reubicada ─────────────────
+  // ─── Simulación 1: Encargo con Devolución ──────────────────────────────────
   const handleSimularDevolucion = useCallback(() => {
     const randomOfNum = Math.floor(100000000 + Math.random() * 900000000).toString();
     const codigo26 = `98200192${randomOfNum}82910293`.slice(0, 26);
@@ -903,7 +912,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setDevolucionData({
       codigoBarras26: codigo26,
       codigoOF: codigoOF,
-      rampaReubicada: 'Rampa 04 - Sector Devoluciones (RM Caren)',
+      destinoDevolucion: 'Sector Devoluciones / Pallet RM Caren',
       motivoDevolucion: 'Dirección errónea / Devolución a remitente solicitada',
     });
     setModalDevolucionOpen(true);
@@ -913,10 +922,34 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   const handleConfirmarDevolucion = useCallback(() => {
     if (devolucionData) {
       handleScanEncargo(devolucionData.codigoOF, 'ENCARGO', 'SIN_INTEGRIDAD', true);
-      triggerToast(`Encargo ${devolucionData.codigoOF} registrado con aviso de devolución y carga reubicada`, 'warning', devolucionData.codigoOF);
+      triggerToast(`Encargo ${devolucionData.codigoOF} registrado con orden de devolución`, 'warning', devolucionData.codigoOF);
     }
     setModalDevolucionOpen(false);
   }, [devolucionData, handleScanEncargo, triggerToast]);
+
+  // ─── Simulación 2: Aviso de Carga Reubicada ────────────────────────────────
+  const handleSimularReubicacion = useCallback(() => {
+    const randomOfNum = Math.floor(100000000 + Math.random() * 900000000).toString();
+    const codigo26 = `98200192${randomOfNum}82910293`.slice(0, 26);
+    const codigoOF = `OF-${randomOfNum}`;
+
+    setReubicacionData({
+      codigoBarras26: codigo26,
+      codigoOF: codigoOF,
+      nuevaRampa: 'Rampa 06 - Zona B (Despacho Norte)',
+      motivoReubicacion: 'Reasignación operativa de rampa / balance de carga',
+    });
+    setModalReubicacionOpen(true);
+    playWarningSound();
+  }, [playWarningSound]);
+
+  const handleConfirmarReubicacion = useCallback(() => {
+    if (reubicacionData) {
+      handleScanEncargo(reubicacionData.codigoOF, 'ENCARGO', 'SIN_INTEGRIDAD', true);
+      triggerToast(`Encargo ${reubicacionData.codigoOF} confirmado para reubicación a Rampa 06`, 'success', reubicacionData.codigoOF);
+    }
+    setModalReubicacionOpen(false);
+  }, [reubicacionData, handleScanEncargo, triggerToast]);
 
   // ─── Cierre / Cuadratura Bifurcado Handlers ───────────────────────────────
   const handleIniciarCierre = useCallback(() => {
@@ -1036,12 +1069,20 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         valijasPendientes={valijasPendientesBins}
       />
 
-      {/* ── Modal Encargo con Devolución / Carga Reubicada ── */}
-      <ModalCargaReubicadaDevolucion
+      {/* ── Modal 1: Encargo con Devolución ── */}
+      <ModalEncargoDevolucion
         isOpen={modalDevolucionOpen}
         onClose={() => setModalDevolucionOpen(false)}
         onConfirmar={handleConfirmarDevolucion}
         data={devolucionData}
+      />
+
+      {/* ── Modal 2: Aviso de Carga Reubicada ── */}
+      <ModalCargaReubicada
+        isOpen={modalReubicacionOpen}
+        onClose={() => setModalReubicacionOpen(false)}
+        onConfirmar={handleConfirmarReubicacion}
+        data={reubicacionData}
       />
 
       {/* ── Trazabilidad Overlay ── */}
@@ -1122,6 +1163,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             setTestModo={setTestModo}
             onSimularScanPrimerEncargo={handleSimularScanPrimerEncargo}
             onSimularDevolucion={handleSimularDevolucion}
+            onSimularReubicacion={handleSimularReubicacion}
             valijasEntregadasBins={valijasEntregadasBins}
             valijasPendientesBins={valijasPendientesBins}
             onCompletarValijaPendiente={() => {
@@ -2038,21 +2080,21 @@ const DerivarIncidenciasModal: React.FC<DerivarIncidenciasModalProps> = ({
   );
 };
 
-// ─── Modal Encargo con Devolución y Carga Reubicada ─────────────────────────
+// ─── Modal 1: Encargo con Devolución ─────────────────────────────────────────
 
-interface ModalCargaReubicadaDevolucionProps {
+interface ModalEncargoDevolucionProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirmar: () => void;
   data: {
     codigoBarras26: string;
     codigoOF: string;
-    rampaReubicada?: string;
+    destinoDevolucion?: string;
     motivoDevolucion?: string;
   } | null;
 }
 
-const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps> = ({
+const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
   isOpen,
   onClose,
   onConfirmar,
@@ -2080,7 +2122,7 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
           </div>
 
           <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
-            AVISO DE CARGA REUBICADA
+            ENCARGO EN DEVOLUCIÓN
           </span>
 
           <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
@@ -2088,7 +2130,7 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
           </h3>
 
           <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-1 max-w-sm leading-relaxed">
-            Este encargo cuenta con orden de devolución activa y fue reubicado en el sistema logístico.
+            Este encargo cuenta con orden de devolución activa hacia remitente o centro de origen.
           </p>
         </div>
 
@@ -2100,11 +2142,11 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
               <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
                 Número de OF
               </span>
-              <span className="text-base sm:text-lg font-mono font-black text-[#009D4E] dark:text-[#03F77C]">
+              <span className="text-base sm:text-lg font-mono font-black text-amber-600 dark:text-amber-400">
                 {data.codigoOF}
               </span>
             </div>
-            <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold font-mono">
+            <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[11px] font-bold font-mono">
               ORDEN DE FLETE
             </span>
           </div>
@@ -2121,24 +2163,24 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
             </div>
           </div>
 
-          {/* Rampa Reubicada y Motivo */}
+          {/* Destino Devolución y Motivo */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
             <div>
               <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Destino Reubicado
+                Destino Devolución
               </span>
               <span className="text-xs font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <span className="truncate">{data.rampaReubicada || 'Rampa 04 - Devoluciones'}</span>
+                <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span className="truncate">{data.destinoDevolucion || 'Sector Devoluciones / RM Caren'}</span>
               </span>
             </div>
 
             <div>
               <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Motivo
+                Motivo Devolución
               </span>
               <span className="text-xs font-medium text-gray-700 dark:text-hub-text2 block mt-0.5">
-                {data.motivoDevolucion || 'Devolución solicitada'}
+                {data.motivoDevolucion || 'Devolución a remitente solicitada'}
               </span>
             </div>
           </div>
@@ -2148,7 +2190,145 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
         <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-3 flex items-start gap-2.5 mb-6 text-left">
           <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed font-sans">
-            <span className="font-bold">Instrucción:</span> Segregar este bulto físicamente hacia el área de devoluciones o rampa asignada antes de completar el despacho.
+            <span className="font-bold">Instrucción:</span> Aparta este bulto físicamente y deposítalo en el pallet o sector de devoluciones asignado.
+          </p>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:w-auto px-5 py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+          >
+            Cerrar
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirmar}
+            className="w-full sm:flex-1 py-3 px-5 bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:text-[#303030] font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
+          >
+            <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
+            <span>Entendido — Recepcionar Devolución</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Modal 2: Aviso de Carga Reubicada ───────────────────────────────────────
+
+interface ModalCargaReubicadaProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirmar: () => void;
+  data: {
+    codigoBarras26: string;
+    codigoOF: string;
+    nuevaRampa?: string;
+    motivoReubicacion?: string;
+  } | null;
+}
+
+const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
+  isOpen,
+  onClose,
+  onConfirmar,
+  data,
+}) => {
+  if (!isOpen || !data) return null;
+
+  return (
+    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[520px] w-full font-sans transition-all relative">
+        {/* Botón cerrar X superior */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer"
+          title="Cerrar aviso"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {/* Encabezado con Icono de Carga Reubicada */}
+        <div className="flex flex-col items-center text-center mb-5">
+          <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/60 border border-blue-300 dark:border-blue-700/70 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3.5 shadow-sm">
+            <ArrowRightLeft className="w-8 h-8 stroke-[2.2]" />
+          </div>
+
+          <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
+            AVISO DE CARGA REUBICADA
+          </span>
+
+          <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
+            Carga Reubicada
+          </h3>
+
+          <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-1 max-w-sm leading-relaxed">
+            Este encargo fue reubicado operativamente a otra rampa o ubicación logística en el sistema.
+          </p>
+        </div>
+
+        {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
+        <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
+          {/* Número de OF */}
+          <div className="flex items-center justify-between gap-2 border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Número de OF
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-blue-600 dark:text-blue-400">
+                {data.codigoOF}
+              </span>
+            </div>
+            <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[11px] font-bold font-mono">
+              ORDEN DE FLETE
+            </span>
+          </div>
+
+          {/* Número de Código (Código de barras 26 dígitos) */}
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <div className="mb-1">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Número de Código (Bulto)
+              </span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
+              {data.codigoBarras26}
+            </div>
+          </div>
+
+          {/* Nueva Rampa y Motivo */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Nueva Rampa Asignada
+              </span>
+              <span className="text-xs font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span className="truncate">{data.nuevaRampa || 'Rampa 06 - Zona B'}</span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Motivo Reubicación
+              </span>
+              <span className="text-xs font-medium text-gray-700 dark:text-hub-text2 block mt-0.5">
+                {data.motivoReubicacion || 'Reasignación de rampa'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Banner de instrucción operativa */}
+        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-2xl p-3 flex items-start gap-2.5 mb-6 text-left">
+          <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-900 dark:text-blue-200/90 leading-relaxed font-sans">
+            <span className="font-bold">Instrucción:</span> Traslada este bulto físicamente a la rampa indicada antes de completar la recepción.
           </p>
         </div>
 
@@ -2168,7 +2348,7 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
             className="w-full sm:flex-1 py-3 px-5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007038] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
           >
             <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
-            <span>Entendido — Recepcionar y Derivar</span>
+            <span>Entendido — Confirmar Reubicación</span>
           </button>
         </div>
       </div>
@@ -2510,6 +2690,7 @@ const StepScanEncargo: React.FC<{
   setTestModo: (m: ModoRecepcion) => void;
   onSimularScanPrimerEncargo: (tipo?: TipoContenedor, modo?: ModoRecepcion) => void;
   onSimularDevolucion: () => void;
+  onSimularReubicacion: () => void;
   valijasEntregadasBins: number;
   valijasPendientesBins: number;
   onCompletarValijaPendiente?: () => void;
@@ -2528,6 +2709,7 @@ const StepScanEncargo: React.FC<{
   setTestModo,
   onSimularScanPrimerEncargo,
   onSimularDevolucion,
+  onSimularReubicacion,
   valijasEntregadasBins,
   valijasPendientesBins,
   onCompletarValijaPendiente,
@@ -2637,10 +2819,20 @@ const StepScanEncargo: React.FC<{
             type="button"
             onClick={onSimularDevolucion}
             className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
-            title="Simular encargo con devolución y aviso de carga reubicada"
+            title="Simular encargo con devolución"
           >
             <RotateCcw className="w-3 h-3 stroke-[2.2]" />
-            <span>Sim. Devolución</span>
+            <span>Devolución</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onSimularReubicacion}
+            className="px-2 py-1 bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
+            title="Simular aviso de carga reubicada"
+          >
+            <ArrowRightLeft className="w-3 h-3 stroke-[2.2]" />
+            <span>Reubicada</span>
           </button>
         </div>
       ) : (
@@ -2691,21 +2883,32 @@ const StepScanEncargo: React.FC<{
           <button
             type="button"
             onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
-            className="px-4 py-2 bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-500/80 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-2 font-sans cursor-pointer active:scale-95"
+            className="px-3.5 py-2 bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-500/80 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
           >
             <Scan className="w-4 h-4" />
             <span>Simular Escaneo PDA {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
           </button>
 
-          {/* Botón Simular Devolución y Carga Reubicada */}
+          {/* Botón Simular Devolución */}
           <button
             type="button"
             onClick={onSimularDevolucion}
-            className="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-2 font-sans cursor-pointer active:scale-95"
-            title="Simular encargo con devolución y aviso de carga reubicada"
+            className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
+            title="Simular encargo con orden de devolución"
           >
             <RotateCcw className="w-4 h-4 stroke-[2.2] text-amber-600 dark:text-amber-400" />
             <span>Simular Devolución (+1)</span>
+          </button>
+
+          {/* Botón Simular Reubicación */}
+          <button
+            type="button"
+            onClick={onSimularReubicacion}
+            className="px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
+            title="Simular aviso de carga reubicada a otra rampa"
+          >
+            <ArrowRightLeft className="w-4 h-4 stroke-[2.2] text-blue-600 dark:text-blue-400" />
+            <span>Simular Reubicación (+1)</span>
           </button>
         </div>
       )}
