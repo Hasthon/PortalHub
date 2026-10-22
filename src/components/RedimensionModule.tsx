@@ -618,7 +618,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
               </h3>
 
               <p className="text-xs text-gray-500 dark:text-hub-text2 mb-5 max-w-xs leading-relaxed">
-                Escanea el código de barras del encargo para registrar nuevas medidas y estado de embalaje.
+                Escanea el código de barras del encargo. Si no dispones de escáner, puedes utilizar la cámara para escanearlo.
               </p>
 
               <div className="w-full space-y-2.5">
@@ -659,7 +659,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
               </h2>
 
               <p className="text-xs sm:text-sm text-gray-500 dark:text-hub-text2 font-medium max-w-md mb-6 leading-relaxed">
-                Escanea el código de barras del encargo para registrar nuevas medidas y estado de embalaje.
+                Escanea el código de barras del encargo. Si no dispones de escáner, puedes utilizar la cámara para escanearlo.
               </p>
 
               <div className="flex flex-col items-center gap-3 w-full justify-center">
