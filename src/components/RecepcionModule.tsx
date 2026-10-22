@@ -1838,97 +1838,100 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
   if (!isOpen || !data) return null;
 
   return (
-    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[520px] w-full font-sans transition-all relative">
+    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
+      <div className="bg-white dark:bg-hub-surface rounded-3xl p-4 sm:p-7 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[500px] w-full font-sans transition-all relative max-h-[92dvh] flex flex-col my-auto">
         {/* Botón cerrar X superior */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer"
+          className="absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 sm:p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer z-10"
           title="Cerrar aviso"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Encabezado con Icono de Alerta de Devolución */}
-        <div className="flex flex-col items-center text-center mb-5">
-          <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700/70 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3.5 shadow-sm">
-            <RotateCcw className="w-8 h-8 stroke-[2.2]" />
+        {/* Contenido con scroll interno para pantallas cortas */}
+        <div className="overflow-y-auto pr-1 -mr-1 [scrollbar-width:thin] flex-1">
+          {/* Encabezado con Icono de Alerta de Devolución */}
+          <div className="flex flex-col items-center text-center mb-3.5 sm:mb-5">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700/70 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-2.5 sm:mb-3.5 shadow-sm">
+              <RotateCcw className="w-6 h-6 sm:w-8 sm:h-8 stroke-[2.2]" />
+            </div>
+
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider mb-1.5">
+              ENCARGO EN DEVOLUCIÓN
+            </span>
+
+            <h3 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
+              Encargo con Devolución
+            </h3>
+
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-0.5 sm:mt-1 max-w-sm leading-relaxed">
+              Este encargo cuenta con orden de devolución activa hacia remitente o centro de origen.
+            </p>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
-            ENCARGO EN DEVOLUCIÓN
-          </span>
-
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
-            Encargo con Devolución
-          </h3>
-
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-1 max-w-sm leading-relaxed">
-            Este encargo cuenta con orden de devolución activa hacia remitente o centro de origen.
-          </p>
-        </div>
-
-        {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
-        <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
-          {/* Número de OF */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Número de OF
-            </span>
-            <span className="text-base sm:text-lg font-mono font-black text-amber-600 dark:text-amber-400 block mt-0.5">
-              {data.codigoOF}
-            </span>
-          </div>
-
-          {/* Número de Código (Código de barras 26 dígitos) */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <div className="mb-1">
+          {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
+          <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-3 sm:p-4 border border-gray-200/80 dark:border-hub-border space-y-2.5 sm:space-y-3.5 mb-3 sm:mb-5 shadow-2xs text-left">
+            {/* Número de OF */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
               <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Número de Código (Bulto)
+                Número de OF
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-amber-600 dark:text-amber-400 block mt-0.5">
+                {data.codigoOF}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
-              {data.codigoBarras26}
+
+            {/* Número de Código (Código de barras 26 dígitos) */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+              <div className="mb-1">
+                <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                  Número de Código (Bulto)
+                </span>
+              </div>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
+                {data.codigoBarras26}
+              </div>
+            </div>
+
+            {/* Destino Devolución */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Destino Devolución
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+                <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>{data.destinoDevolucion || 'Sector Devoluciones / Pallet RM Caren'}</span>
+              </span>
+            </div>
+
+            {/* Motivo Devolución (Debajo del destino) */}
+            <div className="pt-0.5">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Motivo Devolución
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
+                {data.motivoDevolucion || 'Dirección errónea / Devolución a remitente solicitada'}
+              </span>
             </div>
           </div>
 
-          {/* Destino Devolución */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Destino Devolución
-            </span>
-            <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-              <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>{data.destinoDevolucion || 'Sector Devoluciones / Pallet RM Caren'}</span>
-            </span>
+          {/* Banner de instrucción operativa */}
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 mb-4 sm:mb-6 text-left">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed font-sans">
+              <span className="font-bold">Instrucción:</span> Aparta este bulto físicamente y deposítalo en el pallet o sector de devoluciones asignado.
+            </p>
           </div>
-
-          {/* Motivo Devolución (Debajo del destino) */}
-          <div className="pt-0.5">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Motivo Devolución
-            </span>
-            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
-              {data.motivoDevolucion || 'Dirección errónea / Devolución a remitente solicitada'}
-            </span>
-          </div>
-        </div>
-
-        {/* Banner de instrucción operativa */}
-        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-3 flex items-start gap-2.5 mb-6 text-left">
-          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed font-sans">
-            <span className="font-bold">Instrucción:</span> Aparta este bulto físicamente y deposítalo en el pallet o sector de devoluciones asignado.
-          </p>
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5 pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+            className="w-full sm:w-auto px-5 py-2.5 sm:py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
           >
             Cerrar
           </button>
@@ -1936,7 +1939,7 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
           <button
             type="button"
             onClick={onConfirmar}
-            className="w-full sm:flex-1 py-3 px-5 bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:text-[#303030] font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
+            className="w-full sm:flex-1 py-2.5 sm:py-3 px-5 bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:text-[#303030] font-extrabold rounded-full sm:rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
           >
             <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
             <span>Entendido — Recepcionar Devolución</span>
@@ -1970,97 +1973,100 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
   if (!isOpen || !data) return null;
 
   return (
-    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[520px] w-full font-sans transition-all relative">
+    <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
+      <div className="bg-white dark:bg-hub-surface rounded-3xl p-4 sm:p-7 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[500px] w-full font-sans transition-all relative max-h-[92dvh] flex flex-col my-auto">
         {/* Botón cerrar X superior */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer"
+          className="absolute top-3 right-3 sm:top-5 sm:right-5 p-1.5 sm:p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer z-10"
           title="Cerrar aviso"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Encabezado con Icono de Carga Reubicada */}
-        <div className="flex flex-col items-center text-center mb-5">
-          <div className="w-16 h-16 rounded-3xl bg-blue-50 dark:bg-blue-950/60 border border-blue-300 dark:border-blue-700/70 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3.5 shadow-sm">
-            <ArrowRightLeft className="w-8 h-8 stroke-[2.2]" />
+        {/* Contenido con scroll interno para pantallas cortas */}
+        <div className="overflow-y-auto pr-1 -mr-1 [scrollbar-width:thin] flex-1">
+          {/* Encabezado con Icono de Carga Reubicada */}
+          <div className="flex flex-col items-center text-center mb-3.5 sm:mb-5">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-blue-50 dark:bg-blue-950/60 border border-blue-300 dark:border-blue-700/70 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-2.5 sm:mb-3.5 shadow-sm">
+              <ArrowRightLeft className="w-6 h-6 sm:w-8 sm:h-8 stroke-[2.2]" />
+            </div>
+
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider mb-1.5">
+              AVISO DE CARGA REUBICADA
+            </span>
+
+            <h3 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
+              Carga Reubicada
+            </h3>
+
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-0.5 sm:mt-1 max-w-sm leading-relaxed">
+              Este encargo fue reubicado operativamente a otra rampa o ubicación logística en el sistema.
+            </p>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800 text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
-            AVISO DE CARGA REUBICADA
-          </span>
-
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
-            Carga Reubicada
-          </h3>
-
-          <p className="text-xs sm:text-sm text-gray-600 dark:text-hub-text2 mt-1 max-w-sm leading-relaxed">
-            Este encargo fue reubicado operativamente a otra rampa o ubicación logística en el sistema.
-          </p>
-        </div>
-
-        {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
-        <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
-          {/* Número de OF */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Número de OF
-            </span>
-            <span className="text-base sm:text-lg font-mono font-black text-blue-600 dark:text-blue-400 block mt-0.5">
-              {data.codigoOF}
-            </span>
-          </div>
-
-          {/* Número de Código (Código de barras 26 dígitos) */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <div className="mb-1">
+          {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
+          <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-3 sm:p-4 border border-gray-200/80 dark:border-hub-border space-y-2.5 sm:space-y-3.5 mb-3 sm:mb-5 shadow-2xs text-left">
+            {/* Número de OF */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
               <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Número de Código (Bulto)
+                Número de OF
+              </span>
+              <span className="text-base sm:text-lg font-mono font-black text-blue-600 dark:text-blue-400 block mt-0.5">
+                {data.codigoOF}
               </span>
             </div>
-            <div className="p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
-              {data.codigoBarras26}
+
+            {/* Número de Código (Código de barras 26 dígitos) */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+              <div className="mb-1">
+                <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                  Número de Código (Bulto)
+                </span>
+              </div>
+              <div className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
+                {data.codigoBarras26}
+              </div>
+            </div>
+
+            {/* Nueva Rampa Asignada */}
+            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Nueva Rampa Asignada
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span>{data.nuevaRampa || 'Rampa 06 - Zona B (Despacho Norte)'}</span>
+              </span>
+            </div>
+
+            {/* Motivo Reubicación */}
+            <div className="pt-0.5">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+                Motivo Reubicación
+              </span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
+                {data.motivoReubicacion || 'Reasignación operativa de rampa / balance de carga'}
+              </span>
             </div>
           </div>
 
-          {/* Nueva Rampa Asignada */}
-          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Nueva Rampa Asignada
-            </span>
-            <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-              <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span>{data.nuevaRampa || 'Rampa 06 - Zona B (Despacho Norte)'}</span>
-            </span>
+          {/* Banner de instrucción operativa */}
+          <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 flex items-start gap-2.5 mb-4 sm:mb-6 text-left">
+            <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-900 dark:text-blue-200/90 leading-relaxed font-sans">
+              <span className="font-bold">Instrucción:</span> Traslada este bulto físicamente a la rampa indicada antes de completar la recepción.
+            </p>
           </div>
-
-          {/* Motivo Reubicación */}
-          <div className="pt-0.5">
-            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-              Motivo Reubicación
-            </span>
-            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
-              {data.motivoReubicacion || 'Reasignación operativa de rampa / balance de carga'}
-            </span>
-          </div>
-        </div>
-
-        {/* Banner de instrucción operativa */}
-        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 rounded-2xl p-3 flex items-start gap-2.5 mb-6 text-left">
-          <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-blue-900 dark:text-blue-200/90 leading-relaxed font-sans">
-            <span className="font-bold">Instrucción:</span> Traslada este bulto físicamente a la rampa indicada antes de completar la recepción.
-          </p>
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-2.5 pt-2 shrink-0 border-t border-gray-100 dark:border-hub-border/80">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
+            className="w-full sm:w-auto px-5 py-2.5 sm:py-3 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center order-2 sm:order-1"
           >
             Cerrar
           </button>
@@ -2068,7 +2074,7 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
           <button
             type="button"
             onClick={onConfirmar}
-            className="w-full sm:flex-1 py-3 px-5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007038] text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
+            className="w-full sm:flex-1 py-2.5 sm:py-3 px-5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007038] text-white font-extrabold rounded-full sm:rounded-2xl text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 order-1 sm:order-2"
           >
             <CheckCircle2 className="w-4 h-4 stroke-[2.2]" />
             <span>Entendido — Confirmar Reubicación</span>
