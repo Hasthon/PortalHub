@@ -2482,64 +2482,72 @@ const StepScanEncargo: React.FC<{
 
       {/* ── Barra de Simulación / QA Toolbar ── */}
       {isPda ? (
-        <div className="flex items-center justify-between gap-1.5 p-1.5 px-2.5 bg-gray-50/90 dark:bg-hub-elevated/40 rounded-xl border border-gray-200/60 dark:border-hub-border text-xs">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[10px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider shrink-0">Simular:</span>
-            
-            <select
-              value={testTipo}
-              onChange={e => setTestTipo(e.target.value as TipoContenedor)}
-              className="bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border rounded-lg px-2 py-1 text-[11px] font-bold text-gray-700 dark:text-hub-text1 focus:outline-none cursor-pointer"
-            >
-              <option value="ENCARGO">Encargo</option>
-              <option value="BINS">Bins</option>
-              <option value="VALIJA">Valija</option>
-              <option value="PALLET">Pallet</option>
-              <option value="JAULA">Jaula</option>
-            </select>
+        <div className="bg-gray-50/90 dark:bg-hub-surface/70 rounded-2xl p-2 sm:p-2.5 border border-gray-200/70 dark:border-hub-border text-xs space-y-1.5 shadow-2xs">
+          {/* Fila 1: Configuración de Tipo y Modo */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider shrink-0">
+                Simular:
+              </span>
+              <select
+                value={testTipo}
+                onChange={e => setTestTipo(e.target.value as TipoContenedor)}
+                className="bg-white dark:bg-hub-elevated border border-gray-200 dark:border-hub-border rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-hub-text1 focus:outline-none cursor-pointer flex-1 max-w-[130px]"
+              >
+                <option value="ENCARGO">Encargo</option>
+                <option value="BINS">Bins</option>
+                <option value="VALIJA">Valija</option>
+                <option value="PALLET">Pallet</option>
+                <option value="JAULA">Jaula</option>
+              </select>
+            </div>
 
             <button
               type="button"
               onClick={() => setTestModo(testModo === 'CON_INTEGRIDAD' ? 'SIN_INTEGRIDAD' : 'CON_INTEGRIDAD')}
-              className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 testModo === 'CON_INTEGRIDAD'
                   ? 'bg-emerald-50 text-[#009D4E] border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-700'
-                  : 'bg-white text-gray-600 border-gray-200 dark:bg-hub-surface dark:text-hub-text2'
+                  : 'bg-white text-gray-600 border-gray-200 dark:bg-hub-elevated dark:text-hub-text2'
               }`}
               title="Alternar Con/Sin Integridad"
             >
-              {testModo === 'CON_INTEGRIDAD' ? 'Con Int.' : 'Sin Int.'}
+              {testModo === 'CON_INTEGRIDAD' ? '✓ Con Int.' : 'Sin Int.'}
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
-            className="px-2.5 py-1 bg-[#009D4E] hover:bg-[#008743] dark:bg-[#03F77C] dark:hover:bg-[#02D66B] text-white dark:text-[#303030] font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1.5 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
-          >
-            <Scan className="w-3.5 h-3.5" />
-            <span>Simular {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
-          </button>
+          {/* Fila 2: 3 Botones de acción organizados en Grid para que nunca se monten */}
+          <div className="grid grid-cols-3 gap-1.5">
+            <button
+              type="button"
+              onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
+              className="py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-300/70 dark:border-emerald-800 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+              title="Simular escaneo de encargo o contenedor"
+            >
+              <Scan className="w-3 h-3 shrink-0" />
+              <span className="truncate">Simular {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={onSimularDevolucion}
-            className="px-2 py-1 bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
-            title="Simular encargo con devolución"
-          >
-            <RotateCcw className="w-3 h-3 stroke-[2.2]" />
-            <span>Devolución</span>
-          </button>
+            <button
+              type="button"
+              onClick={onSimularDevolucion}
+              className="py-1 px-1.5 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border border-amber-300/70 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+              title="Simular encargo con devolución"
+            >
+              <RotateCcw className="w-3 h-3 stroke-[2.2] shrink-0" />
+              <span className="truncate">Devolución</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={onSimularReubicacion}
-            className="px-2 py-1 bg-blue-500/15 hover:bg-blue-500/25 active:bg-blue-500/35 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[11px] transition-all shadow-xs flex items-center gap-1 shrink-0 cursor-pointer active:scale-95 whitespace-nowrap"
-            title="Simular aviso de carga reubicada"
-          >
-            <ArrowRightLeft className="w-3 h-3 stroke-[2.2]" />
-            <span>Reubicada</span>
-          </button>
+            <button
+              type="button"
+              onClick={onSimularReubicacion}
+              className="py-1 px-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300/70 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+              title="Simular aviso de carga reubicada"
+            >
+              <ArrowRightLeft className="w-3 h-3 stroke-[2.2] shrink-0" />
+              <span className="truncate">Reubicada</span>
+            </button>
+          </div>
         </div>
       ) : (
         <div className="flex justify-end items-center gap-3 shrink-0 flex-wrap">
