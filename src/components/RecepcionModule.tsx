@@ -1246,13 +1246,9 @@ const StepUbicacion: React.FC<{ isPda: boolean; onScan: (code: string) => void }
             PRIMERA ACCIÓN REQUERIDA
           </span>
 
-          <h3 className="text-base font-extrabold text-[#414745] dark:text-hub-text1 mb-1.5 leading-snug">
+          <h3 className="text-base font-extrabold text-[#414745] dark:text-hub-text1 mb-5 leading-snug">
             Escanea el QR de la ubicación donde se realizará la recepción
           </h3>
-
-          <p className="text-xs text-gray-500 dark:text-hub-text2 mb-5 max-w-xs">
-            Escanea el QR de la ubicación para habilitar las acciones de recepción.
-          </p>
 
           <div className="w-full">
             <button
@@ -1280,13 +1276,9 @@ const StepUbicacion: React.FC<{ isPda: boolean; onScan: (code: string) => void }
           PRIMERA ACCIÓN REQUERIDA
         </span>
 
-        <h2 className="text-2xl font-black text-[#414745] dark:text-hub-text1 font-sans mb-2">
+        <h2 className="text-2xl font-black text-[#414745] dark:text-hub-text1 font-sans mb-8">
           Escanea el QR de la ubicación donde se realizará la recepción
         </h2>
-
-        <p className="text-sm text-gray-500 dark:text-hub-text2 font-medium max-w-md mb-6">
-          Escanea el QR de la ubicación para habilitar las acciones de recepción.
-        </p>
 
         <div className="flex items-center gap-3 w-full justify-center">
           <button
