@@ -2633,9 +2633,6 @@ const StepScanEncargo: React.FC<{
                     style={{ width: `${Math.min(100, Math.max(recepcionadosGlobal > 0 ? 2 : 0, (recepcionadosGlobal / totalCamion) * 100))}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 dark:text-hub-text3 text-right font-medium">
-                  {totalCamion - recepcionadosGlobal} pendientes por escanear
-                </p>
               </div>
 
               {/* Detalle de encargos recepcionados en PDA (con el último encargo adentro) */}
