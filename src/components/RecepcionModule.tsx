@@ -1884,7 +1884,7 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
             </div>
 
             {/* Número de Código (Código de barras 26 dígitos) */}
-            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
+            <div>
               <div className="mb-1">
                 <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
                   Número de Código (Bulto)
@@ -1893,27 +1893,6 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
               <div className="p-2 sm:p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
                 {data.codigoBarras26}
               </div>
-            </div>
-
-            {/* Destino Devolución */}
-            <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-2 sm:pb-3">
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Destino Devolución
-              </span>
-              <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-                <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <span>{data.destinoDevolucion || 'Sector Devoluciones / Pallet RM Caren'}</span>
-              </span>
-            </div>
-
-            {/* Motivo Devolución (Debajo del destino) */}
-            <div className="pt-0.5">
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Motivo Devolución
-              </span>
-              <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
-                {data.motivoDevolucion || 'Dirección errónea / Devolución a remitente solicitada'}
-              </span>
             </div>
           </div>
 
