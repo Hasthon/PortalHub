@@ -1296,7 +1296,7 @@ const RecepcionHeader: React.FC<{
       {step === 'SCAN_ENCARGO' && totalGlobal > 0 && (
         <div className="shrink-0 flex flex-col items-end gap-1">
           <span className="text-xs font-mono font-extrabold text-hub-accent">
-            {recepcionadosGlobal}<span className="text-gray-400 dark:text-hub-text3">/{totalGlobal}</span>
+            {recepcionadosGlobal} <span className="text-[10px] text-gray-400 font-bold">({Math.round(progress)}%)</span>
           </span>
           <div className="w-20 h-1.5 bg-gray-200 dark:bg-hub-elevated rounded-full overflow-hidden">
             <div className="h-full bg-hub-accent rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -2584,7 +2584,7 @@ const StepScanEncargo: React.FC<{
                 {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
               </span>
               <span className="font-mono text-[10px] text-gray-400">
-                ({recepcionadosGlobal}/{totalCamion})
+                ({recepcionadosGlobal})
               </span>
             </button>
 
@@ -2618,9 +2618,14 @@ const StepScanEncargo: React.FC<{
               <div className="bg-white dark:bg-hub-surface rounded-2xl p-3.5 shadow-xs border border-gray-200/80 dark:border-hub-border space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-gray-700 dark:text-hub-text1">Progreso camión</span>
-                  <span className="text-xs font-mono font-bold text-[#009D4E] dark:text-[#03F77C]">
-                    {recepcionadosGlobal} de {totalCamion} ({Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%)
-                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-sm font-black text-gray-900 dark:text-hub-text1 font-mono">
+                      {recepcionadosGlobal}
+                    </span>
+                    <span className="text-[11px] font-mono font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#006338] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800">
+                      {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
+                    </span>
+                  </div>
                 </div>
                 <div className="w-full bg-[#D1F2DE] dark:bg-hub-elevated rounded-full h-3 overflow-hidden p-0.5 shadow-inner">
                   <div
@@ -2800,10 +2805,7 @@ const StepScanEncargo: React.FC<{
                   <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-hub-text1 font-mono tracking-tight">
                     {recepcionadosGlobal}
                   </span>
-                  <span className="text-sm font-bold text-gray-400 dark:text-hub-text3 font-sans">
-                    / {totalCamion} encargos
-                  </span>
-                  <span className="ml-1 text-xs font-mono font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#006338] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#006338] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800">
                     {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
                   </span>
                 </div>
