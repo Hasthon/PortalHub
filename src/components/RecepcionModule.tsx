@@ -895,6 +895,16 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
       return [...filtered, valijaSinIntegridad];
     });
 
+    setValijasEntregadasBins(prev => prev + 1);
+    const cod = valijaSinIntegridad.codigo;
+    setValijasPendientesLista(prev => {
+      if (prev.includes(cod)) {
+        setValijasPendientesBins(b => Math.max(0, b - 1));
+        return prev.filter(c => c !== cod);
+      }
+      return prev;
+    });
+
     setValijaModalOpen(false);
     setPendingValijaNomina(null);
     setPrevStepStack([]);
@@ -1197,11 +1207,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             onSimularReubicacion={handleSimularReubicacion}
             valijasEntregadasBins={valijasEntregadasBins}
             valijasPendientesBins={valijasPendientesBins}
-            onCompletarValijaPendiente={() => {
-              setValijaCodigoEtiqueta('123465874654654132135321264671001');
-              setValijaModalStep('ESCANEO_BINS');
-              setValijaModalOpen(true);
-            }}
             onDerivarIncidencias={() => setDerivarModalOpen(true)}
           />
         )}
@@ -2757,7 +2762,6 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion: () => void;
   valijasEntregadasBins: number;
   valijasPendientesBins: number;
-  onCompletarValijaPendiente?: () => void;
   onDerivarIncidencias?: () => void;
 }> = ({
   isPda,
@@ -2776,7 +2780,6 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion,
   valijasEntregadasBins,
   valijasPendientesBins,
-  onCompletarValijaPendiente,
   onDerivarIncidencias,
   lastEncargo,
   flashKey,
@@ -3152,47 +3155,25 @@ const StepScanEncargo: React.FC<{
                   )}
                 </div>
 
-                {/* Fila Verde: Entregadas */}
+                {/* Fila Verde: Valijas con incidencia recepcionada */}
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F4FAF6] dark:bg-emerald-950/20 border-l-4 border-l-[#006338] dark:border-l-emerald-500 shadow-2xs">
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                    Entregadas en contenedor
+                    Valijas con incidencia recepcionada
                   </span>
                   <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#D1F2DE] dark:bg-emerald-900/60 text-[#006338] dark:text-emerald-300 font-mono flex items-center justify-center">
                     {valijasEntregadasBins}
                   </span>
                 </div>
 
-                {/* Fila Roja: Pendientes */}
-                <div
-                  onClick={valijasPendientesBins > 0 ? (onDerivarIncidencias || onCompletarValijaPendiente) : undefined}
-                  className={`flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs transition-all ${
-                    valijasPendientesBins > 0 ? 'cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-[0.99]' : ''
-                  }`}
-                >
+                {/* Fila Roja: Pendiente para recepción */}
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs">
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                    Pendientes para llevar al contenedor
+                    Pendiente para recepción
                   </span>
                   <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#FAD4D4] dark:bg-red-900/60 text-[#C53030] dark:text-red-300 font-mono flex items-center justify-center">
                     {valijasPendientesBins}
                   </span>
                 </div>
-
-                {/* Botón grande para el pulgar */}
-                {valijasPendientesBins > 0 ? (
-                  <button
-                    type="button"
-                    onClick={onDerivarIncidencias || onCompletarValijaPendiente}
-                    className="w-full py-4 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-extrabold text-sm flex items-center justify-center gap-2.5 shadow-md transition-all cursor-pointer active:scale-95 animate-fadeIn"
-                  >
-                    <Box className="w-5 h-5 shrink-0" />
-                    <span>Ir a dejar al contenedor ({valijasPendientesBins})</span>
-                  </button>
-                ) : (
-                  <div className="py-6 text-center text-xs text-emerald-600 dark:text-emerald-400 font-bold flex flex-col items-center gap-2 bg-emerald-50/50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-100 dark:border-emerald-900/40">
-                    <CheckCircle2 className="w-6 h-6 text-[#009D4E]" />
-                    <span>¡Al día! No hay valijas pendientes de entrega</span>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -3266,44 +3247,25 @@ const StepScanEncargo: React.FC<{
                     </h4>
                   </div>
 
-                  {/* Fila Verde: Entregadas en contenedor */}
+                  {/* Fila Verde: Valijas con incidencia recepcionada */}
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F4FAF6] dark:bg-emerald-950/20 border-l-4 border-l-[#006338] dark:border-l-emerald-500 shadow-2xs">
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                      Entregadas en contenedor de incidencias
+                      Valijas con incidencia recepcionada
                     </span>
                     <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#D1F2DE] dark:bg-emerald-900/60 text-[#006338] dark:text-emerald-300 font-mono flex items-center justify-center">
                       {valijasEntregadasBins}
                     </span>
                   </div>
 
-                  {/* Fila Roja: Pendientes para llevar al contenedor */}
-                  <div
-                    onClick={valijasPendientesBins > 0 ? (onDerivarIncidencias || onCompletarValijaPendiente) : undefined}
-                    className={`flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs transition-all ${
-                      valijasPendientesBins > 0 ? 'cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/40 active:scale-[0.99]' : ''
-                    }`}
-                    title={valijasPendientesBins > 0 ? 'Haz clic para escanear QR del contenedor y registrar la entrega' : undefined}
-                  >
+                  {/* Fila Roja: Pendiente para recepción */}
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs">
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                      Pendientes para llevar a contenedor
+                      Pendiente para recepción
                     </span>
                     <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#FAD4D4] dark:bg-red-900/60 text-[#C53030] dark:text-red-300 font-mono flex items-center justify-center">
                       {valijasPendientesBins}
                     </span>
                   </div>
-
-                  {/* Botón explícito */}
-                  {valijasPendientesBins > 0 && (
-                    <button
-                      type="button"
-                      onClick={onDerivarIncidencias || onCompletarValijaPendiente}
-                      className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer active:scale-95 animate-fadeIn"
-                      title="Ir a dejar valijas al contenedor de incidencias"
-                    >
-                      <Box className="w-4 h-4 shrink-0" />
-                      <span>Ir a dejar al contenedor ({valijasPendientesBins})</span>
-                    </button>
-                  )}
                 </div>
               </div>
 
