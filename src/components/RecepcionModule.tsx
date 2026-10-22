@@ -2740,20 +2740,10 @@ const StepScanEncargo: React.FC<{
                   )}
                 </div>
 
-                {/* Fila Verde: Valijas con incidencia recepcionada */}
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F4FAF6] dark:bg-emerald-950/20 border-l-4 border-l-[#006338] dark:border-l-emerald-500 shadow-2xs">
-                  <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                    Valijas con incidencia recepcionada
-                  </span>
-                  <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#D1F2DE] dark:bg-emerald-900/60 text-[#006338] dark:text-emerald-300 font-mono flex items-center justify-center">
-                    {valijasEntregadasBins}
-                  </span>
-                </div>
-
-                {/* Fila Roja: Pendiente para recepción */}
+                {/* Fila Roja: Pendiente de gestión */}
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs">
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                    Pendiente para recepción
+                    Pendiente de gestión
                   </span>
                   <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#FAD4D4] dark:bg-red-900/60 text-[#C53030] dark:text-red-300 font-mono flex items-center justify-center">
                     {valijasPendientesBins}
@@ -2829,20 +2819,10 @@ const StepScanEncargo: React.FC<{
                     </h4>
                   </div>
 
-                  {/* Fila Verde: Valijas con incidencia recepcionada */}
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-[#F4FAF6] dark:bg-emerald-950/20 border-l-4 border-l-[#006338] dark:border-l-emerald-500 shadow-2xs">
-                    <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                      Valijas con incidencia recepcionada
-                    </span>
-                    <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#D1F2DE] dark:bg-emerald-900/60 text-[#006338] dark:text-emerald-300 font-mono flex items-center justify-center">
-                      {valijasEntregadasBins}
-                    </span>
-                  </div>
-
-                  {/* Fila Roja: Pendiente para recepción */}
+                  {/* Fila Roja: Pendiente de gestión */}
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FEF6F6] dark:bg-red-950/20 border-l-4 border-l-[#E25555] dark:border-l-red-500 shadow-2xs">
                     <span className="text-xs font-bold text-gray-700 dark:text-gray-200 font-sans">
-                      Pendiente para recepción
+                      Pendiente de gestión
                     </span>
                     <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#FAD4D4] dark:bg-red-900/60 text-[#C53030] dark:text-red-300 font-mono flex items-center justify-center">
                       {valijasPendientesBins}
