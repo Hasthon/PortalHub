@@ -39,7 +39,6 @@ import {
   Barcode,
   Package,
   Pencil,
-  Copy,
 } from 'lucide-react';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -2059,17 +2058,7 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
   onConfirmar,
   data,
 }) => {
-  const [copied, setCopied] = useState(false);
-
   if (!isOpen || !data) return null;
-
-  const handleCopyCode = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(data.codigoBarras26);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-[240] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
@@ -2122,28 +2111,10 @@ const ModalCargaReubicadaDevolucion: React.FC<ModalCargaReubicadaDevolucionProps
 
           {/* Número de Código (Código de barras 26 dígitos) */}
           <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider">
+            <div className="mb-1">
+              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
                 Número de Código (Bulto)
               </span>
-              <button
-                type="button"
-                onClick={handleCopyCode}
-                className="text-[11px] font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
-                title="Copiar código completo"
-              >
-                {copied ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copiado</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copiar</span>
-                  </>
-                )}
-              </button>
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-hub-surface border border-gray-200 dark:border-hub-border font-mono text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 tracking-wider break-all select-all">
               {data.codigoBarras26}
