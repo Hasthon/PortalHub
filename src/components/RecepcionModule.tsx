@@ -2137,17 +2137,12 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
         {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
         <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
           {/* Número de OF */}
-          <div className="flex items-center justify-between gap-2 border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Número de OF
-              </span>
-              <span className="text-base sm:text-lg font-mono font-black text-amber-600 dark:text-amber-400">
-                {data.codigoOF}
-              </span>
-            </div>
-            <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-[11px] font-bold font-mono">
-              ORDEN DE FLETE
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Número de OF
+            </span>
+            <span className="text-base sm:text-lg font-mono font-black text-amber-600 dark:text-amber-400 block mt-0.5">
+              {data.codigoOF}
             </span>
           </div>
 
@@ -2163,26 +2158,25 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
             </div>
           </div>
 
-          {/* Destino Devolución y Motivo */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Destino Devolución
-              </span>
-              <span className="text-xs font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-                <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <span className="truncate">{data.destinoDevolucion || 'Sector Devoluciones / RM Caren'}</span>
-              </span>
-            </div>
+          {/* Destino Devolución */}
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Destino Devolución
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+              <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>{data.destinoDevolucion || 'Sector Devoluciones / Pallet RM Caren'}</span>
+            </span>
+          </div>
 
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Motivo Devolución
-              </span>
-              <span className="text-xs font-medium text-gray-700 dark:text-hub-text2 block mt-0.5">
-                {data.motivoDevolucion || 'Devolución a remitente solicitada'}
-              </span>
-            </div>
+          {/* Motivo Devolución (Debajo del destino) */}
+          <div className="pt-0.5">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Motivo Devolución
+            </span>
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
+              {data.motivoDevolucion || 'Dirección errónea / Devolución a remitente solicitada'}
+            </span>
           </div>
         </div>
 
@@ -2275,17 +2269,12 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
         {/* Card con Números Identificadores Clave (Código de Barras y OF) */}
         <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3.5 mb-5 shadow-2xs text-left">
           {/* Número de OF */}
-          <div className="flex items-center justify-between gap-2 border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Número de OF
-              </span>
-              <span className="text-base sm:text-lg font-mono font-black text-blue-600 dark:text-blue-400">
-                {data.codigoOF}
-              </span>
-            </div>
-            <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[11px] font-bold font-mono">
-              ORDEN DE FLETE
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Número de OF
+            </span>
+            <span className="text-base sm:text-lg font-mono font-black text-blue-600 dark:text-blue-400 block mt-0.5">
+              {data.codigoOF}
             </span>
           </div>
 
@@ -2301,26 +2290,25 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
             </div>
           </div>
 
-          {/* Nueva Rampa y Motivo */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-0.5">
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Nueva Rampa Asignada
-              </span>
-              <span className="text-xs font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
-                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                <span className="truncate">{data.nuevaRampa || 'Rampa 06 - Zona B'}</span>
-              </span>
-            </div>
+          {/* Nueva Rampa Asignada */}
+          <div className="border-b border-gray-200/70 dark:border-hub-border/60 pb-3">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Nueva Rampa Asignada
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-gray-800 dark:text-hub-text1 flex items-center gap-1.5 mt-0.5">
+              <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>{data.nuevaRampa || 'Rampa 06 - Zona B (Despacho Norte)'}</span>
+            </span>
+          </div>
 
-            <div>
-              <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
-                Motivo Reubicación
-              </span>
-              <span className="text-xs font-medium text-gray-700 dark:text-hub-text2 block mt-0.5">
-                {data.motivoReubicacion || 'Reasignación de rampa'}
-              </span>
-            </div>
+          {/* Motivo Reubicación */}
+          <div className="pt-0.5">
+            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-hub-text3 uppercase tracking-wider block">
+              Motivo Reubicación
+            </span>
+            <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-hub-text2 block mt-0.5 leading-relaxed">
+              {data.motivoReubicacion || 'Reasignación operativa de rampa / balance de carga'}
+            </span>
           </div>
         </div>
 
