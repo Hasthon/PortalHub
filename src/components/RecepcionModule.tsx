@@ -324,14 +324,12 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   const [pendingValijaNomina, setPendingValijaNomina] = useState<NominaContenedora | null>(null);
   const [valijasEntregadasBins, setValijasEntregadasBins] = useState(0);
   const [valijasPendientesLista, setValijasPendientesLista] = useState<string[]>([]);
+  void valijasPendientesLista;
   const [valijasPendientesBins, setValijasPendientesBins] = useState(0);
 
   // ── Modal Cierre / Cuadratura Bifurcado State ─────────────────────────────
   const [cierreModalOpen, setCierreModalOpen] = useState(false);
   const [cierreModalStep, setCierreModalStep] = useState<CierreModalStep>('INCOMPLETA');
-
-  // ── Modal Derivar Valijas a Incidencias (Modo Lote) ───────────────────────
-  const [derivarModalOpen, setDerivarModalOpen] = useState(false);
 
   // ── Modal 1: Encargo con Devolución ───────────────────────────────────────
   const [modalDevolucionOpen, setModalDevolucionOpen] = useState(false);
@@ -936,14 +934,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setPendingValijaNomina(null);
   }, []);
 
-  const handleConfirmarDerivarLote = useCallback((codigos: string[], contenedor: string) => {
-    playSuccessSound();
-    setValijasEntregadasBins(prev => prev + codigos.length);
-    setValijasPendientesLista(prev => prev.filter(v => !codigos.includes(v)));
-    setValijasPendientesBins(prev => Math.max(0, prev - codigos.length));
-    triggerToast(`Se derivaron ${codigos.length} valija(s) al contenedor ${contenedor}.`, 'success');
-  }, [playSuccessSound, triggerToast]);
-
   // ─── Simulación 1: Encargo con Devolución ──────────────────────────────────
   const handleSimularDevolucion = useCallback(() => {
     const randomOfNum = Math.floor(100000000 + Math.random() * 900000000).toString();
@@ -1101,15 +1091,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         onCancelar={() => setCierreModalOpen(false)}
       />
 
-      {/* ── Modal Derivar Valijas a Incidencias (Modo Lote) ── */}
-      <DerivarIncidenciasModal
-        isOpen={derivarModalOpen}
-        onClose={() => setDerivarModalOpen(false)}
-        onConfirmar={handleConfirmarDerivarLote}
-        valijasDisponibles={valijasPendientesLista}
-        valijasPendientes={valijasPendientesBins}
-      />
-
       {/* ── Modal 1: Encargo con Devolución ── */}
       <ModalEncargoDevolucion
         isOpen={modalDevolucionOpen}
@@ -1148,7 +1129,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
           onTrazabilidad={() => setTrazabilidadOpen(true)}
           isPda={isPda}
           showTrazabilidad={step === 'CUADRATURA'}
-          onDerivarIncidencias={() => setDerivarModalOpen(true)}
         />
       )}
 
@@ -1207,7 +1187,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             onSimularReubicacion={handleSimularReubicacion}
             valijasEntregadasBins={valijasEntregadasBins}
             valijasPendientesBins={valijasPendientesBins}
-            onDerivarIncidencias={() => setDerivarModalOpen(true)}
           />
         )}
         {step === 'ALERTA_ENCARGO' && alertaEncargo && (
@@ -1289,10 +1268,9 @@ const RecepcionHeader: React.FC<{
   recepcionadosGlobal: number;
   onBack: () => void;
   onTrazabilidad: () => void;
-  onDerivarIncidencias?: () => void;
   isPda: boolean;
   showTrazabilidad: boolean;
-}> = ({ step, ubicacion, totalGlobal, recepcionadosGlobal, onBack, onTrazabilidad, onDerivarIncidencias, showTrazabilidad }) => {
+}> = ({ step, ubicacion, totalGlobal, recepcionadosGlobal, onBack, onTrazabilidad, showTrazabilidad }) => {
   const progress = totalGlobal > 0 ? (recepcionadosGlobal / totalGlobal) * 100 : 0;
 
   return (
@@ -1324,18 +1302,6 @@ const RecepcionHeader: React.FC<{
             <div className="h-full bg-hub-accent rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
           </div>
         </div>
-      )}
-      {onDerivarIncidencias && (
-        <button
-          type="button"
-          onClick={onDerivarIncidencias}
-          title="Derivar valijas a contenedor de incidencias"
-          className="shrink-0 px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-all cursor-pointer shadow-2xs"
-        >
-          <Layers className="w-4 h-4" />
-          <span className="hidden sm:inline">Derivar a incidencias</span>
-          <span className="sm:hidden text-[10px]">Incidencias</span>
-        </button>
       )}
       {showTrazabilidad && (
         <button
@@ -1847,319 +1813,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
   );
 };
 
-// ─── Modal Derivar Valijas a Incidencias (Modo Lote) ─────────────────────────
 
-interface DerivarIncidenciasModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirmar: (valijas: string[], contenedorId: string) => void;
-  valijasDisponibles?: string[];
-  valijasPendientes?: number;
-}
-
-const DerivarIncidenciasModal: React.FC<DerivarIncidenciasModalProps> = ({
-  isOpen,
-  onClose,
-  onConfirmar,
-  valijasDisponibles = ['VAL-1759', 'VAL-6696', 'VAL-9930'],
-  valijasPendientes = 0,
-}) => {
-  const [paso, setPaso] = useState<'SCAN_VALIJAS' | 'SCAN_CONTENEDOR' | 'EXITO'>('SCAN_VALIJAS');
-  const [listaValijas, setListaValijas] = useState<string[]>([]);
-  const [valijasActivadas, setValijasActivadas] = useState<string[]>([]);
-  const [valijasEntregadas, setValijasEntregadas] = useState<string[]>([]);
-  const [contenedorId, setContenedorId] = useState('');
-  const prevIsOpenRef = useRef(false);
-
-  // Reset al abrir el modal (solo cuando pasa de cerrado a abierto)
-  useEffect(() => {
-    if (isOpen && !prevIsOpenRef.current) {
-      setPaso('SCAN_VALIJAS');
-      const base = valijasDisponibles && valijasDisponibles.length > 0
-        ? [...valijasDisponibles]
-        : ['VAL-1759', 'VAL-6696', 'VAL-9930'];
-      setListaValijas(base);
-      setValijasActivadas([]); // Por default deshabilitadas hasta que se escaneen
-      setValijasEntregadas([]);
-      setContenedorId('');
-    }
-    prevIsOpenRef.current = isOpen;
-  }, [isOpen, valijasDisponibles]);
-
-  if (!isOpen) return null;
-
-  const escanearValija = (codigo: string) => {
-    const clean = codigo.trim().toUpperCase();
-    if (!clean) return;
-
-    if (!listaValijas.includes(clean)) {
-      setListaValijas(prev => [...prev, clean]);
-      setValijasActivadas(prev => [...prev, clean]);
-    } else if (valijasActivadas.includes(clean)) {
-      // Si se vuelve a escanear una valija ya activada, se quita del lote
-      setValijasActivadas(prev => prev.filter(v => v !== clean));
-    } else {
-      setValijasActivadas(prev => [...prev, clean]);
-    }
-  };
-
-  const simularScanValija = () => {
-    // Si quedan valijas pendientes por activar, escanea la siguiente
-    const siguientePendiente = listaValijas.find(v => !valijasActivadas.includes(v));
-    if (siguientePendiente) {
-      escanearValija(siguientePendiente);
-    } else {
-      // Si ya todas están activadas, al simular escaneo se desactiva la primera para demostrar el descarte
-      const primera = listaValijas[0];
-      if (primera) {
-        escanearValija(primera);
-      }
-    }
-  };
-
-  const confirmarContenedor = (codigo: string) => {
-    const clean = codigo.trim().toUpperCase() || 'BIN-INC-01';
-    setContenedorId(clean);
-    setValijasEntregadas([...valijasActivadas]);
-    setPaso('EXITO');
-    onConfirmar(valijasActivadas, clean);
-  };
-
-  return (
-    <div className="fixed inset-0 z-[230] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[540px] w-full font-sans transition-all">
-        
-        {/* ── STEP 1: ESCANEO DE VALIJAS EN LOTE ── */}
-        {paso === 'SCAN_VALIJAS' && (
-          <div>
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-3 shadow-2xs">
-              <Layers className="w-7 h-7 stroke-[2.2]" />
-            </div>
-
-            <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-hub-text1 text-center mb-5 max-w-sm mx-auto leading-snug">
-              Escanea las valijas que dejarás en el contenedor de incidencias
-            </h3>
-
-            {/* Botón simular escaneo */}
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={simularScanValija}
-                className="w-full py-3 px-4 rounded-2xl text-xs font-bold bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs active:scale-95"
-              >
-                <Scan className="w-4 h-4" />
-                <span>
-                  {listaValijas.some(v => !valijasActivadas.includes(v))
-                    ? '+ Simular escaneo de valija disponible'
-                    : '+ Simular escaneo de valija adicional'}
-                </span>
-              </button>
-            </div>
-
-
-            {/* Lista de valijas en lote */}
-            <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-3 border border-gray-200/80 dark:border-hub-border mb-5">
-              <div className="flex items-center justify-between pb-2 border-b border-gray-200/60 dark:border-hub-border/60 mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-hub-text3">
-                    Valijas en lote
-                  </span>
-                  {valijasPendientes > 0 && (
-                    <span className="text-[10px] text-gray-400 dark:text-hub-text3 font-medium">
-                      ({valijasPendientes} pendientes)
-                    </span>
-                  )}
-                </div>
-                <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-full transition-all ${
-                  valijasActivadas.length > 0
-                    ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
-                    : 'bg-gray-200 dark:bg-hub-surface text-gray-500'
-                }`}>
-                  {valijasActivadas.length} de {listaValijas.length} activada{valijasActivadas.length === 1 ? '' : 's'}
-                </span>
-              </div>
-
-              {listaValijas.length === 0 ? (
-                <div className="py-6 text-center text-xs text-gray-400 dark:text-hub-text3">
-                  No hay valijas con incidencia pendientes para derivar.
-                </div>
-              ) : (
-                <div className="max-h-44 overflow-y-auto space-y-1.5 pr-1 [scrollbar-width:thin]">
-                  {listaValijas.map((val, idx) => {
-                    const isActivada = valijasActivadas.includes(val);
-                    return (
-                      <div
-                        key={val}
-                        onClick={() => escanearValija(val)}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none active:scale-[0.99] ${
-                          isActivada
-                            ? 'bg-white dark:bg-hub-surface border-emerald-300 dark:border-emerald-700 shadow-2xs'
-                            : 'bg-gray-100/70 dark:bg-hub-surface/40 border-dashed border-gray-300 dark:border-hub-border/60 opacity-60 hover:opacity-90'
-                        }`}
-                        title="Haz clic para simular escaneo (activa o quita del lote)"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className={`w-5 h-5 rounded-full text-[10px] font-mono font-bold flex items-center justify-center shrink-0 transition-all ${
-                            isActivada
-                              ? 'bg-[#009D4E] text-white shadow-2xs'
-                              : 'bg-gray-200 dark:bg-hub-elevated text-gray-500'
-                          }`}>
-                            {isActivada ? <CheckCircle2 className="w-3.5 h-3.5" /> : idx + 1}
-                          </span>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className={`font-mono text-xs font-bold transition-colors ${
-                              isActivada
-                                ? 'text-[#303030] dark:text-hub-text1'
-                                : 'text-gray-400 dark:text-hub-text3'
-                            }`}>
-                              {val}
-                            </span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 transition-all ${
-                              isActivada
-                                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-[#006338] dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                                : 'bg-gray-200/80 dark:bg-hub-elevated text-gray-500 dark:text-hub-text3'
-                            }`}>
-                              {isActivada ? 'Activada' : 'Deshabilitada (Pendiente)'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Acciones */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-3.5 px-4 rounded-2xl border-2 border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 text-center shadow-2xs"
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="button"
-                disabled={valijasActivadas.length === 0}
-                onClick={() => setPaso('SCAN_CONTENEDOR')}
-                className={`flex-1 py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md active:scale-95 text-center flex items-center justify-center gap-2 ${
-                  valijasActivadas.length === 0
-                    ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed shadow-none'
-                    : 'bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer'
-                }`}
-              >
-                <span>Continuar</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 2: ESCANEAR CONTENEDOR DE DESTINO ── */}
-        {paso === 'SCAN_CONTENEDOR' && (
-          <div>
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 flex items-center justify-center text-blue-600 dark:text-blue-400 mx-auto mb-3 shadow-2xs">
-              <Box className="w-7 h-7 stroke-[2.2]" />
-            </div>
-
-            <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-hub-text1 text-center mb-1 max-w-sm mx-auto leading-snug">
-              Escanea el QR del contenedor de incidencias
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-hub-text2 text-center mb-4">
-              Al escanear el QR, deposita las valijas dentro del contenedor.
-            </p>
-
-            {/* Resumen del lote */}
-            <div className="bg-amber-50 dark:bg-amber-950/40 rounded-2xl p-3 border border-amber-200 dark:border-amber-800 flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-amber-800 dark:text-amber-300">
-                Total valijas a depositar:
-              </span>
-              <span className="text-sm font-mono font-black text-amber-700 dark:text-amber-400">
-                {valijasActivadas.length} valija(s) activada(s)
-              </span>
-            </div>
-
-            {/* Spinner esperando escaneo de QR */}
-            <div className="my-5 flex flex-col items-center justify-center gap-2.5">
-              <div className="w-10 h-10 border-4 border-blue-100 dark:border-blue-950 border-t-blue-500 rounded-full animate-spin" />
-              <p className="text-xs font-medium text-gray-500 dark:text-hub-text2">
-                Esperando escaneo de QR del contenedor...
-              </p>
-            </div>
-
-            {/* Botón simular QR */}
-            <div className="mb-5">
-              <button
-                type="button"
-                onClick={() => confirmarContenedor('BIN-INC-01')}
-                className="w-full py-3 px-4 rounded-2xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 text-[#009D4E] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-2xs active:scale-95"
-              >
-                <QrCode className="w-4 h-4" />
-                <span>Simular escaneo QR Contenedor (BIN-INC-01)</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-3 pt-1">
-              <button
-                type="button"
-                onClick={() => setPaso('SCAN_VALIJAS')}
-                className="flex-1 py-3 px-4 rounded-2xl border-2 border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 text-center shadow-2xs"
-              >
-                Volver a valijas
-              </button>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-3 px-4 rounded-2xl text-sm font-bold text-gray-600 dark:text-hub-text2 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-hub-elevated transition-all cursor-pointer text-center active:scale-95"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── STEP 3: CONFIRMACIÓN EXITOSA ── */}
-        {paso === 'EXITO' && (
-          <div className="text-center py-2">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto mb-3 shadow-xs animate-bounce">
-              <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
-            </div>
-
-            <h3 className="text-xl font-black text-gray-900 dark:text-hub-text1 mb-1">
-              Valijas entregadas en contenedor de incidencias
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-hub-text2 mb-4">
-              Se ingresaron <span className="font-bold text-gray-800 dark:text-white">{valijasEntregadas.length} valija(s)</span> al contenedor <span className="font-mono font-bold text-[#009D4E] dark:text-[#03F77C]">{contenedorId}</span>.
-            </p>
-
-            <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-3 border border-gray-200/80 dark:border-hub-border mb-5 flex flex-wrap gap-1.5 justify-center max-h-28 overflow-y-auto">
-              {valijasEntregadas.map(v => (
-                <span
-                  key={v}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 font-mono text-[11px] font-bold text-emerald-800 dark:text-emerald-200 shadow-2xs flex items-center gap-1"
-                >
-                  <CheckCircle2 className="w-3 h-3 text-[#009D4E]" />
-                  {v}
-                </span>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center"
-            >
-              Aceptar
-            </button>
-          </div>
-        )}
-
-      </div>
-    </div>
-  );
-};
 
 // ─── Modal 1: Encargo con Devolución ─────────────────────────────────────────
 
@@ -2762,7 +2416,6 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion: () => void;
   valijasEntregadasBins: number;
   valijasPendientesBins: number;
-  onDerivarIncidencias?: () => void;
 }> = ({
   isPda,
   ubicacion,
@@ -2780,7 +2433,6 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion,
   valijasEntregadasBins,
   valijasPendientesBins,
-  onDerivarIncidencias,
   lastEncargo,
   flashKey,
 }) => {
@@ -2797,7 +2449,7 @@ const StepScanEncargo: React.FC<{
 
   return (
     <div className={`max-w-7xl mx-auto w-full font-sans animate-fadeIn ${isPda ? 'p-3 space-y-3' : 'p-4 sm:p-6 lg:p-8 space-y-6'}`}>
-      {/* ── Top Bar: Botón volver + Derivar incidencias + Badge de ubicación de la rampa ── */}
+      {/* ── Top Bar: Botón volver + Badge de ubicación de la rampa ── */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         {!isPda && (
           <button
@@ -2812,19 +2464,6 @@ const StepScanEncargo: React.FC<{
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          {onDerivarIncidencias && (
-            <button
-              type="button"
-              onClick={onDerivarIncidencias}
-              className="min-h-[36px] px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-2 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0"
-              title="Derivar valijas a contenedor de incidencias (Modo Lote)"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Derivar a incidencias</span>
-              <span className="sm:hidden">Incidencias</span>
-            </button>
-          )}
-
           <button
             type="button"
             onClick={onVolverRampa}
