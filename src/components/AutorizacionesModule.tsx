@@ -11,8 +11,6 @@ import {
   Camera,
   Check,
   Sparkles,
-  Smartphone,
-  CheckCircle,
   X,
 } from 'lucide-react';
 import { useAutorizaciones, SolicitudAutorizacion } from '../context/AutorizacionesContext';
@@ -74,7 +72,6 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
     solicitudes,
     pendingCount,
     autorizarSolicitudPresencial,
-    rechazarSolicitud,
     simularNuevaSolicitud,
     solicitudSeleccionada,
   } = useAutorizaciones();
@@ -82,13 +79,13 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
   const [activeTab, setActiveTab] = useState<'pendientes' | 'historial'>('pendientes');
   const [viewMode, setViewMode] = useState<'lista' | 'escaner' | 'pantalla_operario'>('lista');
   const [solicitudEnAccion, setSolicitudEnAccion] = useState<SolicitudAutorizacion | null>(null);
-  const [motivoRechazoInput, setMotivoRechazoInput] = useState<string>('Recontar carga en rampa');
-  const [showRejectConfirm, setShowRejectConfirm] = useState<string | null>(null);
   const [autorizacionExitosa, setAutorizacionExitosa] = useState<SolicitudAutorizacion | null>(null);
   const [isScanningSimulation, setIsScanningSimulation] = useState(false);
   const [showDesktopScanModal, setShowDesktopScanModal] = useState<SolicitudAutorizacion | null>(null);
   const [desbloqueoConfirmado, setDesbloqueoConfirmado] = useState<SolicitudAutorizacion | null>(null);
   const [operarioDesbloqueado, setOperarioDesbloqueado] = useState(false);
+  void operarioDesbloqueado;
+  void setOperarioDesbloqueado;
 
   useEffect(() => {
     if (solicitudSeleccionada) {
@@ -115,12 +112,6 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
     setAutorizacionExitosa(null);
   };
 
-  const handleVerPantallaOperario = (s: SolicitudAutorizacion) => {
-    setSolicitudEnAccion(s);
-    setOperarioDesbloqueado(false);
-    setViewMode('pantalla_operario');
-  };
-
   const handleEjecutarEscaneoPresencial = () => {
     if (!solicitudEnAccion || isScanningSimulation) return;
     setIsScanningSimulation(true);
@@ -130,11 +121,6 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
       setAutorizacionExitosa(solicitudEnAccion);
       setIsScanningSimulation(false);
     }, 450);
-  };
-
-  const handleConfirmarRechazo = (id: string) => {
-    rechazarSolicitud(id, motivoRechazoInput);
-    setShowRejectConfirm(null);
   };
 
   return (

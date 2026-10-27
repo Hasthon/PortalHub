@@ -39,8 +39,6 @@ import {
   Barcode,
   Package,
   Pencil,
-  Clock,
-  PackageOpen,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -333,6 +331,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   const [valijaCodigoEtiqueta, setValijaCodigoEtiqueta] = useState('123465874654654132135321264671001');
   const [pendingValijaNomina, setPendingValijaNomina] = useState<NominaContenedora | null>(null);
   const [pendingValijaModo, setPendingValijaModo] = useState<ModoRecepcion>('CON_INTEGRIDAD');
+  void pendingValijaModo;
   const [valijasEntregadasBins, setValijasEntregadasBins] = useState(0);
   const [valijasPendientesLista, setValijasPendientesLista] = useState<string[]>([]);
   void valijasPendientesLista;
@@ -540,7 +539,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
       return;
     }
 
-    if (tipoContainer && tipoContainer !== 'VALIJA') {
+    if (tipoContainer && tipoContainer !== 'ENCARGO') {
       const id = `NOM-${tipoContainer}-${Math.floor(10000 + Math.random() * 90000)}`;
       const codigo = code.length > 5 ? code : `${tipoContainer}-${Math.floor(100000 + Math.random() * 900000)}`;
       const totalOculto = 50;
@@ -811,7 +810,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     }
 
     // Caso Contenedor BINS o PALLET: siempre popup de inicio escaneo 1 a 1
-    if (t !== 'ENCARGO' && t !== 'VALIJA') {
+    if (t !== 'ENCARGO') {
       const existingNomina = nominasActivas.find(n => n.tipo === t && n.encargos.some(e => !e.recepcionado));
       if (existingNomina) {
         const pend = existingNomina.encargos.find(e => !e.recepcionado);
@@ -941,7 +940,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
       setPendingValijaNomina(null);
       setPrevStepStack([]);
       setStep('SCAN_ENCARGO');
-      setPdaTab('ENCARGOS');
       triggerToast('Valija lista. Escanea los encargos uno a uno.', 'success', valija1a1.codigo);
     }
   }, [pendingValijaNomina, triggerToast]);
@@ -957,7 +955,6 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
       setContenedor1a1ModalOpen(false);
       setPrevStepStack([]);
       setStep('SCAN_ENCARGO');
-      setPdaTab('ENCARGOS');
       const label = pendingContenedor1a1.tipo === 'BINS' ? 'Bin' : pendingContenedor1a1.tipo === 'PALLET' ? 'Pallet' : 'Contenedor';
       triggerToast(`${label} ${pendingContenedor1a1.codigo} cargado. Escanea los encargos uno a uno.`, 'success', pendingContenedor1a1.codigo);
       setPendingContenedor1a1(null);
@@ -1445,9 +1442,7 @@ const RecepcionHeader: React.FC<{
   onTrazabilidad: () => void;
   isPda: boolean;
   showTrazabilidad: boolean;
-}> = ({ step, ubicacion, totalGlobal, recepcionadosGlobal, onBack, onTrazabilidad, showTrazabilidad }) => {
-  const progress = totalGlobal > 0 ? (recepcionadosGlobal / totalGlobal) * 100 : 0;
-
+}> = ({ step, ubicacion, totalGlobal: _totalGlobal, recepcionadosGlobal, onBack, onTrazabilidad, showTrazabilidad }) => {
   return (
     <div className="shrink-0 bg-white dark:bg-hub-surface border-b border-gray-200 dark:border-hub-border px-4 py-3 flex items-center gap-3">
       <button
@@ -1753,6 +1748,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
   onContinuar1a1,
 }) => {
   const { isPda } = useDevice();
+  void onQuitarIntegridad;
   if (!isOpen) return null;
 
   const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
