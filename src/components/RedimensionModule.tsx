@@ -64,9 +64,9 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
   const [isMotivosExpanded, setIsMotivosExpanded] = useState<boolean>(false);
 
   // ─── Estados de Dimensiones (cm) ─────────────────────────────────────────────
-  const [alto, setAlto] = useState<string>('25');
-  const [largo, setLargo] = useState<string>('40');
-  const [ancho, setAncho] = useState<string>('30');
+  const [alto, setAlto] = useState<string>('');
+  const [largo, setLargo] = useState<string>('');
+  const [ancho, setAncho] = useState<string>('');
 
   // ─── Estados de Fotografías (Máx 3) y Modo de Cámara ────────────────────────
   const [fotos, setFotos] = useState<string[]>([]);
@@ -78,6 +78,17 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
   // ─── Estados de Recalcular y Éxito ───────────────────────────────────────────
   const [isRecalculating, setIsRecalculating] = useState<boolean>(false);
   const [showSuccessToast, setShowSuccessToast] = useState<boolean>(false);
+
+  // Validación de formulario completo para habilitar botón Recalcular (mínimo 1 fotografía)
+  const isFormComplete =
+    alto.trim() !== '' &&
+    Number(alto) > 0 &&
+    largo.trim() !== '' &&
+    Number(largo) > 0 &&
+    ancho.trim() !== '' &&
+    Number(ancho) > 0 &&
+    fotos.length >= 1 &&
+    (!embalajeDeficiente || Boolean(motivoDeficiencia));
 
   // Referencias para video y canvas
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -302,9 +313,9 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
       setMotivoDeficiencia('');
       setIsMotivosExpanded(false);
       setSkuVisible(false);
-      setAlto('25');
-      setLargo('40');
-      setAncho('30');
+      setAlto('');
+      setLargo('');
+      setAncho('');
 
       // El mensaje de éxito se cierra solito en 3.5 segundos
       toastTimeoutRef.current = window.setTimeout(() => {
@@ -313,12 +324,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
     }, 600);
   };
 
-  // Cálculos de volumen
-  const altoNum = parseFloat(alto) || 0;
-  const largoNum = parseFloat(largo) || 0;
-  const anchoNum = parseFloat(ancho) || 0;
-  const volumenM3 = ((altoNum * largoNum * anchoNum) / 1000000).toFixed(4);
-  const pesoVolumetrico = ((altoNum * largoNum * anchoNum) / 4000).toFixed(2); // Factor estándar courier 4000
+
 
   // ══════════════════════════════════════════════════════════════════════════════
   // PANTALLA: MODAL / VISTA DE CÁMARA A PANTALLA COMPLETA
@@ -711,7 +717,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-gray-400 dark:text-hub-text3">
-                    {isPda ? 'Encargo' : 'Encargo Escaneado (26 dígitos)'}
+                    {isPda ? 'Encargo' : 'Encargo Escaneado'}
                   </span>
                   <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-[#009D4E] dark:text-emerald-300 font-mono text-[10px] font-extrabold border border-emerald-300 dark:border-emerald-800">
                     OF: {encargoEscaneado.codigoOF9}
@@ -917,11 +923,11 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
           {/* Fila 2: Mitad y Mitad (Dimensiones Físicas y 3 Fotografías compartiendo la fila) */}
           <div className={`grid ${isPda ? 'grid-cols-1 gap-2.5' : 'grid-cols-1 md:grid-cols-2 gap-4 items-stretch'}`}>
             {/* Componente 1 (Mitad Izquierda): Dimensiones del Bulto */}
-            <div className={`bg-white dark:bg-hub-surface border border-gray-200/90 dark:border-hub-border shadow-xs flex flex-col justify-between ${
+            <div className={`bg-white dark:bg-hub-surface border border-gray-200/90 dark:border-hub-border shadow-xs flex flex-col ${
               isPda ? 'rounded-xl p-2.5 space-y-2' : 'rounded-2xl p-4 sm:p-5'
             }`}>
               <div>
-                <div className={`flex items-center justify-between border-b border-gray-100 dark:border-hub-border ${
+                <div className={`flex items-center justify-between h-8 sm:h-9 border-b border-gray-100 dark:border-hub-border ${
                   isPda ? 'pb-2 mb-2' : 'pb-2.5 mb-3'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -930,19 +936,16 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                       Dimensiones del Bulto (cm)
                     </h3>
                   </div>
-                  {!isPda && (
-                    <span className="text-[11px] font-mono font-bold text-gray-400">
-                      Vol: {volumenM3} m³
-                    </span>
-                  )}
                 </div>
 
                 {!isPda && (
-                  <p className="text-xs text-gray-500 dark:text-hub-text2 leading-tight mb-3.5">
+                  <p className="text-xs text-gray-500 dark:text-hub-text2 mb-3.5 leading-tight">
                     Ingresa las nuevas dimensiones del paquete para recalcular el cubicaje y actualizar el cobro.
                   </p>
                 )}
+              </div>
 
+              <div className={`flex-1 flex flex-col justify-center ${isPda ? 'mt-1' : 'py-3 sm:py-4'}`}>
                 <div className={`grid grid-cols-3 ${isPda ? 'gap-2' : 'gap-2.5'}`}>
                   {/* Alto (cm) */}
                   <div className="space-y-1">
@@ -954,6 +957,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                         type="number"
                         min="1"
                         max="300"
+                        placeholder="0"
                         value={alto}
                         onChange={(e) => setAlto(e.target.value)}
                         className={`w-full ${isPda ? 'h-9 text-xs px-2' : 'h-10 text-sm px-3'} rounded-xl border border-gray-300 dark:border-hub-border bg-gray-50 dark:bg-hub-base font-mono font-bold text-center text-[#303030] dark:text-hub-text1 focus:outline-none focus:border-[#009D4E]`}
@@ -971,6 +975,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                         type="number"
                         min="1"
                         max="300"
+                        placeholder="0"
                         value={largo}
                         onChange={(e) => setLargo(e.target.value)}
                         className={`w-full ${isPda ? 'h-9 text-xs px-2' : 'h-10 text-sm px-3'} rounded-xl border border-gray-300 dark:border-hub-border bg-gray-50 dark:bg-hub-base font-mono font-bold text-center text-[#303030] dark:text-hub-text1 focus:outline-none focus:border-[#009D4E]`}
@@ -988,6 +993,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                         type="number"
                         min="1"
                         max="300"
+                        placeholder="0"
                         value={ancho}
                         onChange={(e) => setAncho(e.target.value)}
                         className={`w-full ${isPda ? 'h-9 text-xs px-2' : 'h-10 text-sm px-3'} rounded-xl border border-gray-300 dark:border-hub-border bg-gray-50 dark:bg-hub-base font-mono font-bold text-center text-[#303030] dark:text-hub-text1 focus:outline-none focus:border-[#009D4E]`}
@@ -996,23 +1002,6 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                   </div>
                 </div>
               </div>
-
-              <div className={`${isPda ? 'pt-2 mt-1 space-y-1' : 'pt-3 mt-auto space-y-1.5'}`}>
-                <div className={`${isPda ? 'h-8 px-2.5 text-[11px]' : 'h-10 px-3 text-xs'} rounded-xl bg-gray-50 dark:bg-hub-base/60 border border-gray-200/60 dark:border-hub-border flex items-center justify-between`}>
-                  <span className="text-gray-500 dark:text-hub-text3 font-medium">
-                    Peso volumétrico:
-                  </span>
-                  <span className={`font-mono font-extrabold text-[#009D4E] dark:text-emerald-400 ${isPda ? 'text-xs' : 'text-sm'}`}>
-                    {pesoVolumetrico} kg
-                  </span>
-                </div>
-
-                {!isPda && (
-                  <div className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 text-center">
-                    Fórmula courier estándar: (Alto × Largo × Ancho) ÷ 4.000
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Componente 2 (Mitad Derecha): 3 Fotografías de la Caja */}
@@ -1020,7 +1009,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
               isPda ? 'rounded-xl p-2.5 space-y-2' : 'rounded-2xl p-4 sm:p-5'
             }`}>
               <div>
-                <div className={`flex items-center justify-between border-b border-gray-100 dark:border-hub-border ${
+                <div className={`flex items-center justify-between h-8 sm:h-9 border-b border-gray-100 dark:border-hub-border ${
                   isPda ? 'pb-2 mb-2' : 'pb-2.5 mb-3'
                 }`}>
                   <div className="flex items-center gap-2">
@@ -1030,7 +1019,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                       <UploadCloud className="w-4 h-4 text-[#009D4E]" />
                     )}
                     <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-500 dark:text-hub-text3">
-                      3 Fotografías de la Caja
+                      Fotografías de la Caja
                     </h3>
                   </div>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#009D4E] dark:text-emerald-300 font-mono text-xs font-bold border border-emerald-300 dark:border-emerald-800">
@@ -1092,7 +1081,9 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
                             <span className="text-[10px] font-bold leading-none">
                               {isPda ? `Foto ${idx + 1}` : `Adjuntar ${idx + 1}`}
                             </span>
-                            <span className="text-[8px] font-mono opacity-60 leading-none mt-0.5">Requerida</span>
+                            <span className="text-[8px] font-mono opacity-60 leading-none mt-0.5">
+                              {idx === 0 ? 'Requerida' : 'Opcional'}
+                            </span>
                           </button>
                         )}
                       </div>
@@ -1139,7 +1130,7 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
 
                 {!isPda && (
                   <div className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 text-center">
-                    {fotos.length >= 3 ? 'Fotografías listas para respaldar medidas' : 'Formatos: JPG, PNG, WEBP (hasta 3 imágenes)'}
+                    {fotos.length >= 1 ? 'Fotografías listas para respaldar medidas' : 'Formatos: JPG, PNG, WEBP (hasta 3 imágenes)'}
                   </div>
                 )}
               </div>
@@ -1151,10 +1142,17 @@ export const RedimensionModule: React.FC<RedimensionModuleProps> = ({
             <button
               type="button"
               onClick={handleRecalcular}
-              disabled={isRecalculating}
-              className={`w-full ${isPda ? 'h-11 rounded-full text-sm' : 'md:w-auto md:min-w-[200px] px-8 h-12 rounded-2xl text-sm md:text-base'} bg-[#303030] hover:bg-[#202020] active:bg-[#151515] dark:bg-hub-surface dark:hover:bg-hub-elevated text-white font-extrabold flex items-center justify-center gap-2.5 shadow-md transition-all active:scale-[0.99] cursor-pointer border border-transparent dark:border-hub-border`}
+              disabled={!isFormComplete || isRecalculating}
+              className={`w-full ${isPda ? 'h-11 rounded-full text-sm' : 'md:w-auto md:min-w-[200px] px-8 h-12 rounded-xl text-sm md:text-base'} font-extrabold flex items-center justify-center gap-2.5 transition-all font-sans ${
+                !isFormComplete || isRecalculating
+                  ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed opacity-60 border border-gray-300/40 dark:border-hub-border shadow-none'
+                  : 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer active:scale-[0.99] shadow-md dark:shadow-emerald-500/20'
+              }`}
+              title={!isFormComplete ? 'Completa las dimensiones y adjunta al menos 1 fotografía de respaldo' : 'Recalcular'}
             >
-              <RefreshCw className={`w-4 h-4 stroke-[2.2] text-[#00E676] ${isRecalculating ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 stroke-[2.5] ${isRecalculating ? 'animate-spin' : ''} ${
+                !isFormComplete || isRecalculating ? 'text-gray-400 dark:text-hub-text3' : 'text-white dark:text-[#303030]'
+              }`} />
               <span>{isRecalculating ? 'Recalculando...' : 'Recalcular'}</span>
             </button>
           </div>

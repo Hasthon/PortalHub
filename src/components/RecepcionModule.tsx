@@ -340,6 +340,9 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   // ── Autorización de Valija con Incidencia State ───────────────────────────
   const [autorizacionIncidenciaModalOpen, setAutorizacionIncidenciaModalOpen] = useState(false);
 
+  // ── Modal Bloqueo Finalizar por Valijas con Incidencia ─────────────────────
+  const [valijasBloqueoModalOpen, setValijasBloqueoModalOpen] = useState(false);
+
   // ── Modal Inicio Escaneo 1 a 1 (Bins, Pallets y Valijas con Incidencia) ──
   const [contenedor1a1ModalOpen, setContenedor1a1ModalOpen] = useState(false);
   const [pendingContenedor1a1, setPendingContenedor1a1] = useState<{
@@ -1141,9 +1144,15 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   // ─── Cierre / Cuadratura Handlers ──────────────────────────────────────────
   const handleIniciarCierre = useCallback(() => {
+    if (valijasPendientesBins > 0) {
+      playWarningSound();
+      setValijasBloqueoModalOpen(true);
+      triggerToast('No puedes finalizar, tienes valijas con incidencias que recepcionar', 'warning');
+      return;
+    }
     setCierreModalStep('INCOMPLETA');
     setCierreModalOpen(true);
-  }, []);
+  }, [valijasPendientesBins, playWarningSound, triggerToast]);
 
   const handleSupervisorAutorizado = useCallback(() => {
     playSuccessSound();
@@ -1230,6 +1239,14 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         valijaCodigo={valijasPendientesLista[0] || 'VALIJA-INCIDENCIA-01'}
       />
 
+      {/* ── Modal Bloqueo de Finalización por Valijas con Incidencias ── */}
+      <ValijaIncidenciaBloqueoModal
+        isOpen={valijasBloqueoModalOpen}
+        valijasPendientes={valijasPendientesBins}
+        onClose={() => setValijasBloqueoModalOpen(false)}
+        onIniciarRecepcionValija={handleIniciarRecepcionIncidencia}
+      />
+
       {/* ── Modal Inicio Escaneo 1 a 1 para Bins, Pallets y Valijas ── */}
       {pendingContenedor1a1 && (
         <ContenedorInicioEscaneoModal
@@ -1250,7 +1267,16 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         faltantes={faltantesGlobal}
         valijasPendientesBins={valijasPendientesBins}
         onContinuarEscaneo={() => setCierreModalOpen(false)}
-        onFinalizarConPendientes={() => setCierreModalStep('CUADRATURA_RESUMEN')}
+        onFinalizarConPendientes={() => {
+          if (valijasPendientesBins > 0) {
+            setCierreModalOpen(false);
+            setValijasBloqueoModalOpen(true);
+            playWarningSound();
+            triggerToast('No puedes finalizar, tienes valijas con incidencias que recepcionar', 'warning');
+            return;
+          }
+          setCierreModalStep('CUADRATURA_RESUMEN');
+        }}
         onVolverAEscanear={() => setCierreModalOpen(false)}
         onSolicitarAutorizacion={() => setCierreModalStep('QR_AUTORIZACION')}
         onAutorizarSupervisor={handleSupervisorAutorizado}
@@ -1384,6 +1410,12 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             recepcionadosGlobal={recepcionadosGlobal}
             faltantes={faltantesGlobal}
             onFinalizar={() => {
+              if (valijasPendientesBins > 0) {
+                playWarningSound();
+                setValijasBloqueoModalOpen(true);
+                triggerToast('No puedes finalizar, tienes valijas con incidencias que recepcionar', 'warning');
+                return;
+              }
               if (faltantesGlobal > 0) { setSupervisorAuthReason('CIERRE_CON_PENDIENTES'); setSupervisorAuthOpen(true); }
               else setStep('CIERRE_FINAL');
             }}
@@ -1852,26 +1884,23 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
               El sello físico no coincide con el registrado en el sistema. Aparta la valija físicamente para continuar con la recepción del camión.
             </p>
 
-            {/* Botón Aceptar (secundario con outline) */}
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={onDejarDespues}
-                className={`w-full py-3.5 border-2 border-gray-800 dark:border-gray-300 text-gray-900 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-hub-elevated active:scale-98 transition-all cursor-pointer font-sans flex items-center justify-center gap-2 ${btnRoundClass}`}
-              >
-                Aceptar
-              </button>
-            </div>
-
-            {/* Acción de reintento */}
-            <div className="pt-2 border-t border-gray-100 dark:border-hub-border">
+            {/* Botones de Acción: Desktop (izquierda y derecha) y PDA (vertical) */}
+            <div className={`flex gap-3 ${isPda ? 'flex-col w-full' : 'flex-row items-center'}`}>
               <button
                 type="button"
                 onClick={onReintentar}
-                className={`w-full py-2.5 px-4 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-hub-elevated transition-all flex items-center justify-center gap-2 cursor-pointer ${btnRoundClass}`}
+                className={`w-full sm:flex-1 py-3.5 px-4 border-2 border-gray-300 dark:border-hub-border text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-hub-elevated active:scale-98 transition-all cursor-pointer font-sans flex items-center justify-center gap-2 shadow-2xs ${btnRoundClass}`}
               >
-                <RotateCcw className="w-4 h-4" />
-                <span>¿Fue un error de lectura? Reintentar escaneo del sello</span>
+                <RotateCcw className="w-4 h-4 shrink-0" />
+                <span>Reintentar escaneo</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onDejarDespues}
+                className={`w-full sm:flex-1 py-3.5 px-4 border-2 border-gray-800 dark:border-gray-300 text-gray-900 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-hub-elevated active:scale-98 transition-all cursor-pointer font-sans flex items-center justify-center gap-2 shadow-2xs ${btnRoundClass}`}
+              >
+                <span>Aceptar</span>
               </button>
             </div>
           </div>
@@ -2335,6 +2364,83 @@ const ModalCargaReubicada: React.FC<ModalCargaReubicadaProps> = ({
             className="w-full py-2.5 sm:py-3 px-5 border border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated active:bg-gray-200 text-gray-700 dark:text-hub-text1 font-bold rounded-full sm:rounded-2xl text-xs sm:text-sm transition-all cursor-pointer text-center"
           >
             Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Modal Bloqueo Finalizar por Valijas con Incidencia Pendientes ───────────
+
+interface ValijaIncidenciaBloqueoModalProps {
+  isOpen: boolean;
+  valijasPendientes: number;
+  onClose: () => void;
+  onIniciarRecepcionValija: () => void;
+}
+
+const ValijaIncidenciaBloqueoModal: React.FC<ValijaIncidenciaBloqueoModalProps> = ({
+  isOpen,
+  valijasPendientes,
+  onClose,
+  onIniciarRecepcionValija,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[230] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[480px] w-full font-sans text-center transition-all">
+        {/* Icono de Advertencia */}
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-4 shadow-2xs">
+          <AlertTriangle className="w-8 h-8 stroke-[2.2]" />
+        </div>
+
+        {/* Título Principal */}
+        <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-hub-text1 mb-2">
+          No puedes finalizar
+        </h3>
+
+        {/* Mensaje de la regla de negocio solicitada */}
+        <p className="text-xs sm:text-sm font-semibold text-gray-600 dark:text-hub-text2 mb-5 leading-relaxed">
+          Tienes valijas con incidencias que recepcionar antes de dar por terminada la recepción.
+        </p>
+
+        {/* Resumen de valijas pendientes */}
+        <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-3.5 mb-6 text-left flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Package className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-800 dark:text-hub-text1">Valijas con incidencia en el panel</p>
+              <p className="text-[11px] text-gray-500 dark:text-hub-text3">Debes recepcionar sus encargos 1 a 1</p>
+            </div>
+          </div>
+          <span className="font-mono font-black text-sm px-2.5 py-1 rounded-xl bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+            {valijasPendientes} {valijasPendientes === 1 ? 'valija' : 'valijas'}
+          </span>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full sm:flex-1 py-3 sm:py-3.5 px-4 rounded-xl sm:rounded-2xl border-2 border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 text-center shadow-2xs"
+          >
+            Entendido
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onIniciarRecepcionValija();
+            }}
+            className="w-full sm:flex-1 py-3 sm:py-3.5 px-4 rounded-xl sm:rounded-2xl bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Recepcionar valijas</span>
           </button>
         </div>
       </div>
@@ -3016,7 +3122,7 @@ const StepScanEncargo: React.FC<{
                     disabled={valijasPendientesBins === 0}
                     className={`w-full py-2.5 px-3 rounded-xl text-xs font-extrabold shadow-2xs transition-all flex items-center justify-center gap-2 ${
                       valijasPendientesBins > 0
-                        ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white cursor-pointer active:scale-98 shadow-sm'
+                        ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white border-2 border-transparent dark:bg-transparent dark:border-2 dark:border-[#03F77C] dark:text-[#03F77C] dark:hover:bg-[#03F77C]/10 dark:hover:border-[#02D66B] dark:active:bg-[#03F77C]/20 cursor-pointer active:scale-98 shadow-sm'
                         : 'bg-gray-100 dark:bg-hub-base text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-hub-border cursor-not-allowed opacity-60'
                     }`}
                   >
@@ -3100,9 +3206,9 @@ const StepScanEncargo: React.FC<{
                       type="button"
                       onClick={onIniciarRecepcionIncidencia}
                       disabled={valijasPendientesBins === 0}
-                      className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-extrabold shadow-2xs transition-all flex items-center justify-center gap-2 ${
+                      className={`w-full py-3 px-4 rounded-xl text-xs sm:text-sm font-extrabold shadow-2xs transition-all flex items-center justify-center gap-2 ${
                         valijasPendientesBins > 0
-                          ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white cursor-pointer active:scale-98 shadow-sm'
+                          ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white border-2 border-transparent dark:bg-transparent dark:border-2 dark:border-[#03F77C] dark:text-[#03F77C] dark:hover:bg-[#03F77C]/10 dark:hover:border-[#02D66B] dark:active:bg-[#03F77C]/20 cursor-pointer active:scale-98 shadow-sm'
                           : 'bg-gray-100 dark:bg-hub-base text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-hub-border cursor-not-allowed opacity-60'
                       }`}
                     >
