@@ -74,7 +74,7 @@ export interface EncargoNominado {
   codigoOF9?: string;
 }
 
-export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion' | 'recepcion' | 'redimension' | 'autorizaciones';
+export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion' | 'recepcion' | 'redimension' | 'autorizaciones' | 'embalaje-deficiente';
 
 // --- TIPOS PARA EL MÓDULO DE RECEPCIÓN ---
 

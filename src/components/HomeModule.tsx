@@ -8,6 +8,7 @@ import {
   PackageCheck,
   Ruler,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface HomeModuleProps {
@@ -59,6 +60,15 @@ const MODULES_LIST: ModuleCardDef[] = [
     description: 'Escanear encargo, validar SKU y embalaje deficiente, registrar dimensiones y capturar fotografías.',
     icon: Ruler,
     accentColor: 'from-teal-600 to-emerald-700',
+    badgeText: 'OPERATIVO',
+  },
+  {
+    id: 'embalaje-deficiente',
+    title: 'Embalaje Deficiente',
+    subtitle: '',
+    description: 'Escanear encargo, validar visibilidad de SKU y registrar incidencias de embalaje.',
+    icon: AlertTriangle,
+    accentColor: 'from-amber-500 to-orange-600',
     badgeText: 'OPERATIVO',
   },
   {

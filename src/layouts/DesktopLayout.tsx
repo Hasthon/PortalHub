@@ -17,6 +17,7 @@ import {
   Search,
   Bell,
   ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface DesktopLayoutProps {
@@ -99,6 +100,8 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                           ? 'RECEPCIÓN'
                           : activeModule === 'redimension'
                             ? 'REDIMENSIÓN'
+                            : activeModule === 'embalaje-deficiente'
+                              ? 'EMBALAJE DEFICIENTE'
                             : activeModule === 'autorizaciones'
                               ? 'SUPERVISIÓN LOGÍSTICA'
                               : activeModule === 'escaneo'
@@ -120,6 +123,8 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                         ? 'Módulo de Recepción'
                         : activeModule === 'redimension'
                           ? 'Módulo de Redimensión'
+                          : activeModule === 'embalaje-deficiente'
+                            ? 'Módulo de Embalaje Deficiente'
                           : activeModule === 'autorizaciones'
                             ? 'Supervisión Logística'
                             : activeModule === 'escaneo'
@@ -290,6 +295,30 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     : 'text-emerald-400'
                 }`} />
               <span>Redimensión</span>
+            </button>
+
+            {/* Módulo de Embalaje Deficiente */}
+            <button
+              type="button"
+              onClick={() => onSelectModule?.('embalaje-deficiente')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${
+                activeModule === 'embalaje-deficiente'
+                  ? isDark
+                    ? 'bg-[#03F77C]/15 text-[#03F77C] border border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'bg-[#009D4E] text-white border border-[#00E676]/70 font-black shadow-md ring-2 ring-[#00E676]/25'
+                  : isDark
+                    ? 'text-gray-300 border border-transparent hover:bg-[#03F77C]/10 hover:text-[#03F77C] hover:border-[#03F77C]/30 font-semibold'
+                    : 'text-gray-300 border border-transparent hover:bg-white/10 hover:text-white font-medium'
+              }`}
+            >
+              <AlertTriangle className={`w-4 h-4 ${
+                isDark
+                  ? 'text-amber-400'
+                  : activeModule === 'embalaje-deficiente'
+                    ? 'text-white'
+                    : 'text-amber-400'
+              }`} />
+              <span>Embalaje Deficiente</span>
             </button>
 
             {/* Módulo de Autorizaciones de Supervisor */}

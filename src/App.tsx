@@ -8,6 +8,7 @@ import { EncasilladoModule } from './components/EncasilladoModule';
 import { NominacionDespachoModule } from './components/NominacionDespachoModule';
 import { RecepcionModule } from './components/RecepcionModule';
 import { RedimensionModule } from './components/RedimensionModule';
+import { EmbalajeDeficienteModule } from './components/EmbalajeDeficienteModule';
 import { HomeModule } from './components/HomeModule';
 import { LoginModule } from './components/LoginModule';
 import { ConfiguracionModule } from './components/ConfiguracionModule';
@@ -116,6 +117,14 @@ const MainApp: React.FC = () => {
       case 'redimension':
         return (
           <RedimensionModule
+            onRegisterBackHandler={handleRegisterBackHandler}
+            onBackHome={() => handleSelectModule('home')}
+            onCameraToggle={setIsCameraActive}
+          />
+        );
+      case 'embalaje-deficiente':
+        return (
+          <EmbalajeDeficienteModule
             onRegisterBackHandler={handleRegisterBackHandler}
             onBackHome={() => handleSelectModule('home')}
             onCameraToggle={setIsCameraActive}
