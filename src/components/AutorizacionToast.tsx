@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, X, ArrowRight, MapPin } from 'lucide-react';
+import { ShieldAlert, X, MapPin } from 'lucide-react';
 import { useAutorizaciones } from '../context/AutorizacionesContext';
 import { useDevice } from '../context/DeviceContext';
 
@@ -27,7 +27,10 @@ export const AutorizacionToast: React.FC<AutorizacionToastProps> = ({ onNavigate
           : 'top-20 right-6 max-w-sm w-full'
       }`}
     >
-      <div className="bg-white dark:bg-hub-surface border-2 border-amber-400 dark:border-amber-600 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2 relative overflow-hidden">
+      <div
+        onClick={handleVerSolicitud}
+        className="bg-white dark:bg-hub-surface border-2 border-amber-400 dark:border-amber-600 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2 relative overflow-hidden cursor-pointer hover:border-amber-500 transition-all"
+      >
         {/* Barra superior de acento animada */}
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 via-rose-500 to-[#009D4E] animate-pulse" />
 
@@ -39,7 +42,7 @@ export const AutorizacionToast: React.FC<AutorizacionToastProps> = ({ onNavigate
           <div className="flex-1 min-w-0 text-left">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono font-black uppercase text-amber-700 dark:text-amber-400">
-                AUTORIZACIÓN PRESENCIAL
+                NUEVA SOLICITUD DE DESBLOQUEO
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
             </div>
@@ -54,25 +57,14 @@ export const AutorizacionToast: React.FC<AutorizacionToastProps> = ({ onNavigate
 
           <button
             type="button"
-            onClick={dismissToast}
-            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-hub-text1 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              dismissToast();
+            }}
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-hub-text1 transition-colors cursor-pointer"
             title="Descartar notificación"
           >
             <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100 dark:border-hub-border">
-          <span className="text-[10px] font-semibold text-gray-500 dark:text-hub-text3">
-            {toastNotification.tipoBloqueo}
-          </span>
-          <button
-            type="button"
-            onClick={handleVerSolicitud}
-            className="px-3 py-1.5 rounded-xl bg-[#303030] dark:bg-[#03F77C] text-white dark:text-[#303030] text-xs font-extrabold flex items-center gap-1.5 shadow-xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          >
-            <span>Ver en pantalla</span>
-            <ArrowRight className="w-3 h-3 stroke-[2.5]" />
           </button>
         </div>
       </div>

@@ -106,11 +106,7 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
 
   const handleAutorizarClick = (s: SolicitudAutorizacion) => {
     setDesbloqueoConfirmado(null);
-    if (isPda) {
-      handleIniciarEscaneoPresencial(s);
-    } else {
-      setShowDesktopScanModal(s);
-    }
+    setShowDesktopScanModal(s);
   };
 
   const handleIniciarEscaneoPresencial = (s: SolicitudAutorizacion) => {
@@ -209,77 +205,64 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
-              {/* Card 1: En Espera Presencial (Filtra a Solicitudes en Espera) */}
+            {/* ── BARRA SEGMENTADA DE CONTROL (CONSISTENCIA VISUAL CON RECEPCIÓN) ── */}
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-hub-elevated rounded-2xl border border-gray-200/80 dark:border-hub-border shadow-2xs">
+              {/* Tab 1: En espera */}
               <button
                 type="button"
                 onClick={() => setActiveTab('pendientes')}
-                className={`p-3.5 rounded-2xl flex items-center justify-between text-left transition-all duration-200 cursor-pointer border ${
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   activeTab === 'pendientes'
-                    ? 'bg-white dark:bg-hub-surface border-[#009D4E] dark:border-[#03F77C] shadow-xs'
-                    : 'bg-white dark:bg-hub-surface border-gray-200/80 dark:border-hub-border hover:border-gray-300 dark:hover:border-hub-borderHover hover:shadow-2xs'
+                    ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
+                    : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800 dark:hover:text-hub-text2'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                <AlertTriangle
+                  className={`w-4 h-4 shrink-0 stroke-[2.2] ${
+                    activeTab === 'pendientes'
+                      ? 'text-rose-500 dark:text-rose-400'
+                      : 'text-gray-400 dark:text-hub-text3'
+                  }`}
+                />
+                <span>En espera</span>
+                {pendientes.length > 0 ? (
+                  <span
+                    className={`min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] font-black font-mono flex items-center justify-center ${
                       activeTab === 'pendientes'
-                        ? 'bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400'
-                        : 'bg-gray-50 dark:bg-hub-elevated border border-gray-200/80 dark:border-hub-border text-gray-500 dark:text-hub-text2'
+                        ? 'bg-rose-500 text-white animate-pulse'
+                        : 'bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300'
                     }`}
                   >
-                    <AlertTriangle className="w-4.5 h-4.5 stroke-[2.2]" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 uppercase tracking-wider block leading-tight">
-                      En Espera Presencial
-                    </span>
-                    <span className="text-sm font-extrabold text-[#303030] dark:text-hub-text1 truncate block leading-snug">
-                      {pendientes.length} {pendientes.length === 1 ? 'operario' : 'operarios'}
-                    </span>
-                  </div>
-                </div>
-                {activeTab === 'pendientes' ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#009D4E] dark:bg-[#03F77C] shrink-0 shadow-2xs" />
+                    {pendientes.length}
+                  </span>
                 ) : (
-                  <span className="w-2 h-2 rounded-full bg-gray-200 dark:bg-hub-elevated shrink-0" />
+                  <span className="font-mono text-[10px] text-gray-400 dark:text-hub-text3">
+                    (0)
+                  </span>
                 )}
               </button>
 
-              {/* Card 2: Autorizadas en Turno (Filtra a Historial del Turno) */}
+              {/* Tab 2: Autorizadas */}
               <button
                 type="button"
                 onClick={() => setActiveTab('historial')}
-                className={`p-3.5 rounded-2xl flex items-center justify-between text-left transition-all duration-200 cursor-pointer border ${
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   activeTab === 'historial'
-                    ? 'bg-white dark:bg-hub-surface border-[#009D4E] dark:border-[#03F77C] shadow-xs'
-                    : 'bg-white dark:bg-hub-surface border-gray-200/80 dark:border-hub-border hover:border-gray-300 dark:hover:border-hub-borderHover hover:shadow-2xs'
+                    ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
+                    : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800 dark:hover:text-hub-text2'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                      activeTab === 'historial'
-                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[#009D4E] dark:text-[#03F77C]'
-                        : 'bg-gray-50 dark:bg-hub-elevated border border-gray-200/80 dark:border-hub-border text-gray-500 dark:text-hub-text2'
-                    }`}
-                  >
-                    <CheckCircle className="w-4.5 h-4.5 stroke-[2.2]" />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-[10px] font-mono text-gray-400 dark:text-hub-text3 uppercase tracking-wider block leading-tight">
-                      Autorizadas en Turno
-                    </span>
-                    <span className="text-sm font-extrabold text-[#303030] dark:text-hub-text1 truncate block leading-snug">
-                      {totalAutorizados} {totalAutorizados === 1 ? 'resuelta' : 'resueltas'}
-                    </span>
-                  </div>
-                </div>
-                {activeTab === 'historial' ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#009D4E] dark:bg-[#03F77C] shrink-0 shadow-2xs" />
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-gray-200 dark:bg-hub-elevated shrink-0" />
-                )}
+                <CheckCircle2
+                  className={`w-4 h-4 shrink-0 stroke-[2.2] ${
+                    activeTab === 'historial'
+                      ? 'text-[#009D4E] dark:text-[#03F77C]'
+                      : 'text-gray-400 dark:text-hub-text3'
+                  }`}
+                />
+                <span>Autorizadas</span>
+                <span className="font-mono text-[10px] text-gray-400 dark:text-hub-text3">
+                  ({totalAutorizados})
+                </span>
               </button>
             </div>
           </div>
@@ -324,10 +307,20 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                           : 'border-gray-200/90 dark:border-hub-border shadow-xs hover:border-gray-300 dark:hover:border-hub-borderHover'
                       } rounded-2xl p-5 hover:shadow-md transition-all space-y-3.5 text-left relative overflow-hidden`}
                     >
-                      {/* Cabecera de la Solicitud */}
-                      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-gray-100 dark:border-hub-border">
-                        <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[11px] font-black uppercase">
+                      {/* Cabecera de la Solicitud (En columna: tiempo a la derecha arriba, badge a la izquierda abajo) */}
+                      <div className="flex flex-col gap-1.5 pb-2.5 border-b border-gray-100 dark:border-hub-border">
+                        {/* Fila 1: Tiempo de espera alineado a la derecha */}
+                        <div className="flex justify-end w-full">
+                          <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-amber-700 dark:text-amber-400">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                            <Clock className="w-3.5 h-3.5 shrink-0" />
+                            <span>{sol.tiempoEspera}</span>
+                          </div>
+                        </div>
+
+                        {/* Fila 2: Badge del tipo de bloqueo alineado a la izquierda */}
+                        <div className="flex flex-wrap items-center justify-start gap-2 w-full">
+                          <span className="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[11px] font-black uppercase leading-tight">
                             {sol.tipoBloqueo}
                           </span>
                           {isSelected && (
@@ -335,12 +328,6 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                               Notificación abierta
                             </span>
                           )}
-                        </div>
-
-                        <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-amber-700 dark:text-amber-400">
-                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{sol.tiempoEspera}</span>
                         </div>
                       </div>
 
@@ -370,79 +357,17 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                         </div>
                       </div>
 
-                      {/* Detalle del Faltante */}
-                      <div className="p-3 rounded-2xl bg-gray-50 dark:bg-hub-base border border-gray-200/80 dark:border-hub-border text-xs text-gray-600 dark:text-hub-text2">
-                        <span className="font-bold text-[#303030] dark:text-hub-text1">Detalle del motivo: </span>
-                        {sol.descripcionDetalle}
-                      </div>
-
-                      {/* Botones de Acción */}
-                      <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                      {/* Botón de Acción Principal: Autorizar */}
+                      <div className="pt-1">
                         <button
                           type="button"
-                          onClick={() => handleVerPantallaOperario(sol)}
-                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-600 dark:text-hub-text2 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                          title="Ver pantalla de la PDA del operario con su QR"
+                          onClick={() => handleAutorizarClick(sol)}
+                          className="w-full py-3 px-4 rounded-xl sm:rounded-2xl bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white font-black text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98"
                         >
-                          <Smartphone className="w-3.5 h-3.5 text-[#009D4E]" />
-                          <span>Ver QR de Operario</span>
+                          <QrCode className="w-4 h-4 stroke-[2.2]" />
+                          <span>Autorizar</span>
                         </button>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setShowRejectConfirm(sol.id)}
-                            className="px-3 py-2 rounded-xl border border-gray-300 dark:border-hub-border hover:bg-rose-50 text-rose-700 dark:text-rose-400 text-xs font-bold transition-all cursor-pointer flex-1 sm:flex-none text-center"
-                          >
-                            Rechazar
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleAutorizarClick(sol)}
-                            className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 flex-1 sm:flex-none"
-                          >
-                            <Camera className="w-4 h-4 stroke-[2.2]" />
-                            <span>Autorizar</span>
-                          </button>
-                        </div>
                       </div>
-
-                      {/* Diálogo de Rechazo */}
-                      {showRejectConfirm === sol.id && (
-                        <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-300 dark:border-rose-800 text-left space-y-2.5 animate-fadeIn">
-                          <span className="text-xs font-extrabold text-rose-900 dark:text-rose-300 flex items-center gap-1.5">
-                            <AlertTriangle className="w-4 h-4 text-rose-600" />
-                            <span>Seleccione motivo de rechazo:</span>
-                          </span>
-                          <select
-                            value={motivoRechazoInput}
-                            onChange={(e) => setMotivoRechazoInput(e.target.value)}
-                            className="w-full h-9 px-3 rounded-lg border border-rose-300 bg-white dark:bg-hub-surface text-xs font-semibold text-gray-800 dark:text-hub-text1"
-                          >
-                            <option value="Recontar carga en rampa">Recontar carga físicamente en rampa</option>
-                            <option value="Revisar interior del camión">Revisar interior del camión de transporte</option>
-                            <option value="Derivar bultos a rezago">Derivar faltantes a mesa de rezago/excepción</option>
-                            <option value="No autorizado por supervisor">No autorizado por discrepancia crítica</option>
-                          </select>
-                          <div className="flex justify-end gap-2 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => setShowRejectConfirm(null)}
-                              className="px-3 py-1 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100"
-                            >
-                              Cancelar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleConfirmarRechazo(sol.id)}
-                              className="px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs"
-                            >
-                              Confirmar Rechazo
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                     );
                   })}
@@ -459,40 +384,64 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                   historial.map((sol) => (
                     <div
                       key={sol.id}
-                      className="border border-gray-200/80 dark:border-hub-border rounded-2xl p-3.5 text-left text-xs space-y-2 hover:bg-gray-50/50 dark:hover:bg-hub-base/40 transition-colors"
+                      className="bg-white dark:bg-hub-surface border border-gray-200/90 dark:border-hub-border rounded-2xl p-4 text-left space-y-2.5 shadow-2xs hover:shadow-xs transition-all"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-gray-900 dark:text-hub-text1">{sol.id}</span>
-                          <span className="font-extrabold text-gray-800 dark:text-hub-text1">{sol.usuario}</span>
-                          <span className="text-gray-400">({sol.usuarioId})</span>
-                        </div>
+                      {/* Fila 1: Badge de Estado */}
+                      <div className="flex items-center justify-end pb-2 border-b border-gray-100 dark:border-hub-border">
                         {sol.estado === 'autorizado' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px] font-black uppercase flex items-center gap-1 border border-emerald-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wide border border-emerald-300 dark:border-emerald-700 shrink-0">
                             <Check className="w-3 h-3 stroke-[2.5]" />
-                            Autorizado Presencial
+                            Autorizado
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-800 dark:text-rose-300 text-[10px] font-black uppercase flex items-center gap-1 border border-rose-300">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-black uppercase tracking-wide border border-rose-300 dark:border-rose-700 shrink-0">
                             <X className="w-3 h-3 stroke-[2.5]" />
                             Rechazado
                           </span>
                         )}
                       </div>
 
-                      <div className="text-gray-500 dark:text-hub-text3 flex flex-wrap items-center justify-between text-[11px] gap-2">
-                        <span>{sol.ubicacion} • {sol.tipoBloqueo}</span>
-                        {sol.autorizadoAt && (
-                          <span className="font-mono text-[#009D4E] dark:text-[#03F77C] font-bold">
-                            Autorizado a las {sol.autorizadoAt} por {sol.autorizadoPor}
+                      {/* Fila 2: Operario solicitante (ancho completo sin colapso de texto) */}
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C] shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <span className="font-extrabold text-sm text-[#303030] dark:text-hub-text1">
+                            {sol.usuario}
                           </span>
-                        )}
-                        {sol.motivoRechazo && (
-                          <span className="font-mono text-rose-600 font-bold">
-                            Motivo: {sol.motivoRechazo}
+                          <span className="text-xs font-mono text-gray-400 dark:text-hub-text3 ml-1.5">
+                            ({sol.usuarioId})
                           </span>
-                        )}
+                        </div>
                       </div>
+
+                      {/* Fila 3: Ubicación y motivo de bloqueo */}
+                      <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-hub-text2">
+                        <MapPin className="w-4 h-4 text-gray-400 dark:text-hub-text3 shrink-0 mt-0.5" />
+                        <div className="leading-snug">
+                          <span className="font-semibold text-gray-800 dark:text-hub-text1">{sol.ubicacion}</span>
+                          <span className="text-gray-400 dark:text-hub-text3 mx-1.5">•</span>
+                          <span className="text-gray-500 dark:text-hub-text3">{sol.tipoBloqueo}</span>
+                        </div>
+                      </div>
+
+                      {/* Fila 4: Auditoría de autorización o rechazo */}
+                      {sol.autorizadoAt && (
+                        <div className="pt-2 border-t border-dashed border-gray-200/90 dark:border-hub-border flex items-center gap-1.5 text-[11px] font-mono text-[#009D4E] dark:text-[#03F77C] font-semibold">
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            Autorizado a las <strong className="font-bold">{sol.autorizadoAt}</strong> por {sol.autorizadoPor}
+                          </span>
+                        </div>
+                      )}
+
+                      {sol.motivoRechazo && (
+                        <div className="pt-2 border-t border-dashed border-rose-200/90 dark:border-hub-border flex items-center gap-1.5 text-[11px] font-mono text-rose-600 dark:text-rose-400 font-semibold">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            Motivo: <strong className="font-bold">{sol.motivoRechazo}</strong>
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}
@@ -766,7 +715,7 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
               {desbloqueoConfirmado ? (
                 /* Estado tras simular el escaneo: Mensaje claro de desbloqueo realizado */
                 <div className="py-2 space-y-4 animate-scale-up">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 border-2 border-[#009D4E] dark:border-[#03F77C] flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-md animate-bounce">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/80 border-2 border-[#009D4E] dark:border-[#03F77C] flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-md">
                     <CheckCircle2 className="w-9 h-9 stroke-[2.2]" />
                   </div>
 
@@ -777,27 +726,32 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                     <h3 className="text-base sm:text-lg font-black text-[#303030] dark:text-hub-text1">
                       ¡Se realizó el desbloqueo con éxito!
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-hub-text2 mt-1.5 leading-relaxed">
-                      El código QR presencial fue validado correctamente. La solicitud ha sido autorizada y la operación del operario quedó desbloqueada en rampa.
-                    </p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 text-left space-y-1.5 text-xs font-mono">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Folio:</span>
-                      <span className="font-bold text-gray-800 dark:text-hub-text1">{desbloqueoConfirmado.id}</span>
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800 text-xs font-mono space-y-2 text-left">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-gray-400 w-32 shrink-0">Folio:</span>
+                      <span className="font-bold text-gray-800 dark:text-hub-text1">
+                        {desbloqueoConfirmado.id}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Operario:</span>
-                      <span className="font-bold text-gray-800 dark:text-hub-text1">{desbloqueoConfirmado.usuario}</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-gray-400 w-32 shrink-0">Operario:</span>
+                      <span className="font-bold text-gray-800 dark:text-hub-text1">
+                        {desbloqueoConfirmado.usuario}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Ubicación:</span>
-                      <span className="font-bold text-[#009D4E] dark:text-[#03F77C]">{desbloqueoConfirmado.ubicacion}</span>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-gray-400 w-32 shrink-0">Ubicación:</span>
+                      <span className="font-bold text-[#009D4E] dark:text-[#03F77C] leading-tight">
+                        {desbloqueoConfirmado.ubicacion}
+                      </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Autorizado por:</span>
-                      <span className="font-bold text-[#009D4E] dark:text-[#03F77C]">Byron Guerra (Supervisor)</span>
+                    <div className="flex items-start gap-2.5">
+                      <span className="text-gray-400 w-32 shrink-0">Autorizado por:</span>
+                      <span className="font-bold text-[#009D4E] dark:text-[#03F77C] leading-tight">
+                        Byron Guerra (Supervisor)
+                      </span>
                     </div>
                   </div>
 
@@ -822,10 +776,10 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
 
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-[#303030] dark:text-hub-text1">
-                      Escanea el QR para autorizar el desbloqueo
+                      Escanea el QR para desbloquear
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-hub-text2 mt-2 leading-relaxed">
-                      Para autorizar esta solicitud, acércate presencialmente a la rampa y escanea con tu PDA el código QR que se visualiza en la pantalla del operario.
+                      Para autorizar esta solicitud, acércate presencialmente y escanea con tu PDA el código QR que se visualiza en la pantalla del operario.
                     </p>
                   </div>
 
@@ -851,25 +805,18 @@ export const AutorizacionesModule: React.FC<AutorizacionesModuleProps> = ({ onBa
                     </div>
                   </div>
 
-                  {/* Botones de acción */}
-                  <div className="space-y-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowDesktopScanModal(null)}
-                      className="w-full py-3 rounded-full bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer"
-                    >
-                      Entendido
-                    </button>
-
+                  {/* Botón de acción */}
+                  <div className="pt-1">
                     <button
                       type="button"
                       onClick={() => {
                         autorizarSolicitudPresencial(showDesktopScanModal.id, 'Byron Guerra (Supervisor)');
                         setDesbloqueoConfirmado(showDesktopScanModal);
                       }}
-                      className="w-full py-2.5 rounded-full border border-gray-200 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-600 dark:text-hub-text2 text-xs font-bold transition-all cursor-pointer"
+                      className="w-full py-3 rounded-full bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      ⚡ Simular escaneo presencial (Modo Demo)
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Simular escaneo presencial (Modo Demo)</span>
                     </button>
                   </div>
                 </>

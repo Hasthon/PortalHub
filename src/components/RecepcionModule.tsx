@@ -41,6 +41,7 @@ import {
   Pencil,
   Clock,
   PackageOpen,
+  ShieldCheck,
 } from 'lucide-react';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -76,9 +77,10 @@ type CierreModalStep =
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const PRESET_UBICACIONES_REC = [
-  { codigo: 'UB-REC-01', nombre: 'Andén de Recepción 01 — Zona A' },
-  { codigo: 'UB-REC-02', nombre: 'Andén de Recepción 02 — Zona B' },
-  { codigo: 'UB-REC-03', nombre: 'Muelle 3 — Recepción Nocturna' },
+  { codigo: 'AGENCIA', nombre: 'AGENCIA' },
+  { codigo: 'TRONCAL', nombre: 'TRONCAL' },
+  { codigo: 'RETIRO', nombre: 'RETIRO' },
+  { codigo: 'RETAIL', nombre: 'RETAIL' },
 ];
 
 function generarEncargos(nominaId: string, tipo: TipoContenedor, cantidad: number, todosRecepcionados = false): EncargoRecepcion[] {
@@ -282,6 +284,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   // ── Session State ───────────────────────────────────────────────────────────
   const [ubicacion, setUbicacion] = useState<{ codigo: string; nombre: string } | null>(null);
+  const ubicacionIndexRef = useRef(0);
   const [modoRecepcion, setModoRecepcion] = useState<ModoRecepcion>('CON_INTEGRIDAD');
   const [tipoContenedorSeleccionado, setTipoContenedorSeleccionado] = useState<TipoContenedor | null>(null);
   const [nominasActivas, setNominasActivas] = useState<NominaContenedora[]>(() => [buildBaseTruckNomina()]);
@@ -316,16 +319,36 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   const [desglosOpen, setDesglosOpen] = useState(false);
 
   // ── Valija Sello Modal & Incidencias State (Imágenes 1 a 5) ───────────────
-  type ValijaModalStep = 'ESPERANDO_SELLO' | 'SELLO_EXITO' | 'SELLO_ERROR' | 'ESCANEO_BINS' | 'BINS_EXITO' | 'ALERTA_DEJAR_DESPUES';
+  type ValijaModalStep =
+    | 'ESPERANDO_SELLO'
+    | 'SELLO_EXITO'
+    | 'SELLO_EXITO_SIN_INTEGRIDAD'
+    | 'SELLO_ERROR'
+    | 'ESCANEO_BINS'
+    | 'BINS_EXITO'
+    | 'ALERTA_DEJAR_DESPUES';
 
   const [valijaModalOpen, setValijaModalOpen] = useState(false);
   const [valijaModalStep, setValijaModalStep] = useState<ValijaModalStep>('ESPERANDO_SELLO');
   const [valijaCodigoEtiqueta, setValijaCodigoEtiqueta] = useState('123465874654654132135321264671001');
   const [pendingValijaNomina, setPendingValijaNomina] = useState<NominaContenedora | null>(null);
+  const [pendingValijaModo, setPendingValijaModo] = useState<ModoRecepcion>('CON_INTEGRIDAD');
   const [valijasEntregadasBins, setValijasEntregadasBins] = useState(0);
   const [valijasPendientesLista, setValijasPendientesLista] = useState<string[]>([]);
   void valijasPendientesLista;
   const [valijasPendientesBins, setValijasPendientesBins] = useState(0);
+
+  // ── Autorización de Valija con Incidencia State ───────────────────────────
+  const [autorizacionIncidenciaModalOpen, setAutorizacionIncidenciaModalOpen] = useState(false);
+
+  // ── Modal Inicio Escaneo 1 a 1 (Bins, Pallets y Valijas con Incidencia) ──
+  const [contenedor1a1ModalOpen, setContenedor1a1ModalOpen] = useState(false);
+  const [pendingContenedor1a1, setPendingContenedor1a1] = useState<{
+    tipo: TipoContenedor;
+    codigo: string;
+    nomina: NominaContenedora;
+    mensaje?: string;
+  } | null>(null);
 
   // ── Modal Cierre / Cuadratura Bifurcado State ─────────────────────────────
   const [cierreModalOpen, setCierreModalOpen] = useState(false);
@@ -410,12 +433,20 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   // ─── Scan handlers ────────────────────────────────────────────────────────
 
-  const handleScanUbicacion = useCallback((code: string) => {
-    const found = PRESET_UBICACIONES_REC.find(u => u.codigo === code) ?? PRESET_UBICACIONES_REC[0];
+  const handleScanUbicacion = useCallback((code?: string) => {
+    const clean = code?.trim().toUpperCase();
+    let found = PRESET_UBICACIONES_REC.find(u =>
+      u.codigo === clean ||
+      u.nombre.toUpperCase() === clean
+    );
+    if (!found) {
+      found = PRESET_UBICACIONES_REC[ubicacionIndexRef.current % PRESET_UBICACIONES_REC.length];
+      ubicacionIndexRef.current += 1;
+    }
     setUbicacion(found);
     playSuccessSound();
     setLastScanResult('success');
-    setLastScanCode(code);
+    setLastScanCode(found.codigo);
     setTimeout(() => {
       setPrevStepStack([]);
       setStep('SCAN_ENCARGO');
@@ -479,26 +510,60 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
     // Caso especial VALIJA: requiere validar sello de seguridad (Imágenes 1 y 2)
     if (tipoContainer === 'VALIJA' || code.toUpperCase().includes('VALIJA') || overrideTipo === 'VALIJA') {
+      const existingValija = nominasActivas.find(n => n.tipo === 'VALIJA' && n.encargos.some(e => !e.recepcionado));
+      if (modoActual === 'SIN_INTEGRIDAD' && existingValija && !code.toUpperCase().includes('VALIJA')) {
+        const pend = existingValija.encargos.find(e => !e.recepcionado);
+        if (pend) {
+          handleScanEncargo(pend.codigoOF, 'VALIJA', 'SIN_INTEGRIDAD', true);
+          return;
+        }
+      }
+
       const codigoValija = '123465874654654132135321264671001';
-      const nuevaValija = buildContenedorIntegridad('VALIJA', 300);
-      nuevaValija.codigo = code.length > 5 ? code : `VALIJA-${codigoValija.slice(-6)}`;
+      const conIntegridad = modoActual === 'CON_INTEGRIDAD';
+      const id = `NOM-VALIJA-${Math.floor(10000 + Math.random() * 90000)}`;
+      const nuevaValija: NominaContenedora = {
+        id,
+        codigo: code.length > 5 ? code : `VALIJA-${codigoValija.slice(-6)}`,
+        tipo: 'VALIJA',
+        estado: 'EN_TRANSITO',
+        totalEncargos: 300,
+        encargosRecepcionados: conIntegridad ? 300 : 0,
+        encargos: generarEncargos(id, 'VALIJA', 300, conIntegridad),
+        scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+      };
       setPendingValijaNomina(nuevaValija);
+      setPendingValijaModo(modoActual);
       setValijaCodigoEtiqueta(codigoValija);
       setValijaModalStep('ESPERANDO_SELLO');
       setValijaModalOpen(true);
       return;
     }
 
-    if (tipoContainer && modoActual === 'CON_INTEGRIDAD') {
-      const nuevoContenedor = buildContenedorIntegridad(tipoContainer, 300);
-      nuevoContenedor.codigo = code.length > 5 ? code : `${tipoContainer}-${Math.floor(100000 + Math.random() * 900000)}`;
-      setNominasActivas(prev => [...prev, nuevoContenedor]);
-      setLastScanResult('success');
-      setLastScanCode(nuevoContenedor.codigo);
-      const ultimoEncargo = nuevoContenedor.encargos[nuevoContenedor.encargos.length - 1];
-      setLastEncargoScanned(ultimoEncargo);
+    if (tipoContainer && tipoContainer !== 'VALIJA') {
+      const id = `NOM-${tipoContainer}-${Math.floor(10000 + Math.random() * 90000)}`;
+      const codigo = code.length > 5 ? code : `${tipoContainer}-${Math.floor(100000 + Math.random() * 900000)}`;
+      const totalOculto = 50;
+      const encargos = generarEncargos(id, tipoContainer, totalOculto, false);
+
+      const nuevaNomina: NominaContenedora = {
+        id,
+        codigo,
+        tipo: tipoContainer,
+        estado: 'EN_TRANSITO',
+        totalEncargos: totalOculto,
+        encargosRecepcionados: 0,
+        encargos,
+        scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setPendingContenedor1a1({
+        tipo: tipoContainer,
+        codigo,
+        nomina: nuevaNomina,
+      });
+      setContenedor1a1ModalOpen(true);
       playSuccessSound();
-      triggerToast(`Nómina ${nuevoContenedor.codigo} recepcionada completa con integridad (+300 encargos)`, 'success', nuevoContenedor.codigo);
       return;
     }
 
@@ -580,11 +645,11 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         playSuccessSound();
         triggerToast(`Nómina ${tipo} detectada (Sin Integridad) — Primer encargo recepcionado.`, 'success', newEnc.codigoOF);
 
-          if (newEnc.esUltimaMilla && newEnc.prioridad && !isSimulation) {
-            setSemaforoEncargo(newEnc);
-            setStep('SEMAFORO');
-          }
-          return;
+        if (newEnc.esUltimaMilla && newEnc.prioridad && !isSimulation) {
+          setSemaforoEncargo(newEnc);
+          setStep('SEMAFORO');
+        }
+        return;
       }
     }
 
@@ -696,8 +761,8 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     const prioLabel = encargoFinal.prioridad === 'P1_ATRASADO'
       ? 'Atrasado (Prioridad Alta)'
       : encargoFinal.prioridad === 'P3_ADELANTADO'
-      ? 'Adelantado (Prioridad Baja)'
-      : 'A tiempo (Prioridad Media)';
+        ? 'Adelantado (Prioridad Baja)'
+        : 'A tiempo (Prioridad Media)';
 
     triggerToast(
       `${encargoFinal.codigoOF} · ${prioLabel}`,
@@ -714,60 +779,71 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
     // Caso VALIJA: debe validar el sello de seguridad en modal interactivo (Imágenes 1 y 2)
     if (t === 'VALIJA') {
+      // Si el modo es SIN_INTEGRIDAD y ya hay una valija activa con encargos pendientes por pistolear:
+      const existingValija = nominasActivas.find(n => n.tipo === 'VALIJA' && n.encargos.some(e => !e.recepcionado));
+      if (m === 'SIN_INTEGRIDAD' && existingValija) {
+        const pend = existingValija.encargos.find(e => !e.recepcionado);
+        if (pend) {
+          handleScanEncargo(pend.codigoOF, 'VALIJA', 'SIN_INTEGRIDAD', true);
+          return;
+        }
+      }
+
       const codigoValija = '123465874654654132135321264671001';
-      const nuevaValija = buildContenedorIntegridad('VALIJA', 300);
-      nuevaValija.codigo = `VALIJA-${codigoValija.slice(-6)}`;
+      const conIntegridad = m === 'CON_INTEGRIDAD';
+      const id = `NOM-VALIJA-${Math.floor(10000 + Math.random() * 90000)}`;
+      const nuevaValija: NominaContenedora = {
+        id,
+        codigo: `VALIJA-${codigoValija.slice(-6)}`,
+        tipo: 'VALIJA',
+        estado: 'EN_TRANSITO',
+        totalEncargos: 300,
+        encargosRecepcionados: conIntegridad ? 300 : 0,
+        encargos: generarEncargos(id, 'VALIJA', 300, conIntegridad),
+        scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+      };
       setPendingValijaNomina(nuevaValija);
+      setPendingValijaModo(m);
       setValijaCodigoEtiqueta(codigoValija);
       setValijaModalStep('ESPERANDO_SELLO');
       setValijaModalOpen(true);
       return;
     }
 
-    // Caso Contenedor CON_INTEGRIDAD: Se suma completo (+300 encargos y +300 recepcionados)
-    if (t !== 'ENCARGO' && m === 'CON_INTEGRIDAD') {
-      const nuevoContenedor = buildContenedorIntegridad(t, 300);
-      setNominasActivas(prev => [...prev, nuevoContenedor]);
-      setLastScanResult('success');
-      setLastScanCode(nuevoContenedor.codigo);
-      const ultimoEncargo = nuevoContenedor.encargos[nuevoContenedor.encargos.length - 1];
-      setLastEncargoScanned(ultimoEncargo);
-      playSuccessSound();
-      triggerToast(`Nómina ${nuevoContenedor.codigo} recepcionada completa con integridad (+300 encargos)`, 'success', nuevoContenedor.codigo);
-      return;
-    }
-
-    // Caso Contenedor SIN_INTEGRIDAD: Se valida 1 por 1
-    if (t !== 'ENCARGO' && m === 'SIN_INTEGRIDAD') {
+    // Caso Contenedor BINS o PALLET: siempre popup de inicio escaneo 1 a 1
+    if (t !== 'ENCARGO' && t !== 'VALIJA') {
       const existingNomina = nominasActivas.find(n => n.tipo === t && n.encargos.some(e => !e.recepcionado));
       if (existingNomina) {
         const pend = existingNomina.encargos.find(e => !e.recepcionado);
         if (pend) {
-          handleScanEncargo(pend.codigoOF, t, m, true);
+          handleScanEncargo(pend.codigoOF, t, 'SIN_INTEGRIDAD', true);
           return;
         }
       }
+
       const id = `NOM-${t}-${Math.floor(10000 + Math.random() * 90000)}`;
       const codigo = `${t}-${Math.floor(100000 + Math.random() * 900000)}`;
-      const encargos = generarEncargos(id, t, 300, false);
-      encargos[0].recepcionado = true;
-      encargos[0].recepcionadoAt = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+      const totalOculto = 50; // Total oculto al operario
+      const encargos = generarEncargos(id, t, totalOculto, false);
+
       const nuevaNomina: NominaContenedora = {
         id,
         codigo,
         tipo: t,
         estado: 'EN_TRANSITO',
-        totalEncargos: 300,
-        encargosRecepcionados: 1,
+        totalEncargos: totalOculto,
+        encargosRecepcionados: 0,
         encargos,
         scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
       };
-      setNominasActivas(prev => [...prev, nuevaNomina]);
-      setLastScanResult('success');
-      setLastScanCode(encargos[0].codigoOF);
-      setLastEncargoScanned(encargos[0]);
+
+      setPendingContenedor1a1({
+        tipo: t,
+        codigo,
+        nomina: nuevaNomina,
+      });
+      setContenedor1a1ModalOpen(true);
       playSuccessSound();
-      triggerToast(`Nómina ${codigo} (Sin Integridad) — Primer encargo verificado (1 de 300)`, 'success', encargos[0].codigoOF);
       return;
     }
 
@@ -784,6 +860,10 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
   useBarcodeScanner({
     onScan: (code) => {
       if (supervisorAuthOpen || trazabilidadOpen) return;
+      if (contenedor1a1ModalOpen) {
+        handleComenzarContenedor1a1();
+        return;
+      }
       if (valijaModalOpen) {
         if (valijaModalStep === 'ESPERANDO_SELLO') {
           if (code.includes('ERROR') || code.includes('DIFF') || code.includes('NO')) {
@@ -791,6 +871,10 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
           } else {
             handleValijaSelloCoincide();
           }
+          return;
+        }
+        if (valijaModalStep === 'SELLO_EXITO_SIN_INTEGRIDAD' || valijaModalStep === 'SELLO_EXITO') {
+          handleContinuarEscaneo1a1();
           return;
         }
         if (valijaModalStep === 'ESCANEO_BINS') {
@@ -832,21 +916,53 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   // ─── Valija Sello Modal Handlers (Imágenes 1 a 5) ─────────────────────────
   const handleValijaSelloCoincide = useCallback(() => {
-    setValijaModalStep('SELLO_EXITO');
+    setValijaModalStep('SELLO_EXITO_SIN_INTEGRIDAD');
     playSuccessSound();
-    setTimeout(() => {
-      setValijaModalOpen(false);
-      if (pendingValijaNomina) {
-        setNominasActivas(prev => [...prev, pendingValijaNomina]);
-        setLastScanResult('success');
-        setLastScanCode(pendingValijaNomina.codigo);
-        const ult = pendingValijaNomina.encargos[pendingValijaNomina.encargos.length - 1];
-        setLastEncargoScanned(ult);
-        triggerToast(`Nómina ${pendingValijaNomina.codigo} recepcionada completa con integridad (+300 encargos)`, 'success', pendingValijaNomina.codigo);
-        setPendingValijaNomina(null);
-      }
-    }, 1400);
-  }, [pendingValijaNomina, playSuccessSound, triggerToast]);
+    triggerToast('Sello verificado correctamente, debes comenzar a escanear los encargos uno a uno.', 'success');
+  }, [playSuccessSound, triggerToast]);
+
+  const handleContinuarEscaneo1a1 = useCallback(() => {
+    setValijaModalOpen(false);
+    if (pendingValijaNomina) {
+      const valija1a1: NominaContenedora = {
+        ...pendingValijaNomina,
+        encargosRecepcionados: 0,
+        encargos: pendingValijaNomina.encargos.map(e => ({
+          ...e,
+          recepcionado: false,
+          recepcionadoAt: undefined,
+        })),
+      };
+
+      setNominasActivas(prev => {
+        const filtered = prev.filter(n => n.id !== valija1a1.id && n.codigo !== valija1a1.codigo);
+        return [...filtered, valija1a1];
+      });
+      setPendingValijaNomina(null);
+      setPrevStepStack([]);
+      setStep('SCAN_ENCARGO');
+      setPdaTab('ENCARGOS');
+      triggerToast('Valija lista. Escanea los encargos uno a uno.', 'success', valija1a1.codigo);
+    }
+  }, [pendingValijaNomina, triggerToast]);
+
+  const handleComenzarContenedor1a1 = useCallback(() => {
+    if (pendingContenedor1a1) {
+      setNominasActivas(prev => {
+        const filtered = prev.filter(n => n.id !== pendingContenedor1a1.nomina.id && n.codigo !== pendingContenedor1a1.nomina.codigo);
+        return [...filtered, pendingContenedor1a1.nomina];
+      });
+      setTipoContenedorSeleccionado(pendingContenedor1a1.tipo);
+      setModoRecepcion('SIN_INTEGRIDAD');
+      setContenedor1a1ModalOpen(false);
+      setPrevStepStack([]);
+      setStep('SCAN_ENCARGO');
+      setPdaTab('ENCARGOS');
+      const label = pendingContenedor1a1.tipo === 'BINS' ? 'Bin' : pendingContenedor1a1.tipo === 'PALLET' ? 'Pallet' : 'Contenedor';
+      triggerToast(`${label} ${pendingContenedor1a1.codigo} cargado. Escanea los encargos uno a uno.`, 'success', pendingContenedor1a1.codigo);
+      setPendingContenedor1a1(null);
+    }
+  }, [pendingContenedor1a1, triggerToast]);
 
   const handleValijaSelloNoCoincide = useCallback(() => {
     setValijaModalStep('SELLO_ERROR');
@@ -934,6 +1050,50 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setPendingValijaNomina(null);
   }, []);
 
+  const handleIniciarRecepcionIncidencia = useCallback(() => {
+    if (valijasPendientesBins <= 0) return;
+    setAutorizacionIncidenciaModalOpen(true);
+  }, [valijasPendientesBins]);
+
+  const handleAutorizarValijaIncidencia = useCallback(() => {
+    setAutorizacionIncidenciaModalOpen(false);
+    playSuccessSound();
+
+    // Descontar una valija pendiente de gestión
+    setValijasPendientesBins(prev => Math.max(0, prev - 1));
+    setValijasEntregadasBins(prev => prev + 1);
+
+    // Identificador de la valija
+    const valijaCod = valijasPendientesLista[0] || `VALIJA-INC-${Math.floor(1000 + Math.random() * 9000)}`;
+    setValijasPendientesLista(prev => prev.slice(1));
+
+    // Nómina en el backend con sus encargos no recepcionados (recepción a ciegas)
+    const id = `NOM-VALIJA-INC-${Math.floor(10000 + Math.random() * 90000)}`;
+    const totalOculto = 50; // Total interno en backend, oculto al operario
+    const encargos = generarEncargos(id, 'VALIJA', totalOculto, false);
+
+    const nuevaValijaIncidencia: NominaContenedora = {
+      id,
+      codigo: valijaCod,
+      tipo: 'VALIJA',
+      estado: 'EN_TRANSITO',
+      totalEncargos: totalOculto,
+      encargosRecepcionados: 0,
+      encargos,
+      scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    // En lugar de ir directo al escaneo sin aviso, abrir el popup para comenzar escaneo 1 a 1 sin pedir sello
+    setPendingContenedor1a1({
+      tipo: 'VALIJA',
+      codigo: valijaCod,
+      nomina: nuevaValijaIncidencia,
+      mensaje: 'Valija autorizada correctamente, debes comenzar a escanear los encargos uno a uno.',
+    });
+    setContenedor1a1ModalOpen(true);
+    triggerToast(`Valija ${valijaCod} autorizada por supervisor.`, 'success', valijaCod);
+  }, [valijasPendientesLista, playSuccessSound, triggerToast]);
+
   // ─── Simulación 1: Encargo con Devolución ──────────────────────────────────
   const handleSimularDevolucion = useCallback(() => {
     const randomOfNum = Math.floor(100000000 + Math.random() * 900000000).toString();
@@ -982,17 +1142,11 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setModalReubicacionOpen(false);
   }, [reubicacionData, handleScanEncargo, triggerToast]);
 
-  // ─── Cierre / Cuadratura Bifurcado Handlers ───────────────────────────────
+  // ─── Cierre / Cuadratura Handlers ──────────────────────────────────────────
   const handleIniciarCierre = useCallback(() => {
-    const faltantes = totalGlobal - recepcionadosGlobal;
-    const tienePendientes = faltantes > 0 || valijasPendientesBins > 0;
-    if (tienePendientes) {
-      setCierreModalStep('INCOMPLETA');
-    } else {
-      setCierreModalStep('CUADRATURA_RESUMEN');
-    }
+    setCierreModalStep('INCOMPLETA');
     setCierreModalOpen(true);
-  }, [totalGlobal, recepcionadosGlobal, valijasPendientesBins]);
+  }, []);
 
   const handleSupervisorAutorizado = useCallback(() => {
     playSuccessSound();
@@ -1030,7 +1184,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             ${toastLeaving ? 'animate-toast-slide-out-right' : 'animate-toast-slide-in-right'}
             ${toast.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200'
               : toast.type === 'error' ? 'bg-red-50 dark:bg-red-950 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200'
-              : 'bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200'}`}
+                : 'bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-200'}`}
         >
           <div className="shrink-0 mt-0.5">
             {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : toast.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
@@ -1068,7 +1222,27 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         onDejarDespues={handleValijaDejarDespues}
         onConfirmarDejarDespues={handleValijaConfirmarDejarDespues}
         onCancelar={handleValijaCancelar}
+        onContinuar1a1={handleContinuarEscaneo1a1}
       />
+
+      {/* ── Modal de Autorización por Supervisor para Valija con Incidencia ── */}
+      <AutorizacionValijaIncidenciaModal
+        isOpen={autorizacionIncidenciaModalOpen}
+        onClose={() => setAutorizacionIncidenciaModalOpen(false)}
+        onAutorizar={handleAutorizarValijaIncidencia}
+        valijaCodigo={valijasPendientesLista[0] || 'VALIJA-INCIDENCIA-01'}
+      />
+
+      {/* ── Modal Inicio Escaneo 1 a 1 para Bins, Pallets y Valijas ── */}
+      {pendingContenedor1a1 && (
+        <ContenedorInicioEscaneoModal
+          isOpen={contenedor1a1ModalOpen}
+          tipo={pendingContenedor1a1.tipo}
+          codigo={pendingContenedor1a1.codigo}
+          mensaje={pendingContenedor1a1.mensaje}
+          onComenzar={handleComenzarContenedor1a1}
+        />
+      )}
 
       {/* ── Modal Flujo de Finalización y Cuadratura (Bifurcaciones con o sin pendientes) ── */}
       <CierreRecepcionModal
@@ -1079,7 +1253,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         faltantes={faltantesGlobal}
         valijasPendientesBins={valijasPendientesBins}
         onContinuarEscaneo={() => setCierreModalOpen(false)}
-        onFinalizarConPendientes={() => setCierreModalStep('CONFIRMAR_SUPERVISOR')}
+        onFinalizarConPendientes={() => setCierreModalStep('CUADRATURA_RESUMEN')}
         onVolverAEscanear={() => setCierreModalOpen(false)}
         onSolicitarAutorizacion={() => setCierreModalStep('QR_AUTORIZACION')}
         onAutorizarSupervisor={handleSupervisorAutorizado}
@@ -1187,6 +1361,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
             onSimularReubicacion={handleSimularReubicacion}
             valijasEntregadasBins={valijasEntregadasBins}
             valijasPendientesBins={valijasPendientesBins}
+            onIniciarRecepcionIncidencia={handleIniciarRecepcionIncidencia}
           />
         )}
         {step === 'ALERTA_ENCARGO' && alertaEncargo && (
@@ -1293,14 +1468,11 @@ const RecepcionHeader: React.FC<{
           </p>
         )}
       </div>
-      {step === 'SCAN_ENCARGO' && totalGlobal > 0 && (
-        <div className="shrink-0 flex flex-col items-end gap-1">
+      {step === 'SCAN_ENCARGO' && (
+        <div className="shrink-0 flex items-center">
           <span className="text-xs font-mono font-extrabold text-hub-accent">
-            {recepcionadosGlobal} <span className="text-[10px] text-gray-400 font-bold">({Math.round(progress)}%)</span>
+            {recepcionadosGlobal}
           </span>
-          <div className="w-20 h-1.5 bg-gray-200 dark:bg-hub-elevated rounded-full overflow-hidden">
-            <div className="h-full bg-hub-accent rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
-          </div>
         </div>
       )}
       {showTrazabilidad && (
@@ -1546,7 +1718,14 @@ const StepValidacionNomina: React.FC<{ nomina: NominaContenedora | null }> = ({ 
 
 interface ValijaSelloModalProps {
   isOpen: boolean;
-  step: 'ESPERANDO_SELLO' | 'SELLO_EXITO' | 'SELLO_ERROR' | 'ESCANEO_BINS' | 'BINS_EXITO' | 'ALERTA_DEJAR_DESPUES';
+  step:
+    | 'ESPERANDO_SELLO'
+    | 'SELLO_EXITO'
+    | 'SELLO_EXITO_SIN_INTEGRIDAD'
+    | 'SELLO_ERROR'
+    | 'ESCANEO_BINS'
+    | 'BINS_EXITO'
+    | 'ALERTA_DEJAR_DESPUES';
   valijaCodigo: string;
   onCoincide: () => void;
   onNoCoincide: () => void;
@@ -1556,6 +1735,7 @@ interface ValijaSelloModalProps {
   onDejarDespues: () => void;
   onConfirmarDejarDespues: () => void;
   onCancelar: () => void;
+  onContinuar1a1?: () => void;
 }
 
 const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
@@ -1570,13 +1750,17 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
   onDejarDespues,
   onConfirmarDejarDespues,
   onCancelar,
+  onContinuar1a1,
 }) => {
+  const { isPda } = useDevice();
   if (!isOpen) return null;
+
+  const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
 
   return (
     <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[560px] w-full font-sans transition-all">
-        
+      <div className={`bg-white dark:bg-hub-surface p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[560px] w-full font-sans transition-all ${isPda ? 'rounded-3xl' : 'rounded-2xl'}`}>
+
         {/* ── 1. ESPERANDO SELLO (Imágenes 1 y 2) ── */}
         {step === 'ESPERANDO_SELLO' && (
           <div>
@@ -1625,25 +1809,36 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
             <button
               type="button"
               onClick={onCancelar}
-              className="w-full py-3.5 rounded-full border border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-hub-elevated active:scale-95 transition-all cursor-pointer font-sans"
+              className={`w-full py-3.5 border border-gray-900 dark:border-gray-300 text-gray-900 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-hub-elevated active:scale-95 transition-all cursor-pointer font-sans ${btnRoundClass}`}
             >
               Cancelar
             </button>
           </div>
         )}
 
-        {/* ── 2. SELLO ÉXITO ── */}
-        {step === 'SELLO_EXITO' && (
-          <div className="py-4 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto mb-3 shadow-xs">
+        {/* ── 2. SELLO ÉXITO (Escaneo 1 a 1 requerido) ── */}
+        {(step === 'SELLO_EXITO' || step === 'SELLO_EXITO_SIN_INTEGRIDAD') && (
+          <div className="py-4 text-center space-y-4 font-sans animate-fadeIn">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-xs">
               <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
             </div>
-            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1">
-              ¡Sello validado correctamente!
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-hub-text2">
-              Cargando encargos de la valija a la sesión...
-            </p>
+
+            <div className="px-2">
+              <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-hub-text1 leading-snug">
+                Sello verificado correctamente, debes comenzar a escanear los encargos uno a uno.
+              </h3>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onContinuar1a1}
+                className={`w-full py-3.5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white font-extrabold text-xs sm:text-sm shadow-sm transition-all cursor-pointer font-sans flex items-center justify-center gap-2 active:scale-98 ${btnRoundClass}`}
+              >
+                <Scan className="w-4 h-4 stroke-[2.2]" />
+                <span>Comenzar escaneo</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1657,58 +1852,18 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
             <h3 className="text-xl font-black text-gray-900 dark:text-white">
               El sello no coincide
             </h3>
-            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1.5 mb-5 max-w-[420px] mx-auto leading-relaxed">
-              El sello físico no coincide con el registrado en el sistema. Selecciona la acción a seguir para continuar con la recepción:
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1.5 mb-6 max-w-[420px] mx-auto leading-relaxed">
+              El sello físico no coincide con el registrado en el sistema. Aparta la valija físicamente para continuar con la recepción del camión.
             </p>
 
-            {/* Opciones operativas principales */}
-            <div className="space-y-3 mb-5 text-left">
-              {/* Opción 1: Quitar integridad y recepcionar 1 a 1 */}
-              <button
-                type="button"
-                onClick={onQuitarIntegridad}
-                className="w-full p-4 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/80 dark:bg-emerald-950/30 dark:hover:bg-emerald-950/50 border-2 border-[#009D4E] dark:border-[#03F77C]/60 text-left transition-all cursor-pointer group shadow-xs active:scale-[0.99] flex items-start gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#009D4E] text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                  <PackageOpen className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-black text-gray-900 dark:text-white">
-                      Quitar integridad y recepcionar 1 a 1
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200/80 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 uppercase tracking-wider shrink-0">
-                      Continuar ahora
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 leading-snug">
-                    Desarma la valija en el sistema y pistolea cada encargo individualmente para verificar su contenido.
-                  </p>
-                </div>
-              </button>
-
-              {/* Opción 2: Dejar para después */}
+            {/* Botón Aceptar (secundario con outline) */}
+            <div className="mb-4">
               <button
                 type="button"
                 onClick={onDejarDespues}
-                className="w-full p-4 rounded-2xl bg-gray-50 hover:bg-amber-50/60 dark:bg-hub-elevated/40 dark:hover:bg-amber-950/20 border-2 border-gray-200 dark:border-hub-border hover:border-amber-400 dark:hover:border-amber-600 text-left transition-all cursor-pointer group shadow-2xs active:scale-[0.99] flex items-start gap-3.5"
+                className={`w-full py-3.5 border-2 border-gray-800 dark:border-gray-300 text-gray-900 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-100 dark:hover:bg-hub-elevated active:scale-98 transition-all cursor-pointer font-sans flex items-center justify-center gap-2 ${btnRoundClass}`}
               >
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-black text-gray-900 dark:text-white">
-                      Dejar para después
-                    </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 uppercase tracking-wider shrink-0">
-                      Apartar física
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5 leading-snug">
-                    Aparta la valija físicamente para revisión posterior sin detener la recepción del camión.
-                  </p>
-                </div>
+                Aceptar
               </button>
             </div>
 
@@ -1717,7 +1872,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
               <button
                 type="button"
                 onClick={onReintentar}
-                className="w-full py-3 px-4 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-hub-elevated transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className={`w-full py-2.5 px-4 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-hub-elevated transition-all flex items-center justify-center gap-2 cursor-pointer ${btnRoundClass}`}
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>¿Fue un error de lectura? Reintentar escaneo del sello</span>
@@ -1762,7 +1917,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
             <button
               type="button"
               onClick={onDejarDespues}
-              className="w-full py-3.5 rounded-full border border-gray-800 dark:border-gray-400 text-gray-800 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-hub-elevated active:scale-95 transition-all cursor-pointer font-sans"
+              className={`w-full py-3.5 border border-gray-800 dark:border-gray-400 text-gray-800 dark:text-white font-extrabold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-hub-elevated active:scale-95 transition-all cursor-pointer font-sans ${btnRoundClass}`}
             >
               Dejar para después
             </button>
@@ -1801,7 +1956,7 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
             <button
               type="button"
               onClick={onConfirmarDejarDespues}
-              className="w-full py-3.5 rounded-full bg-[#303030] dark:bg-white text-white dark:text-[#303030] font-extrabold text-xs sm:text-sm shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer font-sans"
+              className={`w-full py-3.5 bg-[#303030] dark:bg-white text-white dark:text-[#303030] font-extrabold text-xs sm:text-sm shadow hover:opacity-90 active:scale-95 transition-all cursor-pointer font-sans ${btnRoundClass}`}
             >
               Entendido, ir a recepción
             </button>
@@ -1813,7 +1968,183 @@ const ValijaSelloModal: React.FC<ValijaSelloModalProps> = ({
   );
 };
 
+// ─── Generador QR nítido para Autorizaciones ────────────────────────────────
+const QrMatrix: React.FC<{ value: string; size?: number }> = ({ size = 180 }) => {
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className="bg-white p-3 rounded-2xl border-2 border-gray-900 shadow-sm flex flex-col items-center justify-between relative"
+    >
+      <div className="w-full flex justify-between">
+        <div className="w-9 h-9 border-4 border-gray-950 rounded-lg flex items-center justify-center p-1">
+          <div className="w-4 h-4 bg-gray-950 rounded-xs" />
+        </div>
+        <div className="w-9 h-9 border-4 border-gray-950 rounded-lg flex items-center justify-center p-1">
+          <div className="w-4 h-4 bg-gray-950 rounded-xs" />
+        </div>
+      </div>
 
+      <div className="my-auto flex flex-col items-center justify-center gap-1">
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 28 }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-1.5 h-1.5 rounded-2xs ${
+                (i * 7 + 13) % 3 === 0 ? 'bg-gray-950' : (i * 3 + 5) % 2 === 0 ? 'bg-gray-800' : 'bg-transparent'
+              }`}
+            />
+          ))}
+        </div>
+        <div className="px-1.5 py-0.5 rounded-md bg-[#009D4E] text-white text-[8px] font-black tracking-widest uppercase">
+          STARKEN
+        </div>
+      </div>
+
+      <div className="w-full flex justify-between">
+        <div className="w-9 h-9 border-4 border-gray-950 rounded-lg flex items-center justify-center p-1">
+          <div className="w-4 h-4 bg-gray-950 rounded-xs" />
+        </div>
+        <div className="flex items-center justify-center pr-1">
+          <div className="w-4 h-4 bg-gray-950 rounded-xs" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Modal: Autorización por Supervisor para Valija con Incidencia ───────────
+interface AutorizacionValijaIncidenciaModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAutorizar: () => void;
+  valijaCodigo?: string;
+}
+
+const AutorizacionValijaIncidenciaModal: React.FC<AutorizacionValijaIncidenciaModalProps> = ({
+  isOpen,
+  onClose,
+  onAutorizar,
+  valijaCodigo = 'VALIJA-INCIDENCIA-01',
+}) => {
+  const { isPda } = useDevice();
+  if (!isOpen) return null;
+
+  const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
+
+  return (
+    <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      <div className={`bg-white dark:bg-hub-surface p-6 sm:p-7 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[440px] w-full font-sans transition-all space-y-4 text-center relative ${isPda ? 'rounded-3xl' : 'rounded-2xl'}`}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-hub-text1 hover:bg-gray-100 dark:hover:bg-hub-elevated transition-colors cursor-pointer"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/80 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto shadow-2xs">
+          <ShieldCheck className="w-7 h-7 stroke-[2.2]" />
+        </div>
+
+        <div>
+          <h3 className="text-base sm:text-lg font-black text-[#303030] dark:text-hub-text1">
+            Autorización de Valija con Incidencia
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-hub-text2 mt-1 leading-relaxed">
+            Acércate al supervisor para que escanee este código QR y autorice la apertura y recepción de la valija.
+          </p>
+        </div>
+
+        <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-hub-base border border-gray-200/80 dark:border-hub-border flex items-center justify-between text-xs font-mono">
+          <span className="text-gray-400 font-sans">Valija a desbloquear:</span>
+          <span className="font-bold text-gray-800 dark:text-hub-text1">{valijaCodigo}</span>
+        </div>
+
+        <div className="py-2 flex flex-col items-center justify-center">
+          <QrMatrix value={`AUTH_VALIJA_${valijaCodigo}`} size={170} />
+          <span className="text-[10px] font-mono text-gray-400 mt-2">
+            Código QR de un solo uso • Autorización presencial
+          </span>
+        </div>
+
+        <div className="space-y-2 pt-1">
+          <button
+            type="button"
+            onClick={onAutorizar}
+            className={`w-full py-3 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 ${btnRoundClass}`}
+          >
+            <ShieldCheck className="w-4 h-4 stroke-[2.2]" />
+            <span>Simular autorización de supervisor</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className={`w-full py-2.5 border border-gray-200 dark:border-hub-border hover:bg-gray-50 dark:hover:bg-hub-elevated text-gray-600 dark:text-hub-text2 text-xs font-bold transition-all cursor-pointer ${btnRoundClass}`}
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Modal: Aviso de Inicio de Escaneo 1 a 1 (Bins, Pallets y Valijas con Incidencia) ─
+interface ContenedorInicioEscaneoModalProps {
+  isOpen: boolean;
+  tipo: TipoContenedor;
+  codigo?: string;
+  mensaje?: string;
+  onComenzar: () => void;
+}
+
+const ContenedorInicioEscaneoModal: React.FC<ContenedorInicioEscaneoModalProps> = ({
+  isOpen,
+  tipo,
+  codigo,
+  mensaje,
+  onComenzar,
+}) => {
+  const { isPda } = useDevice();
+  if (!isOpen) return null;
+
+  const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
+  const labelTipo = tipo === 'BINS' ? 'Bin' : tipo === 'PALLET' ? 'Pallet' : tipo === 'VALIJA' ? 'Valija' : 'Contenedor';
+  const textoTitulo = mensaje || `${labelTipo} verificado correctamente, debes comenzar a escanear los encargos uno a uno.`;
+
+  return (
+    <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+      <div className={`bg-white dark:bg-hub-surface p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[480px] w-full font-sans transition-all text-center space-y-4 ${isPda ? 'rounded-3xl' : 'rounded-2xl'}`}>
+        <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-xs">
+          <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
+        </div>
+
+        <div className="px-2">
+          <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-hub-text1 leading-snug">
+            {textoTitulo}
+          </h3>
+          {codigo && (
+            <p className="text-xs font-mono font-bold text-gray-500 dark:text-hub-text2 mt-1.5">
+              {codigo}
+            </p>
+          )}
+        </div>
+
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={onComenzar}
+            className={`w-full py-3.5 bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white font-extrabold text-xs sm:text-sm shadow-sm transition-all cursor-pointer font-sans flex items-center justify-center gap-2 active:scale-98 ${btnRoundClass}`}
+          >
+            <Scan className="w-4 h-4 stroke-[2.2]" />
+            <span>Comenzar escaneo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ─── Modal 1: Encargo con Devolución ─────────────────────────────────────────
 
@@ -1858,7 +2189,7 @@ const ModalEncargoDevolucion: React.FC<ModalEncargoDevolucionProps> = ({
             </div>
 
             <span className="px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 text-[9.5px] sm:text-[10px] font-mono font-bold uppercase tracking-wider mb-1.5">
-              ENCARGO EN DEVOLUCIÓN
+              ACCIÓN REQUERIDA
             </span>
 
             <h3 className="text-lg sm:text-2xl font-black text-gray-900 dark:text-hub-text1 leading-snug">
@@ -2065,58 +2396,35 @@ const CierreRecepcionModal: React.FC<CierreRecepcionModalProps> = ({
     <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
       <div className="bg-white dark:bg-hub-surface rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[520px] w-full font-sans transition-all">
 
-        {/* ── 1. RECEPCIÓN INCOMPLETA ── */}
+        {/* ── 1. DOBLE CONFIRMACIÓN DE FINALIZACIÓN ── */}
         {step === 'INCOMPLETA' && (
           <div>
             <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-3 shadow-2xs">
               <AlertTriangle className="w-7 h-7 stroke-[2.2]" />
             </div>
 
-            <h3 className="text-xl font-black text-gray-900 dark:text-hub-text1 text-center mb-1">
-              ¿Cerrar recepción con pendientes?
+            <h3 className="text-lg sm:text-xl font-black text-gray-900 dark:text-hub-text1 text-center mb-1">
+              ¿Estás seguro de finalizar la recepción?
             </h3>
-            <p className="text-xs text-gray-500 dark:text-hub-text2 text-center mb-4">
-              Aún quedan elementos por procesar en esta carga.
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-hub-text2 text-center mb-6">
+              Confirma si deseas dar por terminado este proceso de recepción.
             </p>
 
-            {/* Tarjeta estructurada de faltantes con estilo cuadratura */}
-            <div className="bg-gray-50 dark:bg-hub-elevated rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border space-y-3 mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-600 dark:text-hub-text2">
-                  Encargos por escanear:
-                </span>
-                <span className="text-base font-black font-mono text-amber-600 dark:text-amber-400">
-                  {faltantes}
-                </span>
-              </div>
-
-              {valijasPendientesBins > 0 && (
-                <div className="flex items-center justify-between border-t border-gray-200/60 dark:border-hub-border/60 pt-2.5">
-                  <span className="text-xs font-bold text-gray-600 dark:text-hub-text2">
-                    Valijas pendientes de entrega:
-                  </span>
-                  <span className="text-base font-black font-mono text-red-600 dark:text-red-400">
-                    {valijasPendientesBins}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onFinalizarConPendientes}
-                className="flex-1 py-3.5 px-4 rounded-2xl border-2 border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 text-center shadow-2xs"
-              >
-                Finalizar con pendientes
-              </button>
+            <div className="flex flex-col-reverse sm:flex-row items-center gap-2.5 sm:gap-3">
               <button
                 type="button"
                 onClick={onContinuarEscaneo}
-                className="flex-1 py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] text-white dark:bg-[#03F77C] dark:hover:bg-[#02D66B] dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
+                className="w-full sm:flex-1 py-3 sm:py-3.5 px-4 rounded-2xl border-2 border-gray-300 dark:border-hub-border hover:bg-gray-100 dark:hover:bg-hub-elevated text-gray-700 dark:text-hub-text1 font-bold text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer active:scale-95 text-center shadow-2xs"
               >
-                <Scan className="w-4 h-4" />
-                <span>Continuar escaneo</span>
+                Continuar escaneando
+              </button>
+              <button
+                type="button"
+                onClick={onFinalizarConPendientes}
+                className="w-full sm:flex-1 py-3 sm:py-3.5 px-4 rounded-2xl bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] dark:hover:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] font-bold text-xs sm:text-sm whitespace-nowrap transition-all shadow-md cursor-pointer active:scale-95 text-center flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Sí, finalizar</span>
               </button>
             </div>
           </div>
@@ -2352,6 +2660,7 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion: () => void;
   valijasEntregadasBins: number;
   valijasPendientesBins: number;
+  onIniciarRecepcionIncidencia?: () => void;
 }> = ({
   isPda,
   ubicacion,
@@ -2369,364 +2678,317 @@ const StepScanEncargo: React.FC<{
   onSimularReubicacion,
   valijasEntregadasBins,
   valijasPendientesBins,
+  onIniciarRecepcionIncidencia,
   lastEncargo,
   flashKey,
 }) => {
-  const allEncargosRec = nominasActivas.flatMap(n => n.encargos).filter(e => e.recepcionado);
-  const activeLastEncargo = lastEncargo && lastEncargo.prioridad
-    ? lastEncargo
-    : [...allEncargosRec].reverse().find(e => e.prioridad) || null;
-  const previousEncargos = activeLastEncargo
-    ? [...allEncargosRec].reverse().filter(item => item.id !== activeLastEncargo.id)
-    : [...allEncargosRec].reverse();
-  const totalCamion = totalGlobal > 0 ? totalGlobal : 50;
-  const isCompleted = totalCamion > 0 && recepcionadosGlobal >= totalCamion;
-  const [pdaTab, setPdaTab] = useState<'ENCARGOS' | 'INCIDENCIAS'>('ENCARGOS');
+    const allEncargosRec = nominasActivas.flatMap(n => n.encargos).filter(e => e.recepcionado);
+    const activeLastEncargo = lastEncargo && lastEncargo.prioridad
+      ? lastEncargo
+      : [...allEncargosRec].reverse().find(e => e.prioridad) || null;
+    const previousEncargos = activeLastEncargo
+      ? [...allEncargosRec].reverse().filter(item => item.id !== activeLastEncargo.id)
+      : [...allEncargosRec].reverse();
+    const totalCamion = totalGlobal > 0 ? totalGlobal : 50;
+    const isCompleted = totalCamion > 0 && recepcionadosGlobal >= totalCamion;
+    const [pdaTab, setPdaTab] = useState<'ENCARGOS' | 'INCIDENCIAS'>('ENCARGOS');
 
-  return (
-    <div className={`max-w-7xl mx-auto w-full font-sans animate-fadeIn ${isPda ? 'p-3 space-y-3' : 'p-4 sm:p-6 lg:p-8 space-y-6'}`}>
-      {/* ── Top Bar: Botón volver + Badge de ubicación de la rampa ── */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        {!isPda && (
+    return (
+      <div className={`max-w-7xl mx-auto w-full font-sans animate-fadeIn ${isPda ? 'p-3 space-y-3' : 'p-4 sm:p-6 lg:p-8 space-y-6'}`}>
+        {/* ── Top Bar: Badge de ubicación ── */}
+        <div className="w-full flex items-center justify-end">
           <button
             type="button"
             onClick={onVolverRampa}
-            className="font-bold text-gray-600 dark:text-hub-text2 hover:text-gray-900 dark:hover:text-hub-text1 flex items-center gap-2 transition-colors font-sans cursor-pointer shrink-0 text-sm"
-            title="Volver a Selección de Rampa"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Volver a Selección de Rampa</span>
-          </button>
-        )}
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            type="button"
-            onClick={onVolverRampa}
-            className={`min-h-[36px] pl-3 sm:pl-4 pr-2.5 py-1.5 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold flex items-center gap-2 sm:gap-3 shadow-2xs transition-all cursor-pointer active:scale-95 ${
-              isPda ? 'max-w-[calc(100%-48px)]' : 'shrink-0'
-            }`}
+            className="min-h-[36px] pl-3 sm:pl-4 pr-2.5 py-1.5 rounded-full bg-[#EEFBF4] dark:bg-[#03F77C]/15 hover:bg-emerald-100/90 dark:hover:bg-[#03F77C]/25 border border-[#A7F3D0] dark:border-[#03F77C]/40 text-[#009D4E] dark:text-[#03F77C] text-xs font-mono font-bold flex items-center gap-2 sm:gap-3 shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0"
             title="Cambiar rampa / ubicación activa"
           >
-            <span className="truncate">{ubicacion ? `${ubicacion.codigo} - ${ubicacion.nombre}` : 'Rampa 24 - Puerto Montt'}</span>
+            <span className="truncate">{ubicacion ? ubicacion.nombre : 'AGENCIA'}</span>
             <div className="w-6 h-6 rounded-full bg-[#009D4E] dark:bg-[#03F77C] text-white dark:text-[#303030] flex items-center justify-center shrink-0 shadow-2xs">
               <Pencil className="w-3 h-3 stroke-[2.5]" />
             </div>
           </button>
         </div>
-      </div>
 
-      {/* ── Barra de Simulación / QA Toolbar ── */}
-      {isPda ? (
-        <div className="bg-gray-50/90 dark:bg-hub-surface/70 rounded-2xl p-2 sm:p-2.5 border border-gray-200/70 dark:border-hub-border text-xs space-y-1.5 shadow-2xs">
-          {/* Fila 1: Configuración de Tipo y Modo */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <span className="text-[10px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider shrink-0">
-                Simular:
-              </span>
-              <select
-                value={testTipo}
-                onChange={e => setTestTipo(e.target.value as TipoContenedor)}
-                className="bg-white dark:bg-hub-elevated border border-gray-200 dark:border-hub-border rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-hub-text1 focus:outline-none cursor-pointer flex-1 max-w-[130px]"
+        {/* ── Barra de Simulación / QA Toolbar ── */}
+        {isPda ? (
+          <div className="bg-gray-50/90 dark:bg-hub-surface/70 rounded-2xl p-2 sm:p-2.5 border border-gray-200/70 dark:border-hub-border text-xs space-y-1.5 shadow-2xs">
+            {/* Fila 1: Configuración de Tipo y Modo */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                <span className="text-[10px] font-bold text-gray-400 dark:text-hub-text3 uppercase tracking-wider shrink-0">
+                  Simular:
+                </span>
+                <select
+                  value={testTipo}
+                  onChange={e => setTestTipo(e.target.value as TipoContenedor)}
+                  className="bg-white dark:bg-hub-elevated border border-gray-200 dark:border-hub-border rounded-lg px-2 py-0.5 text-[11px] font-bold text-gray-700 dark:text-hub-text1 focus:outline-none cursor-pointer flex-1 max-w-[130px]"
+                >
+                  <option value="ENCARGO">Encargo</option>
+                  <option value="BINS">Bins</option>
+                  <option value="VALIJA">Valija</option>
+                  <option value="PALLET">Pallet</option>
+                  <option value="JAULA">Jaula</option>
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setTestModo(testModo === 'CON_INTEGRIDAD' ? 'SIN_INTEGRIDAD' : 'CON_INTEGRIDAD')}
+                className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${testModo === 'CON_INTEGRIDAD'
+                    ? 'bg-emerald-50 text-[#009D4E] border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-700'
+                    : 'bg-white text-gray-600 border-gray-200 dark:bg-hub-elevated dark:text-hub-text2'
+                  }`}
+                title="Alternar Con/Sin Integridad"
               >
-                <option value="ENCARGO">Encargo</option>
-                <option value="BINS">Bins</option>
-                <option value="VALIJA">Valija</option>
-                <option value="PALLET">Pallet</option>
-                <option value="JAULA">Jaula</option>
-              </select>
+                {testModo === 'CON_INTEGRIDAD' ? '✓ Con Int.' : 'Sin Int.'}
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setTestModo(testModo === 'CON_INTEGRIDAD' ? 'SIN_INTEGRIDAD' : 'CON_INTEGRIDAD')}
-              className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                testModo === 'CON_INTEGRIDAD'
-                  ? 'bg-emerald-50 text-[#009D4E] border-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-700'
-                  : 'bg-white text-gray-600 border-gray-200 dark:bg-hub-elevated dark:text-hub-text2'
-              }`}
-              title="Alternar Con/Sin Integridad"
-            >
-              {testModo === 'CON_INTEGRIDAD' ? '✓ Con Int.' : 'Sin Int.'}
-            </button>
-          </div>
+            {/* Fila 2: 3 Botones de acción organizados en Grid para que nunca se monten */}
+            <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
+                className="py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-300/70 dark:border-emerald-800 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+                title="Simular escaneo de encargo o contenedor"
+              >
+                <Scan className="w-3 h-3 shrink-0" />
+                <span className="truncate">Simular {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
+              </button>
 
-          {/* Fila 2: 3 Botones de acción organizados en Grid para que nunca se monten */}
-          <div className="grid grid-cols-3 gap-1.5">
+              <button
+                type="button"
+                onClick={onSimularDevolucion}
+                className="py-1 px-1.5 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border border-amber-300/70 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+                title="Simular encargo con devolución"
+              >
+                <RotateCcw className="w-3 h-3 stroke-[2.2] shrink-0" />
+                <span className="truncate">Devolución</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={onSimularReubicacion}
+                className="py-1 px-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300/70 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
+                title="Simular carga sin redimensión"
+              >
+                <ArrowRightLeft className="w-3 h-3 stroke-[2.2] shrink-0" />
+                <span className="truncate">Sin Redimensión</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-end items-center gap-3 shrink-0 flex-wrap">
+            {/* Chips de tipo de nómina contenedora */}
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-hub-elevated p-1 rounded-2xl border border-gray-200/60 dark:border-hub-border">
+              {(['ENCARGO', 'BINS', 'VALIJA', 'PALLET', 'JAULA'] as TipoContenedor[]).map(tipo => {
+                const active = testTipo === tipo;
+                return (
+                  <button
+                    key={tipo}
+                    type="button"
+                    onClick={() => setTestTipo(tipo)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${active
+                        ? 'bg-amber-500 text-white shadow-xs'
+                        : 'text-gray-600 dark:text-hub-text2 hover:text-gray-900'
+                      }`}
+                  >
+                    {tipo}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Chips de modo Con/Sin Integridad */}
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-hub-elevated p-1 rounded-2xl border border-gray-200/60 dark:border-hub-border">
+              {(['CON_INTEGRIDAD', 'SIN_INTEGRIDAD'] as ModoRecepcion[]).map(modo => {
+                const active = testModo === modo;
+                return (
+                  <button
+                    key={modo}
+                    type="button"
+                    onClick={() => setTestModo(modo)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${active
+                        ? 'bg-[#009D4E] text-white shadow-xs'
+                        : 'text-gray-600 dark:text-hub-text2 hover:text-gray-900'
+                      }`}
+                  >
+                    {modo === 'CON_INTEGRIDAD' ? 'Con Int.' : 'Sin Int.'}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Botón Simular Escaneo PDA */}
             <button
               type="button"
               onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
-              className="py-1 px-1.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border border-emerald-300/70 dark:border-emerald-800 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
-              title="Simular escaneo de encargo o contenedor"
+              className="px-3.5 py-2 bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-500/80 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
             >
-              <Scan className="w-3 h-3 shrink-0" />
-              <span className="truncate">Simular {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
+              <Scan className="w-4 h-4" />
+              <span>Simular Escaneo PDA {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
             </button>
 
+            {/* Botón Simular Devolución */}
             <button
               type="button"
               onClick={onSimularDevolucion}
-              className="py-1 px-1.5 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border border-amber-300/70 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
-              title="Simular encargo con devolución"
+              className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
+              title="Simular encargo con orden de devolución"
             >
-              <RotateCcw className="w-3 h-3 stroke-[2.2] shrink-0" />
-              <span className="truncate">Devolución</span>
+              <RotateCcw className="w-4 h-4 stroke-[2.2] text-amber-600 dark:text-amber-400" />
+              <span>Simular Devolución (+1)</span>
             </button>
 
+            {/* Botón Simular Carga Sin Redimensión */}
             <button
               type="button"
               onClick={onSimularReubicacion}
-              className="py-1 px-1.5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-300/70 dark:border-blue-800 text-blue-700 dark:text-blue-400 font-bold rounded-lg text-[10.5px] transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95 whitespace-nowrap shadow-2xs"
-              title="Simular carga sin redimensión"
+              className="px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
+              title="Simular aviso de carga sin redimensión"
             >
-              <ArrowRightLeft className="w-3 h-3 stroke-[2.2] shrink-0" />
-              <span className="truncate">Sin Redimensión</span>
+              <ArrowRightLeft className="w-4 h-4 stroke-[2.2] text-blue-600 dark:text-blue-400" />
+              <span>Simular Sin Redimensión (+1)</span>
             </button>
           </div>
-        </div>
-      ) : (
-        <div className="flex justify-end items-center gap-3 shrink-0 flex-wrap">
-          {/* Chips de tipo de nómina contenedora */}
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-hub-elevated p-1 rounded-2xl border border-gray-200/60 dark:border-hub-border">
-            {(['ENCARGO', 'BINS', 'VALIJA', 'PALLET', 'JAULA'] as TipoContenedor[]).map(tipo => {
-              const active = testTipo === tipo;
-              return (
-                <button
-                  key={tipo}
-                  type="button"
-                  onClick={() => setTestTipo(tipo)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
-                    active
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-gray-600 dark:text-hub-text2 hover:text-gray-900'
+        )}
+
+        {/* ── RECEPCIÓN DE CARGA (BARRA DE PROGRESO COMPACTA & CERO-SCROLL) ── */}
+        {isPda ? (
+          /* ── OPCIÓN 1 EN MODO PDA: TABBAR ARRIBA (ENCARGOS VS INCIDENCIAS) ── */
+          <div className="space-y-3">
+            {/* 1. TabBar Switch Superior en PDA */}
+            <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-hub-elevated rounded-2xl border border-gray-200/80 dark:border-hub-border shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setPdaTab('ENCARGOS')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${pdaTab === 'ENCARGOS'
+                    ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
+                    : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800'
                   }`}
-                >
-                  {tipo}
-                </button>
-              );
-            })}
-          </div>
+              >
+                <PackageCheck className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
+                <span>Encargos</span>
+                <span className="font-mono text-[10px] text-gray-400">
+                  ({recepcionadosGlobal})
+                </span>
+              </button>
 
-          {/* Chips de modo Con/Sin Integridad */}
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-hub-elevated p-1 rounded-2xl border border-gray-200/60 dark:border-hub-border">
-            {(['CON_INTEGRIDAD', 'SIN_INTEGRIDAD'] as ModoRecepcion[]).map(modo => {
-              const active = testModo === modo;
-              return (
-                <button
-                  key={modo}
-                  type="button"
-                  onClick={() => setTestModo(modo)}
-                  className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
-                    active
-                      ? 'bg-[#009D4E] text-white shadow-xs'
-                      : 'text-gray-600 dark:text-hub-text2 hover:text-gray-900'
+              <button
+                type="button"
+                onClick={() => setPdaTab('INCIDENCIAS')}
+                className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${pdaTab === 'INCIDENCIAS'
+                    ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
+                    : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800'
                   }`}
-                >
-                  {modo === 'CON_INTEGRIDAD' ? 'Con Int.' : 'Sin Int.'}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Botón Simular Escaneo PDA */}
-          <button
-            type="button"
-            onClick={() => onSimularScanPrimerEncargo(testTipo, testModo)}
-            className="px-3.5 py-2 bg-emerald-600/10 hover:bg-emerald-600/20 active:bg-emerald-600/30 border border-emerald-500/80 text-[#009D4E] dark:text-[#03F77C] font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
-          >
-            <Scan className="w-4 h-4" />
-            <span>Simular Escaneo PDA {testTipo !== 'ENCARGO' && testModo === 'CON_INTEGRIDAD' ? '(+300)' : '(+1)'}</span>
-          </button>
-
-          {/* Botón Simular Devolución */}
-          <button
-            type="button"
-            onClick={onSimularDevolucion}
-            className="px-3 py-2 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/70 text-amber-700 dark:text-amber-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
-            title="Simular encargo con orden de devolución"
-          >
-            <RotateCcw className="w-4 h-4 stroke-[2.2] text-amber-600 dark:text-amber-400" />
-            <span>Simular Devolución (+1)</span>
-          </button>
-
-          {/* Botón Simular Carga Sin Redimensión */}
-          <button
-            type="button"
-            onClick={onSimularReubicacion}
-            className="px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30 border border-blue-500/70 text-blue-700 dark:text-blue-400 font-bold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5 font-sans cursor-pointer active:scale-95"
-            title="Simular aviso de carga sin redimensión"
-          >
-            <ArrowRightLeft className="w-4 h-4 stroke-[2.2] text-blue-600 dark:text-blue-400" />
-            <span>Simular Sin Redimensión (+1)</span>
-          </button>
-        </div>
-      )}
-
-      {/* ── RECEPCIÓN DE CARGA (BARRA DE PROGRESO COMPACTA & CERO-SCROLL) ── */}
-      {isPda ? (
-        /* ── OPCIÓN 1 EN MODO PDA: TABBAR ARRIBA (ENCARGOS VS INCIDENCIAS) ── */
-        <div className="space-y-3">
-          {/* 1. TabBar Switch Superior en PDA */}
-          <div className="flex items-center gap-1.5 p-1 bg-gray-100 dark:bg-hub-elevated rounded-2xl border border-gray-200/80 dark:border-hub-border shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setPdaTab('ENCARGOS')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                pdaTab === 'ENCARGOS'
-                  ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
-                  : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800'
-              }`}
-            >
-              <PackageCheck className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C]" />
-              <span>Encargos</span>
-              <span className="font-mono text-[11px] text-[#009D4E] dark:text-[#03F77C] font-black">
-                {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
-              </span>
-              <span className="font-mono text-[10px] text-gray-400">
-                ({recepcionadosGlobal})
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPdaTab('INCIDENCIAS')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                pdaTab === 'INCIDENCIAS'
-                  ? 'bg-white dark:bg-hub-surface text-gray-900 dark:text-hub-text1 shadow-xs font-black'
-                  : 'text-gray-500 dark:text-hub-text3 hover:text-gray-800'
-              }`}
-            >
-              <Layers className="w-4 h-4 text-amber-500" />
-              <span>Incidencias</span>
-              {valijasPendientesBins > 0 ? (
-                <span className="min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] font-black bg-red-500 text-white font-mono flex items-center justify-center animate-pulse">
-                  {valijasPendientesBins}
-                </span>
-              ) : (
-                <span className="text-[10px] text-gray-400 font-mono">
-                  ({valijasEntregadasBins})
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* 2. Contenido según Tab Activo en PDA */}
-          {pdaTab === 'ENCARGOS' ? (
-            <div className="space-y-3 animate-fadeIn">
-              {/* Barra de progreso compacta (solo dentro de Encargos) */}
-              <div className="bg-white dark:bg-hub-surface rounded-2xl p-3.5 shadow-xs border border-gray-200/80 dark:border-hub-border space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-gray-700 dark:text-hub-text1">Progreso camión</span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-sm font-black text-gray-900 dark:text-hub-text1 font-mono">
-                      {recepcionadosGlobal}
-                    </span>
-                    <span className="text-[11px] font-mono font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#006338] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800">
-                      {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="w-full bg-[#D1F2DE] dark:bg-hub-elevated rounded-full h-3 overflow-hidden p-0.5 shadow-inner">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#009D4E] to-[#00B85C] dark:from-[#03F77C] dark:to-[#00D668] rounded-full transition-all duration-500 ease-out shadow-xs"
-                    style={{ width: `${Math.min(100, Math.max(recepcionadosGlobal > 0 ? 2 : 0, (recepcionadosGlobal / totalCamion) * 100))}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Detalle de encargos recepcionados en PDA (con el último encargo adentro) */}
-              <div className="bg-white dark:bg-hub-surface rounded-2xl p-3.5 border border-gray-200/80 dark:border-hub-border shadow-xs flex flex-col">
-                <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-hub-border mb-2.5 shrink-0">
-                  <span className="text-xs font-bold text-gray-700 dark:text-hub-text1">
-                    Encargos recepcionados
+              >
+                <Layers className="w-4 h-4 text-amber-500" />
+                <span>Incidencias</span>
+                {valijasPendientesBins > 0 ? (
+                  <span className="min-w-[18px] h-4.5 px-1.5 rounded-full text-[10px] font-black bg-red-500 text-white font-mono flex items-center justify-center animate-pulse">
+                    {valijasPendientesBins}
                   </span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300">
-                    {allEncargosRec.length}
+                ) : (
+                  <span className="text-[10px] text-gray-400 font-mono">
+                    ({valijasEntregadasBins})
                   </span>
-                </div>
-
-                {/* Banner Último encargo escaneado en PDA (DENTRO del contenedor) */}
-                {activeLastEncargo && activeLastEncargo.prioridad && (
-                  <div
-                    key={flashKey}
-                    className={`mb-2.5 p-3 rounded-xl border transition-all duration-300 shrink-0 shadow-xs animate-toast-slide-down ${
-                      activeLastEncargo.prioridad === 'P1_ATRASADO'
-                        ? 'bg-red-50/90 dark:bg-red-950/40 border-red-300 dark:border-red-800/70 border-l-4 border-l-red-500'
-                        : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                        ? 'bg-sky-50/90 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800/70 border-l-4 border-l-sky-500'
-                        : 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/70 border-l-4 border-l-emerald-500'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-hub-text3 font-mono flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full animate-ping ${
-                          activeLastEncargo.prioridad === 'P1_ATRASADO'
-                            ? 'bg-red-500'
-                            : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                            ? 'bg-sky-500'
-                            : 'bg-emerald-500'
-                        }`} />
-                        Último encargo
-                      </span>
-                      {prioridadBadge(activeLastEncargo.prioridad, false)}
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-bold text-gray-700 dark:text-gray-200 truncate">
-                        {activeLastEncargo.codigoBarras || '78981234567898123456'}
-                      </span>
-                      <p className={`text-[11px] font-bold font-sans text-right ${
-                        activeLastEncargo.prioridad === 'P1_ATRASADO'
-                          ? 'text-red-700 dark:text-red-300'
-                          : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                          ? 'text-sky-700 dark:text-sky-300'
-                          : 'text-emerald-700 dark:text-emerald-300'
-                      }`}>
-                        {activeLastEncargo.prioridad === 'P1_ATRASADO'
-                          ? '🚨 Salida urgente'
-                          : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                          ? '🔵 Carga condicional'
-                          : '✅ Plan regular'}
-                      </p>
-                    </div>
-                  </div>
                 )}
+              </button>
+            </div>
 
-                <div className="max-h-[190px] overflow-y-auto space-y-1.5 pr-1 [scrollbar-width:thin]">
-                  {allEncargosRec.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-gray-400 dark:text-hub-text3">
-                      Escanea un encargo para comenzar
+            {/* 2. Contenido según Tab Activo en PDA */}
+            {pdaTab === 'ENCARGOS' ? (
+              <div className="space-y-3 animate-fadeIn">
+                {/* Detalle de encargos recepcionados en PDA (con el último encargo adentro) */}
+                <div className="bg-white dark:bg-hub-surface rounded-2xl p-3.5 border border-gray-200/80 dark:border-hub-border shadow-xs flex flex-col">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-hub-border mb-2.5 shrink-0">
+                    <span className="text-xs font-bold text-gray-700 dark:text-hub-text1">
+                      Encargos recepcionados
+                    </span>
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300">
+                      {allEncargosRec.length}
+                    </span>
+                  </div>
+
+                  {/* Banner Último encargo escaneado en PDA (DENTRO del contenedor) */}
+                  {activeLastEncargo && activeLastEncargo.prioridad && (
+                    <div
+                      key={flashKey}
+                      className={`mb-2.5 p-3 rounded-xl border transition-all duration-300 shrink-0 shadow-xs animate-toast-slide-down ${activeLastEncargo.prioridad === 'P1_ATRASADO'
+                          ? 'bg-red-50/90 dark:bg-red-950/40 border-red-300 dark:border-red-800/70 border-l-4 border-l-red-500'
+                          : activeLastEncargo.prioridad === 'P3_ADELANTADO'
+                            ? 'bg-sky-50/90 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800/70 border-l-4 border-l-sky-500'
+                            : 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/70 border-l-4 border-l-emerald-500'
+                        }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-hub-text3 font-mono flex items-center gap-1.5">
+                          <span className={`w-2 h-2 rounded-full animate-ping ${activeLastEncargo.prioridad === 'P1_ATRASADO'
+                              ? 'bg-red-500'
+                              : activeLastEncargo.prioridad === 'P3_ADELANTADO'
+                                ? 'bg-sky-500'
+                                : 'bg-emerald-500'
+                            }`} />
+                          Último encargo
+                        </span>
+                        {prioridadBadge(activeLastEncargo.prioridad, false)}
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-mono font-bold text-gray-700 dark:text-gray-200 truncate">
+                          {activeLastEncargo.codigoBarras || '78981234567898123456'}
+                        </span>
+                        <p className={`text-[11px] font-bold font-sans text-right ${activeLastEncargo.prioridad === 'P1_ATRASADO'
+                            ? 'text-red-700 dark:text-red-300'
+                            : activeLastEncargo.prioridad === 'P3_ADELANTADO'
+                              ? 'text-sky-700 dark:text-sky-300'
+                              : 'text-emerald-700 dark:text-emerald-300'
+                          }`}>
+                          {activeLastEncargo.prioridad === 'P1_ATRASADO'
+                            ? '🚨 Salida urgente'
+                            : activeLastEncargo.prioridad === 'P3_ADELANTADO'
+                              ? '🔵 Carga condicional'
+                              : '✅ Plan regular'}
+                        </p>
+                      </div>
                     </div>
-                  ) : (
-                    previousEncargos.map((item) => {
-                      const borderPriorityColor =
-                        item.prioridad === 'P1_ATRASADO'
-                          ? 'border-l-red-500'
-                          : item.prioridad === 'P3_ADELANTADO'
-                          ? 'border-l-sky-500'
-                          : item.prioridad === 'P2_A_TIEMPO'
-                          ? 'border-l-emerald-500'
-                          : 'border-l-gray-300 dark:border-l-hub-border';
-
-                      return (
-                        <div
-                          key={item.id}
-                          className={`p-2 rounded-xl border text-xs font-mono flex items-center justify-between gap-2 border-l-4 ${borderPriorityColor} border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40`}
-                        >
-                          <span className="font-bold text-xs truncate text-[#414745] dark:text-slate-200">
-                            {item.codigoBarras || '78981234567898123456'}
-                          </span>
-                          <div className="shrink-0">
-                            {prioridadBadge(item.prioridad, true)}
-                          </div>
-                        </div>
-                      );
-                    })
                   )}
+
+                  <div className="max-h-[190px] overflow-y-auto space-y-1.5 pr-1 [scrollbar-width:thin]">
+                    {allEncargosRec.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-gray-400 dark:text-hub-text3">
+                        Escanea un encargo para comenzar
+                      </div>
+                    ) : (
+                      previousEncargos.map((item) => {
+                        const borderPriorityColor =
+                          item.prioridad === 'P1_ATRASADO'
+                            ? 'border-l-red-500'
+                            : item.prioridad === 'P3_ADELANTADO'
+                              ? 'border-l-sky-500'
+                              : item.prioridad === 'P2_A_TIEMPO'
+                                ? 'border-l-emerald-500'
+                                : 'border-l-gray-300 dark:border-l-hub-border';
+
+                        return (
+                          <div
+                            key={item.id}
+                            className={`p-2 rounded-xl border text-xs font-mono flex items-center justify-between gap-2 border-l-4 ${borderPriorityColor} border-gray-200/80 dark:border-hub-border bg-gray-50/60 dark:bg-slate-800/40`}
+                          >
+                            <span className="font-bold text-xs truncate text-[#414745] dark:text-slate-200">
+                              {item.codigoBarras || '78981234567898123456'}
+                            </span>
+                            <div className="shrink-0">
+                              {prioridadBadge(item.prioridad, true)}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
+            ) : (
               /* TAB INCIDENCIAS EN PDA: 100% LIMPIO Y ENFOCADO */
               <div className="bg-white dark:bg-hub-surface rounded-2xl p-4 border border-gray-200/80 dark:border-hub-border shadow-xs space-y-3.5 animate-fadeIn">
                 <div className="flex items-center justify-between">
@@ -2749,6 +3011,23 @@ const StepScanEncargo: React.FC<{
                     {valijasPendientesBins}
                   </span>
                 </div>
+
+                {/* Botón Iniciar recepción */}
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={onIniciarRecepcionIncidencia}
+                    disabled={valijasPendientesBins === 0}
+                    className={`w-full py-2.5 px-3 rounded-xl text-xs font-extrabold shadow-2xs transition-all flex items-center justify-center gap-2 ${
+                      valijasPendientesBins > 0
+                        ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white cursor-pointer active:scale-98 shadow-sm'
+                        : 'bg-gray-100 dark:bg-hub-base text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-hub-border cursor-not-allowed opacity-60'
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4 shrink-0" />
+                    <span>Iniciar recepción</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -2767,49 +3046,39 @@ const StepScanEncargo: React.FC<{
                       <h3 className="text-base font-extrabold text-[#414745] dark:text-hub-text1 font-sans">
                         Recepción de carga
                       </h3>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                        recepcionadosGlobal === 0
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${recepcionadosGlobal === 0
                           ? 'bg-gray-100 text-gray-500 dark:bg-hub-elevated dark:text-hub-text3'
                           : isCompleted
-                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                          : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                      }`}>
+                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                        }`}>
                         {recepcionadosGlobal === 0 ? 'En espera' : isCompleted ? '¡Carga completa!' : 'En proceso'}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-hub-text2 font-sans mt-0.5">
-                      {recepcionadosGlobal === 0
-                        ? 'Escanea un encargo para comenzar'
-                        : isCompleted
-                        ? 'Todos los encargos han sido recepcionados'
-                        : `${totalCamion - recepcionadosGlobal} pendiente${totalCamion - recepcionadosGlobal === 1 ? '' : 's'} por escanear de la carga`}
-                    </p>
+                    {recepcionadosGlobal === 0 ? (
+                      <p className="text-xs text-gray-500 dark:text-hub-text2 font-sans mt-0.5">
+                        Escanea un encargo para comenzar
+                      </p>
+                    ) : isCompleted ? (
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 font-sans mt-0.5 font-bold">
+                        Todos los encargos han sido recepcionados
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
-                {/* Contador y Porcentaje destacado */}
+                {/* Contador destacado (sin porcentaje) */}
                 <div className="flex items-baseline gap-2 shrink-0">
                   <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-hub-text1 font-mono tracking-tight">
                     {recepcionadosGlobal}
                   </span>
-                  <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-[#006338] dark:text-[#03F77C] border border-emerald-200 dark:border-emerald-800">
-                    {Math.round(totalCamion > 0 ? (recepcionadosGlobal / totalCamion) * 100 : 0)}%
-                  </span>
                 </div>
-              </div>
-
-              {/* Barra de progreso horizontal con gradiente suave */}
-              <div className="w-full bg-[#D1F2DE] dark:bg-hub-elevated rounded-full h-3.5 overflow-hidden p-0.5 shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-[#009D4E] to-[#00B85C] dark:from-[#03F77C] dark:to-[#00D668] rounded-full transition-all duration-500 ease-out shadow-xs"
-                  style={{ width: `${Math.min(100, Math.max(recepcionadosGlobal > 0 ? 2 : 0, (recepcionadosGlobal / totalCamion) * 100))}%` }}
-                />
               </div>
             </div>
 
             {/* 2. Cuerpo en 2 Columnas (Layout Cero-Scroll) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-              
+
               {/* Columna Izquierda (lg:col-span-5): Valijas con incidencia */}
               <div className="lg:col-span-5 space-y-4">
                 <div className="bg-white dark:bg-hub-surface rounded-3xl p-5 border border-gray-200/80 dark:border-hub-border shadow-xs space-y-3">
@@ -2827,6 +3096,23 @@ const StepScanEncargo: React.FC<{
                     <span className="min-w-[26px] h-6 px-2.5 rounded-full text-xs font-black bg-[#FAD4D4] dark:bg-red-900/60 text-[#C53030] dark:text-red-300 font-mono flex items-center justify-center">
                       {valijasPendientesBins}
                     </span>
+                  </div>
+
+                  {/* Botón Iniciar recepción */}
+                  <div className="pt-1.5">
+                    <button
+                      type="button"
+                      onClick={onIniciarRecepcionIncidencia}
+                      disabled={valijasPendientesBins === 0}
+                      className={`w-full py-3 px-4 rounded-2xl text-xs sm:text-sm font-extrabold shadow-2xs transition-all flex items-center justify-center gap-2 ${
+                        valijasPendientesBins > 0
+                          ? 'bg-[#009D4E] hover:bg-[#008743] active:bg-[#007037] text-white cursor-pointer active:scale-98 shadow-sm'
+                          : 'bg-gray-100 dark:bg-hub-base text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-hub-border cursor-not-allowed opacity-60'
+                      }`}
+                    >
+                      <QrCode className="w-4 h-4 shrink-0" />
+                      <span>Iniciar recepción</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2847,24 +3133,22 @@ const StepScanEncargo: React.FC<{
                 {activeLastEncargo && activeLastEncargo.prioridad && (
                   <div
                     key={flashKey}
-                    className={`mb-3 p-3.5 rounded-2xl border transition-all duration-300 shrink-0 shadow-sm animate-toast-slide-down ${
-                      activeLastEncargo.prioridad === 'P1_ATRASADO'
+                    className={`mb-3 p-3.5 rounded-2xl border transition-all duration-300 shrink-0 shadow-sm animate-toast-slide-down ${activeLastEncargo.prioridad === 'P1_ATRASADO'
                         ? 'bg-red-50/90 dark:bg-red-950/40 border-red-300 dark:border-red-800/70 border-l-4 border-l-red-500 ring-2 ring-red-500/20'
                         : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                        ? 'bg-sky-50/90 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800/70 border-l-4 border-l-sky-500 ring-2 ring-sky-500/20'
-                        : 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/70 border-l-4 border-l-emerald-500 ring-2 ring-emerald-500/20'
-                    }`}
+                          ? 'bg-sky-50/90 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800/70 border-l-4 border-l-sky-500 ring-2 ring-sky-500/20'
+                          : 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/70 border-l-4 border-l-emerald-500 ring-2 ring-emerald-500/20'
+                      }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 dark:text-hub-text3 font-mono flex items-center gap-1.5">
-                          <span className={`w-2 h-2 rounded-full animate-ping ${
-                            activeLastEncargo.prioridad === 'P1_ATRASADO'
+                          <span className={`w-2 h-2 rounded-full animate-ping ${activeLastEncargo.prioridad === 'P1_ATRASADO'
                               ? 'bg-red-500'
                               : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                              ? 'bg-sky-500'
-                              : 'bg-emerald-500'
-                          }`} />
+                                ? 'bg-sky-500'
+                                : 'bg-emerald-500'
+                            }`} />
                           Último encargo escaneado
                         </span>
                         <span className="text-[11px] font-mono text-gray-400 dark:text-hub-text3">
@@ -2878,18 +3162,17 @@ const StepScanEncargo: React.FC<{
                       <span className="text-xs font-mono font-bold text-gray-700 dark:text-gray-200 truncate">
                         {activeLastEncargo.codigoBarras || '78981234567898123456'}
                       </span>
-                      <p className={`text-xs font-bold font-sans ${
-                        activeLastEncargo.prioridad === 'P1_ATRASADO'
+                      <p className={`text-xs font-bold font-sans ${activeLastEncargo.prioridad === 'P1_ATRASADO'
                           ? 'text-red-700 dark:text-red-300'
                           : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                          ? 'text-sky-700 dark:text-sky-300'
-                          : 'text-emerald-700 dark:text-emerald-300'
-                      }`}>
+                            ? 'text-sky-700 dark:text-sky-300'
+                            : 'text-emerald-700 dark:text-emerald-300'
+                        }`}>
                         {activeLastEncargo.prioridad === 'P1_ATRASADO'
                           ? '🚨 Salida urgente: Priorizar carga inmediata al camión'
                           : activeLastEncargo.prioridad === 'P3_ADELANTADO'
-                          ? '🔵 Carga condicional: Cargar sólo si queda espacio en el camión'
-                          : '✅ Plan regular: Agregar al camión en curso'}
+                            ? '🔵 Carga condicional: Cargar sólo si queda espacio en el camión'
+                            : '✅ Plan regular: Agregar al camión en curso'}
                       </p>
                     </div>
                   </div>
@@ -2912,10 +3195,10 @@ const StepScanEncargo: React.FC<{
                         item.prioridad === 'P1_ATRASADO'
                           ? 'border-l-red-500'
                           : item.prioridad === 'P3_ADELANTADO'
-                          ? 'border-l-sky-500'
-                          : item.prioridad === 'P2_A_TIEMPO'
-                          ? 'border-l-emerald-500'
-                          : 'border-l-gray-300 dark:border-l-hub-border';
+                            ? 'border-l-sky-500'
+                            : item.prioridad === 'P2_A_TIEMPO'
+                              ? 'border-l-emerald-500'
+                              : 'border-l-gray-300 dark:border-l-hub-border';
 
                       return (
                         <div
@@ -2938,29 +3221,27 @@ const StepScanEncargo: React.FC<{
           </div>
         )}
 
-      {/* ── Botón Finalizar recepción ── */}
-      <div className={`pt-2 ${isPda ? 'w-full' : 'flex justify-end'}`}>
-        <button
-          type="button"
-          disabled={recepcionadosGlobal === 0}
-          onClick={onCuadrar}
-          className={`font-black text-sm flex items-center justify-center gap-2.5 transition-all font-sans ${
-            isPda
-              ? 'w-full py-4 rounded-full shadow-md'
-              : 'px-8 py-3.5 rounded-2xl shadow-md'
-          } ${
-            recepcionadosGlobal === 0
-              ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed opacity-60 border border-gray-300/40 dark:border-hub-border'
-              : 'bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer active:scale-[0.98] shadow-md dark:shadow-emerald-500/20'
-          }`}
-          title={recepcionadosGlobal === 0 ? 'Desactivado: aún no hay encargos recepcionados' : 'Finalizar recepción'}
-        >
-          <span>Finalizar recepción</span>
-        </button>
+        {/* ── Botón Finalizar recepción ── */}
+        <div className={`pt-2 ${isPda ? 'w-full' : 'flex justify-end'}`}>
+          <button
+            type="button"
+            disabled={recepcionadosGlobal === 0}
+            onClick={onCuadrar}
+            className={`font-black text-sm flex items-center justify-center gap-2.5 transition-all font-sans ${isPda
+                ? 'w-full py-4 rounded-full shadow-md'
+                : 'px-8 py-3.5 rounded-2xl shadow-md'
+              } ${recepcionadosGlobal === 0
+                ? 'bg-gray-200 dark:bg-hub-elevated text-gray-400 dark:text-hub-text3 cursor-not-allowed opacity-60 border border-gray-300/40 dark:border-hub-border'
+                : 'bg-[#303030] hover:bg-[#1f1f1f] active:bg-black text-white dark:bg-[#03F77C] hover:dark:bg-[#02D66B] dark:active:bg-[#02B55A] dark:text-[#303030] cursor-pointer active:scale-[0.98] shadow-md dark:shadow-emerald-500/20'
+              }`}
+            title={recepcionadosGlobal === 0 ? 'Desactivado: aún no hay encargos recepcionados' : 'Finalizar recepción'}
+          >
+            <span>Finalizar recepción</span>
+          </button>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 // ─── Step: Alerta Encargo ─────────────────────────────────────────────────────
 
@@ -3311,3 +3592,4 @@ const StepCierreFinal: React.FC<{
     </div>
   );
 };
+
