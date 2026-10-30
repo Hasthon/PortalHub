@@ -81,7 +81,7 @@ const PRESET_UBICACIONES_REC = [
   { codigo: 'RETAIL', nombre: 'RETAIL' },
 ];
 
-function generarEncargos(nominaId: string, tipo: TipoContenedor, cantidad: number, todosRecepcionados = false): EncargoRecepcion[] {
+function generarEncargos(nominaId: string, _tipo: TipoContenedor, cantidad: number, todosRecepcionados = false): EncargoRecepcion[] {
   const estados: EstadoEncargo[] = ['NORMAL', 'NORMAL', 'NORMAL', 'DEVOLUCION', 'FALTA_REDIMENSIONAR', 'REDIMENSIONADA', 'NORMAL', 'NORMAL'];
   const prioridades: PrioridadSemaforo[] = [
     'P2_A_TIEMPO',
@@ -102,7 +102,7 @@ function generarEncargos(nominaId: string, tipo: TipoContenedor, cantidad: numbe
       codigoOF: `OF-${Math.floor(1000000 + Math.random() * 9000000)}`,
       codigoBarras: `78${Math.floor(1e10 + Math.random() * 9e10).toString()}`,
       estado: estados[i % estados.length],
-      prioridad: tipo === 'ENCARGO' ? prioridades[i % prioridades.length] : undefined,
+      prioridad: prioridades[i % prioridades.length],
       esUltimaMilla: (i % 4 === 0),
       recepcionado: todosRecepcionados,
       recepcionadoAt: todosRecepcionados ? timeStr : undefined,
@@ -349,6 +349,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     tipo: TipoContenedor;
     codigo: string;
     nomina: NominaContenedora;
+    nominas?: NominaContenedora[];
     mensaje?: string;
   } | null>(null);
 
@@ -595,6 +596,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
           const primerEncargo: EncargoRecepcion = {
             ...encargos[0],
             codigoOF: code.startsWith('OF-') ? code : (code.length >= 7 ? code : `OF-${code}`),
+            prioridad: encargos[0].prioridad || 'P2_A_TIEMPO',
             recepcionado: true,
             recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
           };
@@ -627,7 +629,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
           codigoOF: code.startsWith('OF-') ? code : (code.length >= 7 ? code : `OF-${code}`),
           codigoBarras: code,
           estado: estadosSI[Math.floor(Math.random() * estadosSI.length)],
-          prioridad: tipo === 'ENCARGO' ? prioSI[Math.floor(Math.random() * prioSI.length)] : undefined,
+          prioridad: prioSI[Math.floor(Math.random() * prioSI.length)],
           esUltimaMilla: Math.random() < 0.3,
           recepcionado: true,
           recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
@@ -674,7 +676,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
           codigoOF: code.startsWith('OF-') ? code : `OF-${code}`,
           codigoBarras: code,
           estado: estadosSI[Math.floor(Math.random() * estadosSI.length)],
-          prioridad: (testTipo === 'ENCARGO' || nominaTarget.tipo === 'ENCARGO') ? prioSI[Math.floor(Math.random() * prioSI.length)] : undefined,
+          prioridad: prioSI[Math.floor(Math.random() * prioSI.length)],
           esUltimaMilla: Math.random() < 0.3,
           recepcionado: false,
           nominaId: nominaTarget.id,
@@ -718,18 +720,25 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     const encargoFinal = foundEncargo;
     const nominaIdFinal = foundNominaId;
 
+    const prioSI: PrioridadSemaforo[] = ['P2_A_TIEMPO', 'P1_ATRASADO', 'P3_ADELANTADO'];
+    const encargoFinalPrioridad: PrioridadSemaforo = encargoFinal.prioridad || prioSI[Math.floor(Math.random() * prioSI.length)];
+    const encargoFinalConPrioridad: EncargoRecepcion = {
+      ...encargoFinal,
+      prioridad: encargoFinalPrioridad,
+    };
+
     if ((encargoFinal.estado === 'DEVOLUCION' || encargoFinal.estado === 'FALTA_REDIMENSIONAR') && !isSimulation) {
       playWarningSound();
       setLastScanResult('warning');
       setLastScanCode(encargoFinal.codigoOF);
-      setLastEncargoScanned(encargoFinal);
-      setAlertaEncargo(encargoFinal);
+      setLastEncargoScanned(encargoFinalConPrioridad);
+      setAlertaEncargo(encargoFinalConPrioridad);
       setNominasActivas(prev => prev.map(n =>
         n.id === nominaIdFinal
           ? {
             ...n,
             encargosRecepcionados: n.encargosRecepcionados + 1,
-            encargos: n.encargos.map(e => e.id === encargoFinal.id ? { ...e, recepcionado: true, recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) } : e),
+            encargos: n.encargos.map(e => e.id === encargoFinal.id ? { ...e, prioridad: encargoFinalPrioridad, recepcionado: true, recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) } : e),
           }
           : n
       ));
@@ -738,9 +747,9 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     }
 
     // Audio feedback según prioridad del encargo
-    if (encargoFinal.prioridad === 'P1_ATRASADO') {
+    if (encargoFinalPrioridad === 'P1_ATRASADO') {
       playAtrasadoSound();
-    } else if (encargoFinal.prioridad === 'P3_ADELANTADO') {
+    } else if (encargoFinalPrioridad === 'P3_ADELANTADO') {
       playAdelantadoSound();
     } else {
       playATiempoSound();
@@ -748,21 +757,21 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
     setLastScanResult('success');
     setLastScanCode(encargoFinal.codigoOF);
-    setLastEncargoScanned(encargoFinal);
+    setLastEncargoScanned(encargoFinalConPrioridad);
     setFlashKey(k => k + 1);
     setNominasActivas(prev => prev.map(n =>
       n.id === nominaIdFinal
         ? {
           ...n,
           encargosRecepcionados: n.encargosRecepcionados + 1,
-          encargos: n.encargos.map(e => e.id === encargoFinal.id ? { ...e, recepcionado: true, recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) } : e),
+          encargos: n.encargos.map(e => e.id === encargoFinal.id ? { ...e, prioridad: encargoFinalPrioridad, recepcionado: true, recepcionadoAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) } : e),
         }
         : n
     ));
 
-    const prioLabel = encargoFinal.prioridad === 'P1_ATRASADO'
+    const prioLabel = encargoFinalPrioridad === 'P1_ATRASADO'
       ? 'Atrasado (Prioridad Alta)'
-      : encargoFinal.prioridad === 'P3_ADELANTADO'
+      : encargoFinalPrioridad === 'P3_ADELANTADO'
         ? 'Adelantado (Prioridad Baja)'
         : 'A tiempo (Prioridad Media)';
 
@@ -949,16 +958,19 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
 
   const handleComenzarContenedor1a1 = useCallback(() => {
     if (pendingContenedor1a1) {
+      const nominasToAdd = pendingContenedor1a1.nominas || [pendingContenedor1a1.nomina];
       setNominasActivas(prev => {
-        const filtered = prev.filter(n => n.id !== pendingContenedor1a1.nomina.id && n.codigo !== pendingContenedor1a1.nomina.codigo);
-        return [...filtered, pendingContenedor1a1.nomina];
+        const idsToAdd = new Set(nominasToAdd.map(n => n.id));
+        const codigosToAdd = new Set(nominasToAdd.map(n => n.codigo));
+        const filtered = prev.filter(n => !idsToAdd.has(n.id) && !codigosToAdd.has(n.codigo));
+        return [...filtered, ...nominasToAdd];
       });
       setTipoContenedorSeleccionado(pendingContenedor1a1.tipo);
       setModoRecepcion('SIN_INTEGRIDAD');
       setContenedor1a1ModalOpen(false);
       setPrevStepStack([]);
       setStep('SCAN_ENCARGO');
-      const label = pendingContenedor1a1.tipo === 'BINS' ? 'Bin' : pendingContenedor1a1.tipo === 'PALLET' ? 'Pallet' : 'Contenedor';
+      const label = pendingContenedor1a1.tipo === 'BINS' ? 'Bin' : pendingContenedor1a1.tipo === 'PALLET' ? 'Pallet' : 'Valija';
       triggerToast(`${label} ${pendingContenedor1a1.codigo} cargado. Escanea los encargos uno a uno.`, 'success', pendingContenedor1a1.codigo);
       setPendingContenedor1a1(null);
     }
@@ -1059,40 +1071,67 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
     setAutorizacionIncidenciaModalOpen(false);
     playSuccessSound();
 
-    // Descontar una valija pendiente de gestión
-    setValijasPendientesBins(prev => Math.max(0, prev - 1));
-    setValijasEntregadasBins(prev => prev + 1);
+    // Cantidad total de valijas con incidencia a autorizar en este lote
+    const count = valijasPendientesBins > 0 ? valijasPendientesBins : (valijasPendientesLista.length || 1);
 
-    // Identificador de la valija
-    const valijaCod = valijasPendientesLista[0] || `VALIJA-INC-${Math.floor(1000 + Math.random() * 9000)}`;
-    setValijasPendientesLista(prev => prev.slice(1));
+    // Códigos de las valijas del lote
+    const codigos: string[] = [];
+    for (let i = 0; i < count; i++) {
+      codigos.push(valijasPendientesLista[i] || `VALIJA-INC-${Math.floor(1000 + Math.random() * 9000)}`);
+    }
 
-    // Nómina en el backend con sus encargos no recepcionados (recepción a ciegas)
-    const id = `NOM-VALIJA-INC-${Math.floor(10000 + Math.random() * 90000)}`;
-    const totalOculto = 50; // Total interno en backend, oculto al operario
-    const encargos = generarEncargos(id, 'VALIJA', totalOculto, false);
+    // Descontar TODAS las valijas pendientes de gestión de una sola vez
+    setValijasPendientesBins(0);
+    setValijasEntregadasBins(prev => prev + count);
+    setValijasPendientesLista([]);
 
-    const nuevaValijaIncidencia: NominaContenedora = {
-      id,
-      codigo: valijaCod,
-      tipo: 'VALIJA',
-      estado: 'EN_TRANSITO',
-      totalEncargos: totalOculto,
-      encargosRecepcionados: 0,
-      encargos,
-      scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
-    };
+    // Generar nóminas para todas las valijas autorizadas del lote (recepción a ciegas 1 a 1)
+    const nuevasNominas: NominaContenedora[] = codigos.map((valijaCod, idx) => {
+      const id = `NOM-VALIJA-INC-${Math.floor(10000 + Math.random() * 90000)}-${idx + 1}`;
+      const totalOculto = 50; // Total interno en backend, oculto al operario
+      const encargos = generarEncargos(id, 'VALIJA', totalOculto, false);
 
-    // En lugar de ir directo al escaneo sin aviso, abrir el popup para comenzar escaneo 1 a 1 sin pedir sello
+      return {
+        id,
+        codigo: valijaCod,
+        tipo: 'VALIJA',
+        estado: 'EN_TRANSITO',
+        totalEncargos: totalOculto,
+        encargosRecepcionados: 0,
+        encargos,
+        scannedAt: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }),
+      };
+    });
+
+    // Agregar todas las nuevas nóminas al set activo
+    setNominasActivas(prev => {
+      const idsNuevos = new Set(nuevasNominas.map(n => n.id));
+      const codigosNuevos = new Set(nuevasNominas.map(n => n.codigo));
+      const filtered = prev.filter(n => !idsNuevos.has(n.id) && !codigosNuevos.has(n.codigo));
+      return [...filtered, ...nuevasNominas];
+    });
+
+    setTipoContenedorSeleccionado('VALIJA');
+    setModoRecepcion('SIN_INTEGRIDAD');
+
+    const labelValijas = count === 1 ? `Valija ${codigos[0]}` : `Lote de ${count} valijas`;
+    const tituloModal = count === 1 ? 'Valija autorizada' : 'Valijas autorizadas';
+
+    // Abrir el popup para comenzar escaneo 1 a 1 de todo el lote
     setPendingContenedor1a1({
       tipo: 'VALIJA',
-      codigo: valijaCod,
-      nomina: nuevaValijaIncidencia,
-      mensaje: 'Valija autorizada correctamente, debes comenzar a escanear los encargos uno a uno.',
+      codigo: '',
+      nomina: nuevasNominas[0],
+      nominas: nuevasNominas,
+      mensaje: tituloModal,
     });
     setContenedor1a1ModalOpen(true);
-    triggerToast(`Valija ${valijaCod} autorizada por supervisor.`, 'success', valijaCod);
-  }, [valijasPendientesLista, playSuccessSound, triggerToast]);
+
+    const toastMsg = count === 1
+      ? `Valija ${codigos[0]} autorizada por supervisor.`
+      : `Lote de ${count} valijas con incidencias autorizadas por supervisor.`;
+    triggerToast(toastMsg, 'success', labelValijas);
+  }, [valijasPendientesBins, valijasPendientesLista, playSuccessSound, triggerToast]);
 
   // ─── Simulación 1: Encargo con Devolución ──────────────────────────────────
   const handleSimularDevolucion = useCallback(() => {
@@ -1237,6 +1276,7 @@ export const RecepcionModule: React.FC<RecepcionModuleProps> = ({
         onClose={() => setAutorizacionIncidenciaModalOpen(false)}
         onAutorizar={handleAutorizarValijaIncidencia}
         valijaCodigo={valijasPendientesLista[0] || 'VALIJA-INCIDENCIA-01'}
+        totalValijas={valijasPendientesBins}
       />
 
       {/* ── Modal Bloqueo de Finalización por Valijas con Incidencias ── */}
@@ -2043,6 +2083,7 @@ interface AutorizacionValijaIncidenciaModalProps {
   onClose: () => void;
   onAutorizar: () => void;
   valijaCodigo?: string;
+  totalValijas?: number;
 }
 
 const AutorizacionValijaIncidenciaModal: React.FC<AutorizacionValijaIncidenciaModalProps> = ({
@@ -2050,11 +2091,13 @@ const AutorizacionValijaIncidenciaModal: React.FC<AutorizacionValijaIncidenciaMo
   onClose,
   onAutorizar,
   valijaCodigo = 'VALIJA-INCIDENCIA-01',
+  totalValijas = 1,
 }) => {
   const { isPda } = useDevice();
   if (!isOpen) return null;
 
   const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
+  const esMultiples = totalValijas > 1;
 
   return (
     <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
@@ -2073,22 +2116,27 @@ const AutorizacionValijaIncidenciaModal: React.FC<AutorizacionValijaIncidenciaMo
 
         <div>
           <h3 className="text-base sm:text-lg font-black text-[#303030] dark:text-hub-text1">
-            Autorización de Valija con Incidencia
+            {esMultiples ? 'Autorización de Lote de Valijas con Incidencia' : 'Autorización de Valija con Incidencia'}
           </h3>
           <p className="text-xs text-gray-500 dark:text-hub-text2 mt-1 leading-relaxed">
-            Acércate al supervisor para que escanee este código QR y autorice la apertura y recepción de la valija.
+            Solicita al supervisor escanear este código QR para autorizar la recepción.
           </p>
         </div>
 
         <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-hub-base border border-gray-200/80 dark:border-hub-border flex items-center justify-between text-xs font-mono">
-          <span className="text-gray-400 font-sans">Valija a desbloquear:</span>
-          <span className="font-bold text-gray-800 dark:text-hub-text1">{valijaCodigo}</span>
+          <span className="text-gray-400 font-sans">
+            {esMultiples ? 'Valijas a desbloquear:' : 'Valija a desbloquear:'}
+          </span>
+          <span className="font-bold text-gray-800 dark:text-hub-text1">
+            {esMultiples ? `${totalValijas} valijas con incidencia` : valijaCodigo}
+          </span>
         </div>
 
+
         <div className="py-2 flex flex-col items-center justify-center">
-          <QrMatrix value={`AUTH_VALIJA_${valijaCodigo}`} size={170} />
+          <QrMatrix value={`AUTH_VALIJAS_LOTE_${totalValijas}_${Date.now()}`} size={170} />
           <span className="text-[10px] font-mono text-gray-400 mt-2">
-            Código QR de un solo uso • Autorización presencial
+            Código QR de un solo uso • Autorización presencial única
           </span>
         </div>
 
@@ -2136,21 +2184,24 @@ const ContenedorInicioEscaneoModal: React.FC<ContenedorInicioEscaneoModalProps> 
 
   const btnRoundClass = isPda ? 'rounded-full' : 'rounded-xl';
   const labelTipo = tipo === 'BINS' ? 'Bin' : tipo === 'PALLET' ? 'Pallet' : tipo === 'VALIJA' ? 'Valija' : 'Contenedor';
-  const textoTitulo = mensaje || `${labelTipo} verificado correctamente, debes comenzar a escanear los encargos uno a uno.`;
+  const textoTitulo = mensaje || `${labelTipo} verificado`;
 
   return (
     <div className="fixed inset-0 z-[220] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-      <div className={`bg-white dark:bg-hub-surface p-6 sm:p-8 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[480px] w-full font-sans transition-all text-center space-y-4 ${isPda ? 'rounded-3xl' : 'rounded-2xl'}`}>
-        <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-xs">
-          <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
+      <div className={`bg-white dark:bg-hub-surface p-6 sm:p-7 shadow-2xl border border-gray-100 dark:border-hub-border max-w-[420px] w-full font-sans transition-all text-center space-y-4 ${isPda ? 'rounded-3xl' : 'rounded-2xl'}`}>
+        <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-[#009D4E] dark:text-[#03F77C] mx-auto shadow-xs">
+          <CheckCircle2 className="w-8 h-8 stroke-[2.5]" />
         </div>
 
-        <div className="px-2">
+        <div className="px-2 space-y-1">
           <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-hub-text1 leading-snug">
             {textoTitulo}
           </h3>
+          <p className="text-xs text-gray-500 dark:text-hub-text2 font-medium">
+            Comienza a escanear los encargos uno a uno.
+          </p>
           {codigo && (
-            <p className="text-xs font-mono font-bold text-gray-500 dark:text-hub-text2 mt-1.5">
+            <p className="text-xs font-mono font-bold text-gray-400 dark:text-hub-text3 pt-1">
               {codigo}
             </p>
           )}
@@ -2785,9 +2836,12 @@ const StepScanEncargo: React.FC<{
   flashKey,
 }) => {
     const allEncargosRec = nominasActivas.flatMap(n => n.encargos).filter(e => e.recepcionado);
-    const activeLastEncargo = lastEncargo && lastEncargo.prioridad
+    const rawLast = lastEncargo && allEncargosRec.some(e => e.id === lastEncargo.id)
       ? lastEncargo
-      : [...allEncargosRec].reverse().find(e => e.prioridad) || null;
+      : [...allEncargosRec].reverse()[0] || null;
+    const activeLastEncargo = rawLast
+      ? { ...rawLast, prioridad: rawLast.prioridad || ('P2_A_TIEMPO' as PrioridadSemaforo) }
+      : null;
     const previousEncargos = activeLastEncargo
       ? [...allEncargosRec].reverse().filter(item => item.id !== activeLastEncargo.id)
       : [...allEncargosRec].reverse();
@@ -3063,14 +3117,13 @@ const StepScanEncargo: React.FC<{
                       </div>
                     ) : (
                       previousEncargos.map((item) => {
+                        const prio = item.prioridad || 'P2_A_TIEMPO';
                         const borderPriorityColor =
-                          item.prioridad === 'P1_ATRASADO'
+                          prio === 'P1_ATRASADO'
                             ? 'border-l-red-500'
-                            : item.prioridad === 'P3_ADELANTADO'
+                            : prio === 'P3_ADELANTADO'
                               ? 'border-l-sky-500'
-                              : item.prioridad === 'P2_A_TIEMPO'
-                                ? 'border-l-emerald-500'
-                                : 'border-l-gray-300 dark:border-l-hub-border';
+                              : 'border-l-emerald-500';
 
                         return (
                           <div
@@ -3081,7 +3134,7 @@ const StepScanEncargo: React.FC<{
                               {item.codigoBarras || '78981234567898123456'}
                             </span>
                             <div className="shrink-0">
-                              {prioridadBadge(item.prioridad, true)}
+                              {prioridadBadge(prio, true)}
                             </div>
                           </div>
                         );
@@ -3293,14 +3346,13 @@ const StepScanEncargo: React.FC<{
                     </div>
                   ) : (
                     previousEncargos.map((item) => {
+                      const prio = item.prioridad || 'P2_A_TIEMPO';
                       const borderPriorityColor =
-                        item.prioridad === 'P1_ATRASADO'
+                        prio === 'P1_ATRASADO'
                           ? 'border-l-red-500'
-                          : item.prioridad === 'P3_ADELANTADO'
+                          : prio === 'P3_ADELANTADO'
                             ? 'border-l-sky-500'
-                            : item.prioridad === 'P2_A_TIEMPO'
-                              ? 'border-l-emerald-500'
-                              : 'border-l-gray-300 dark:border-l-hub-border';
+                            : 'border-l-emerald-500';
 
                       return (
                         <div
@@ -3311,7 +3363,7 @@ const StepScanEncargo: React.FC<{
                             {item.codigoBarras || `78981234567898123456${Math.floor(100000 + Math.random() * 900000)}`}
                           </strong>
                           <div className="shrink-0 flex items-center justify-end">
-                            {prioridadBadge(item.prioridad, true)}
+                            {prioridadBadge(prio, true)}
                           </div>
                         </div>
                       );
