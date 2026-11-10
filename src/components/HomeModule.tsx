@@ -9,6 +9,7 @@ import {
   Ruler,
   ShieldCheck,
   AlertTriangle,
+  ClipboardCheck,
 } from 'lucide-react';
 
 interface HomeModuleProps {
@@ -51,6 +52,15 @@ const MODULES_LIST: ModuleCardDef[] = [
     description: 'Recepcionar nóminas contenedoras (Bins, Valija, Pallet, Jaula), validar encargos y cuadrar recepciones.',
     icon: PackageCheck,
     accentColor: 'from-amber-500 to-orange-600',
+    badgeText: 'OPERATIVO',
+  },
+  {
+    id: 'rendicion',
+    title: 'Rendición de Móvil',
+    subtitle: '',
+    description: 'Seleccionar tipo de móvil, ingresar N° de móvil e iniciar el cuadre de bultos devueltos o no entregados.',
+    icon: ClipboardCheck,
+    accentColor: 'from-[#009D4E] to-teal-700',
     badgeText: 'OPERATIVO',
   },
   {

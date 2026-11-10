@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ActiveModule } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { useAutorizaciones } from '../context/AutorizacionesContext';
-import { Scan, MapPin, ArrowLeft, Menu, User, Settings, LogOut, X, Sun, Moon, Search, Bell, ShieldCheck } from 'lucide-react';
+import { Scan, MapPin, ArrowLeft, Menu, User, Settings, LogOut, X, Sun, Moon, Search, Bell, ShieldCheck, ClipboardCheck } from 'lucide-react';
 
 interface PDALayoutProps {
   children: React.ReactNode;
@@ -126,6 +126,8 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                       ? 'Nominación y Despacho'
                       : activeModule === 'recepcion'
                         ? 'Recepción'
+                        : activeModule === 'rendicion'
+                          ? 'Rendición de Móvil'
                         : activeModule === 'redimension'
                           ? 'Redimensión'
                           : activeModule === 'escaneo'
@@ -243,6 +245,19 @@ export const PDALayout: React.FC<PDALayoutProps> = ({
                 >
                   <Search className="w-4 h-4 text-[#009D4E] dark:text-[#03F77C] shrink-0 stroke-[2.5]" />
                   <span>Seguimiento de Encargo</span>
+                </button>
+
+                {/* Opción: Rendición de Móvil */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onSelectModule?.('rendicion');
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl hover:bg-gray-100 dark:hover:bg-hub-elevated text-xs font-bold text-[#414745] dark:text-hub-text1 flex items-center gap-3 transition-colors text-left cursor-pointer"
+                >
+                  <ClipboardCheck className="w-4 h-4 text-[#009D4E] shrink-0" />
+                  <span>Rendición de Móvil</span>
                 </button>
 
                 {/* Option 1: Mi Perfil */}

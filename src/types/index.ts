@@ -74,7 +74,48 @@ export interface EncargoNominado {
   codigoOF9?: string;
 }
 
-export type ActiveModule = 'home' | 'encasillado' | 'escaneo' | 'inventario' | 'despachos' | 'reportes' | 'nominacion' | 'configuracion' | 'recepcion' | 'redimension' | 'autorizaciones' | 'embalaje-deficiente';
+export type ActiveModule =
+  | 'home'
+  | 'encasillado'
+  | 'escaneo'
+  | 'inventario'
+  | 'despachos'
+  | 'reportes'
+  | 'nominacion'
+  | 'configuracion'
+  | 'recepcion'
+  | 'redimension'
+  | 'autorizaciones'
+  | 'embalaje-deficiente'
+  | 'rendicion';
+
+// --- TIPOS PARA EL MÓDULO DE RENDICIÓN ---
+
+export type TipoMovilRendicion =
+  | 'BUS'
+  | 'CAMION'
+  | 'RAMPLA'
+  | 'CAMIONETA'
+  | 'FURGON'
+  | 'MOTO'
+  | 'TUR_CARRY'
+  | 'AVION'
+  | 'PEATON'
+  | 'CAMIONETA_PLATAFORMA'
+  | 'CAMION_PLATAFORMA';
+
+export interface MovilRendicionInfo {
+  tipo: TipoMovilRendicion;
+  numeroMovil: string;
+  patente?: string;
+  conductor?: string;
+  rutConductor?: string;
+  totalBultosAsignados?: number;
+  entregados?: number;
+  pendientesRendicion?: number;
+  fechaSalida?: string;
+  horaSalida?: string;
+}
 
 // --- TIPOS PARA EL MÓDULO DE RECEPCIÓN ---
 

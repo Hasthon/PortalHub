@@ -7,6 +7,7 @@ import { ScanModule } from './components/ScanModule';
 import { EncasilladoModule } from './components/EncasilladoModule';
 import { NominacionDespachoModule } from './components/NominacionDespachoModule';
 import { RecepcionModule } from './components/RecepcionModule';
+import { RendicionModule } from './components/RendicionModule';
 import { RedimensionModule } from './components/RedimensionModule';
 import { EmbalajeDeficienteModule } from './components/EmbalajeDeficienteModule';
 import { HomeModule } from './components/HomeModule';
@@ -110,6 +111,13 @@ const MainApp: React.FC = () => {
       case 'recepcion':
         return (
           <RecepcionModule
+            onRegisterBackHandler={handleRegisterBackHandler}
+            onBackHome={() => handleSelectModule('home')}
+          />
+        );
+      case 'rendicion':
+        return (
+          <RendicionModule
             onRegisterBackHandler={handleRegisterBackHandler}
             onBackHome={() => handleSelectModule('home')}
           />

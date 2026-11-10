@@ -18,6 +18,7 @@ import {
   Bell,
   ShieldCheck,
   AlertTriangle,
+  ClipboardCheck,
 } from 'lucide-react';
 
 interface DesktopLayoutProps {
@@ -98,17 +99,19 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                         ? 'NOMINACIÓN Y DESPACHO'
                         : activeModule === 'recepcion'
                           ? 'RECEPCIÓN'
+                          : activeModule === 'rendicion'
+                            ? 'RENDICIÓN'
                           : activeModule === 'redimension'
                             ? 'REDIMENSIÓN'
-                            : activeModule === 'embalaje-deficiente'
-                              ? 'EMBALAJE DEFICIENTE'
-                            : activeModule === 'autorizaciones'
-                              ? 'SUPERVISIÓN LOGÍSTICA'
-                              : activeModule === 'escaneo'
-                                ? 'LECTURA DE ENCARGOS'
-                                : activeModule === 'configuracion'
-                                  ? 'CONFIGURACIÓN'
-                                  : activeModule.toUpperCase()}
+                          : activeModule === 'embalaje-deficiente'
+                            ? 'EMBALAJE DEFICIENTE'
+                          : activeModule === 'autorizaciones'
+                            ? 'SUPERVISIÓN LOGÍSTICA'
+                          : activeModule === 'escaneo'
+                            ? 'LECTURA DE ENCARGOS'
+                            : activeModule === 'configuracion'
+                              ? 'CONFIGURACIÓN'
+                              : activeModule.toUpperCase()}
                 </span>
               </nav>
               <h2 className={`text-base sm:text-lg font-bold leading-tight truncate ${isDark ? 'text-hub-text1' : 'text-white'
@@ -121,17 +124,19 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                       ? 'Módulo de Nominación y Despacho'
                       : activeModule === 'recepcion'
                         ? 'Módulo de Recepción'
+                        : activeModule === 'rendicion'
+                          ? 'Módulo de rendición de móviles'
                         : activeModule === 'redimension'
                           ? 'Módulo de Redimensión'
-                          : activeModule === 'embalaje-deficiente'
-                            ? 'Módulo de Embalaje Deficiente'
-                          : activeModule === 'autorizaciones'
-                            ? 'Supervisión Logística'
-                            : activeModule === 'escaneo'
-                              ? 'Módulo de Lectura de Encargos'
-                              : activeModule === 'configuracion'
-                                ? 'Configuración del Sistema'
-                                : `Módulo ${activeModule}`}
+                        : activeModule === 'embalaje-deficiente'
+                          ? 'Módulo de Embalaje Deficiente'
+                        : activeModule === 'autorizaciones'
+                          ? 'Supervisión Logística'
+                          : activeModule === 'escaneo'
+                            ? 'Módulo de Lectura de Encargos'
+                            : activeModule === 'configuracion'
+                              ? 'Configuración del Sistema'
+                              : `Módulo ${activeModule}`}
               </h2>
             </div>
 
@@ -273,6 +278,28 @@ export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
                     : 'text-emerald-400'
                 }`} />
               <span>Recepción</span>
+            </button>
+
+            {/* Módulo de Rendición */}
+            <button
+              type="button"
+              onClick={() => onSelectModule?.('rendicion')}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-all cursor-pointer ${activeModule === 'rendicion'
+                  ? isDark
+                    ? 'bg-[#03F77C]/15 text-[#03F77C] border border-[#03F77C]/40 font-bold shadow-xs'
+                    : 'bg-[#009D4E] text-white border border-[#00E676]/70 font-black shadow-md ring-2 ring-[#00E676]/25'
+                  : isDark
+                    ? 'text-gray-300 border border-transparent hover:bg-[#03F77C]/10 hover:text-[#03F77C] hover:border-[#03F77C]/30 font-semibold'
+                    : 'text-gray-300 border border-transparent hover:bg-white/10 hover:text-white font-medium'
+                }`}
+            >
+              <ClipboardCheck className={`w-4 h-4 ${isDark
+                  ? 'text-[#03F77C]'
+                  : activeModule === 'rendicion'
+                    ? 'text-white'
+                    : 'text-emerald-400'
+                }`} />
+              <span>Rendición</span>
             </button>
 
             {/* Módulo de Redimensión */}
