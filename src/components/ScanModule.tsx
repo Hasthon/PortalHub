@@ -322,7 +322,7 @@ export const ScanModule: React.FC = () => {
 
   // --- RENDER FOR DESKTOP (PC) ---
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6 font-sans animate-fadeIn">
       {/* Top Banner & Main Scan Input Bar */}
       <div className="bg-white dark:bg-hub-surface rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-hub-border">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 pb-6 border-b border-gray-100 dark:border-hub-border">

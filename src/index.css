@@ -41,6 +41,25 @@
     font-family: 'JetBrains Mono', Consolas, monospace;
   }
 
+  /* Desactivar outline negro por defecto de navegadores en inputs y controles */
+  input,
+  textarea,
+  select,
+  button {
+    outline: none !important;
+  }
+
+  input:focus,
+  input:focus-visible,
+  textarea:focus,
+  textarea:focus-visible,
+  select:focus,
+  select:focus-visible,
+  button:focus,
+  button:focus-visible {
+    outline: none !important;
+  }
+
   /* Custom Modern Minimalist Scrollbars */
   ::-webkit-scrollbar {
     width: 6px;

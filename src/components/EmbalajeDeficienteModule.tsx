@@ -651,7 +651,7 @@ export const EmbalajeDeficienteModule: React.FC<EmbalajeDeficienteModuleProps> =
           )
         ) : (
           // ─── ESTADO 2: ENCARGO ESCANEADO (COMPONENTES DE LA IMAGEN) ─────────────
-          <div className="max-w-5xl mx-auto w-full space-y-4 animate-fadeIn">
+          <div className="max-w-7xl mx-auto w-full space-y-4 animate-fadeIn">
             <input
               ref={fileInputRef}
               type="file"
